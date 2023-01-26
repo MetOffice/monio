@@ -5,7 +5,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/NetCDFFile.h"
+#include "lfriclitejedi/IO/File.h"
 
 #include <map>
 #include <memory>
@@ -14,35 +14,35 @@
 #include "atlas/parallel/mpi/mpi.h"
 #include "oops/util/Logger.h"
 
-#include "NetCDFAttributeBase.h"
-#include "NetCDFAttributeInt.h"
-#include "NetCDFAttributeString.h"
-#include "NetCDFConstants.h"
-#include "NetCDFVariable.h"
+#include "AttributeBase.h"
+#include "AttributeInt.h"
+#include "AttributeString.h"
+#include "Constants.h"
+#include "Variable.h"
 
 // Constructors ///////////////////////////////////////////////////////////////////////////////////
 
-lfriclite::NetCDFFile::NetCDFFile(const std::string& filePath,
-                                  const netCDF::NcFile::FileMode fileMode):
-                                  filePath_(filePath),
-                                  fileMode_(fileMode) {
+monio::File::File(const std::string& filePath,
+                              const netCDF::NcFile::FileMode fileMode):
+                              filePath_(filePath),
+                              fileMode_(fileMode) {
   try {
-    oops::Log::debug() << "NetCDFFile::NetCDFFile(): filePath_> " <<  filePath_  <<
+    oops::Log::debug() << "File::File(): filePath_> " <<  filePath_  <<
                          ", fileMode_> " << fileMode_ << std::endl;
     dataFile_ = std::make_unique<netCDF::NcFile>(filePath_, fileMode_);
   } catch (netCDF::exceptions::NcException& exception) {
-    std::string message = "An exception occurred in NetCDFFile> ";
+    std::string message = "An exception occurred in File> ";
     message.append(exception.what());
     throw std::runtime_error(message);
   }
 }
 
-lfriclite::NetCDFFile::~NetCDFFile() {}
+monio::File::~File() {}
 
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 
-void lfriclite::NetCDFFile::readMetadata(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::readMetadata()" << std::endl;
+void monio::File::readMetadata(Metadata& metadata) {
+  oops::Log::debug() << "File::readMetadata()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     readDimensions(metadata);  // Should be called before readVariables()
     readVariables(metadata);
@@ -50,13 +50,13 @@ void lfriclite::NetCDFFile::readMetadata(NetCDFMetadata& metadata) {
     metadata.print();
   } else {
     throw std::runtime_error(
-        "NetCDFFile::readMetadata()> Write file accessed for reading...");
+        "File::readMetadata()> Write file accessed for reading...");
   }
 }
 
-void lfriclite::NetCDFFile::readMetadata(NetCDFMetadata& metadata,
+void monio::File::readMetadata(Metadata& metadata,
                                          const std::vector<std::string>& varNames) {
-  oops::Log::debug() << "NetCDFFile::readMetadata()" << std::endl;
+  oops::Log::debug() << "File::readMetadata()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     readDimensions(metadata);  // Should be called before readVariables()
     readVariables(metadata, varNames);
@@ -64,12 +64,12 @@ void lfriclite::NetCDFFile::readMetadata(NetCDFMetadata& metadata,
     metadata.print();
   } else {
     throw std::runtime_error(
-        "NetCDFFile::readMetadata()> Write file accessed for reading...");
+        "File::readMetadata()> Write file accessed for reading...");
   }
 }
 
-void lfriclite::NetCDFFile::readDimensions(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::readDimensions()" << std::endl;
+void monio::File::readDimensions(Metadata& metadata) {
+  oops::Log::debug() << "File::readDimensions()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     std::multimap<std::string, netCDF::NcDim> ncDimsMap = getFile()->getDims();
     for (auto const& ncDimPair : ncDimsMap) {
@@ -78,12 +78,12 @@ void lfriclite::NetCDFFile::readDimensions(NetCDFMetadata& metadata) {
     }
   } else {
     throw std::runtime_error(
-        "NetCDFFile::readDimensions()> Write file accessed for reading...");
+        "File::readDimensions()> Write file accessed for reading...");
   }
 }
 
-void lfriclite::NetCDFFile::readVariables(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::readVariables()" << std::endl;
+void monio::File::readVariables(Metadata& metadata) {
+  oops::Log::debug() << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     // Potentially process getFile()->getGroups() OR getFile()->getId() here?
     std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile()->getVars();
@@ -92,13 +92,13 @@ void lfriclite::NetCDFFile::readVariables(NetCDFMetadata& metadata) {
       readVariable(metadata, ncVar);
     }
   } else {
-    throw std::runtime_error("NetCDFFile::readVariables()> Write file accessed for reading...");
+    throw std::runtime_error("File::readVariables()> Write file accessed for reading...");
   }
 }
 
-void lfriclite::NetCDFFile::readVariables(NetCDFMetadata& metadata,
+void monio::File::readVariables(Metadata& metadata,
                                           const std::vector<std::string>& variableNames) {
-  oops::Log::debug() << "NetCDFFile::readVariables()" << std::endl;
+  oops::Log::debug() << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     // Potentially process getFile()->getGroups() OR getFile()->getId() here?
     std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile()->getVars();
@@ -111,22 +111,22 @@ void lfriclite::NetCDFFile::readVariables(NetCDFMetadata& metadata,
       }
     }
   } else {
-    throw std::runtime_error("NetCDFFile::readVariables()> Write file accessed for reading...");
+    throw std::runtime_error("File::readVariables()> Write file accessed for reading...");
   }
 }
 
-void lfriclite::NetCDFFile::readVariable(NetCDFMetadata& metadata, netCDF::NcVar ncVar) {
+void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
   netCDF::NcType varType = ncVar.getType();
   std::string varName = ncVar.getName();
-  lfriclite::NetCDFVariable* var;
+  monio::Variable* var;
   if (varType == netCDF::NcType::nc_INT)
-    var = new NetCDFVariable(varName, lfriclite::ncconsts::eInt);
+    var = new Variable(varName, constants::eInt);
   else if (varType == netCDF::NcType::nc_FLOAT)
-    var = new NetCDFVariable(varName, lfriclite::ncconsts::eFloat);
+    var = new Variable(varName, constants::eFloat);
   else if (varType == netCDF::NcType::nc_DOUBLE)
-    var = new NetCDFVariable(varName, lfriclite::ncconsts::eDouble);
+    var = new Variable(varName, constants::eDouble);
   else
-    throw std::runtime_error("NetCDFFile::readVariables()> Variable data type " +
+    throw std::runtime_error("File::readVariables()> Variable data type " +
                                 varType.getName() + " not coded for.");
 
   std::vector<netCDF::NcDim> ncVarDims = ncVar.getDims();
@@ -134,7 +134,7 @@ void lfriclite::NetCDFFile::readVariable(NetCDFMetadata& metadata, netCDF::NcVar
   for (auto const& ncVarDim : ncVarDims) {
     std::string varDimName = ncVarDim.getName();
     if (metadata.isDimDefined(varDimName) == false) {
-      throw std::runtime_error("NetCDFFile::readVariables()> Variable dimension \"" +
+      throw std::runtime_error("File::readVariables()> Variable dimension \"" +
                                varDimName + "\" not defined.");
     }
     std::size_t varDimSize = ncVarDim.getSize();
@@ -148,23 +148,23 @@ void lfriclite::NetCDFFile::readVariable(NetCDFMetadata& metadata, netCDF::NcVar
   for (auto const& ncVarAttrPair : ncVarAttrMap) {
     netCDF::NcVarAtt ncVarAttr = ncVarAttrPair.second;
 
-    lfriclite::NetCDFAttributeBase* varAttr = nullptr;
+    monio::AttributeBase* varAttr = nullptr;
     netCDF::NcType ncVarAttrType = ncVarAttr.getType();
 
     if (ncVarAttrType == netCDF::NcType::nc_CHAR ||
         ncVarAttrType == netCDF::NcType::nc_STRING) {
       std::string strValue;
       ncVarAttr.getValues(strValue);
-      varAttr = new lfriclite::NetCDFAttributeString(ncVarAttr.getName(), strValue);
+      varAttr = new monio::AttributeString(ncVarAttr.getName(), strValue);
       var->addAttribute(varAttr);
     } else if (ncVarAttrType == netCDF::NcType::nc_INT ||
                ncVarAttrType == netCDF::NcType::nc_SHORT) {
       int intValue;
       ncVarAttr.getValues(&intValue);
-      varAttr = new lfriclite::NetCDFAttributeInt(ncVarAttr.getName(), intValue);
+      varAttr = new monio::AttributeInt(ncVarAttr.getName(), intValue);
       var->addAttribute(varAttr);
     } else {
-      throw std::runtime_error("NetCDFFile::readVariables()> Variable attribute data type \""
+      throw std::runtime_error("File::readVariables()> Variable attribute data type \""
                                   + ncVarAttrType.getName() + "\" not coded for.");
     }
   }
@@ -172,87 +172,87 @@ void lfriclite::NetCDFFile::readVariable(NetCDFMetadata& metadata, netCDF::NcVar
 }
 
 
-void lfriclite::NetCDFFile::readAttributes(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::readVariables()" << std::endl;
+void monio::File::readAttributes(Metadata& metadata) {
+  oops::Log::debug() << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     std::multimap<std::string, netCDF::NcGroupAtt> ncAttrMap = getFile()->getAtts();
     for (auto const& ncAttrPair : ncAttrMap) {
       netCDF::NcGroupAtt ncAttr = ncAttrPair.second;
 
-      lfriclite::NetCDFAttributeBase* globAttr = nullptr;
+      monio::AttributeBase* globAttr = nullptr;
       netCDF::NcType attrType = ncAttr.getType();
       if (attrType == netCDF::NcType::nc_CHAR || attrType == netCDF::NcType::nc_STRING) {
         std::string strValue;
         ncAttr.getValues(strValue);
-        globAttr = new lfriclite::NetCDFAttributeString(ncAttr.getName(), strValue);
+        globAttr = new monio::AttributeString(ncAttr.getName(), strValue);
 
       } else if (attrType == netCDF::NcType::nc_INT || attrType == netCDF::NcType::nc_SHORT) {
         int intValue;
         ncAttr.getValues(&intValue);
-        globAttr = new lfriclite::NetCDFAttributeInt(ncAttr.getName(), intValue);
+        globAttr = new monio::AttributeInt(ncAttr.getName(), intValue);
       } else {
-        throw std::runtime_error("NetCDFFile::readAttributes()> Global attribute data type \""
+        throw std::runtime_error("File::readAttributes()> Global attribute data type \""
                                  + attrType.getName() + "\" not coded for.");
       }
       metadata.addGlobalAttr(globAttr->getName(), globAttr);
     }
   } else {
     throw std::runtime_error(
-        "NetCDFFile::readAttributes()> Write file accessed for reading...");
+        "File::readAttributes()> Write file accessed for reading...");
   }
 }
 
 template<typename T>
-void lfriclite::NetCDFFile::readData(const std::string& varName,
+void monio::File::readData(const std::string& varName,
                                      const int varSize,
                                      std::vector<T>& dataVec) {
-  oops::Log::debug() << "NetCDFFile::readData()" << std::endl;
+  oops::Log::debug() << "File::readData()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
     dataVec.resize(varSize, 0);
     var.getVar(dataVec.data());
   } else {
-    throw std::runtime_error("NetCDFFile::readData()> Write file accessed for reading...");
+    throw std::runtime_error("File::readData()> Write file accessed for reading...");
   }
 }
 
-template void lfriclite::NetCDFFile::readData<double>(const std::string& varName,
+template void monio::File::readData<double>(const std::string& varName,
                                                       const int varSize,
                                                       std::vector<double>& dataVec);
-template void lfriclite::NetCDFFile::readData<float>(const std::string& varName,
+template void monio::File::readData<float>(const std::string& varName,
                                                      const int varSize,
                                                      std::vector<float>& dataVec);
-template void lfriclite::NetCDFFile::readData<int>(const std::string& varName,
+template void monio::File::readData<int>(const std::string& varName,
                                                    const int varSize,
                                                    std::vector<int>& dataVec);
 
 template<typename T>
-void lfriclite::NetCDFFile::readField(const std::string& fieldName,
+void monio::File::readField(const std::string& fieldName,
                                       const int varSize,
                                       const std::vector<size_t>& startVec,
                                       const std::vector<size_t>& countVec,
                                       std::vector<T>& dataVec) {
-  oops::Log::debug() << "NetCDFFile::readField()" << std::endl;
+  oops::Log::debug() << "File::readField()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(fieldName);
     dataVec.resize(varSize, 0);
     var.getVar(startVec, countVec, dataVec.data());
   } else {
-    throw std::runtime_error("NetCDFFile::readField()> Write file accessed for reading...");
+    throw std::runtime_error("File::readField()> Write file accessed for reading...");
   }
 }
 
-template void lfriclite::NetCDFFile::readField<double>(const std::string& varName,
+template void monio::File::readField<double>(const std::string& varName,
                                                        const int varSize,
                                                        const std::vector<size_t>& startVec,
                                                        const std::vector<size_t>& countVec,
                                                        std::vector<double>& dataVec);
-template void lfriclite::NetCDFFile::readField<float>(const std::string& varName,
+template void monio::File::readField<float>(const std::string& varName,
                                                       const int varSize,
                                                       const std::vector<size_t>& startVec,
                                                       const std::vector<size_t>& countVec,
                                                       std::vector<float>& dataVec);
-template void lfriclite::NetCDFFile::readField<int>(const std::string& varName,
+template void monio::File::readField<int>(const std::string& varName,
                                                     const int varSize,
                                                     const std::vector<size_t>& startVec,
                                                     const std::vector<size_t>& countVec,
@@ -260,133 +260,133 @@ template void lfriclite::NetCDFFile::readField<int>(const std::string& varName,
 
 // Writing functions //////////////////////////////////////////////////////////////////////////////
 
-void lfriclite::NetCDFFile::writeMetadata(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::writeMetadata()" << std::endl;
+void monio::File::writeMetadata(Metadata& metadata) {
+  oops::Log::debug() << "File::writeMetadata()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     writeDimensions(metadata);  // Should be called before readVariables()
     writeVariables(metadata);
     writeAttributes(metadata);  // Global attributes
   } else {
     throw std::runtime_error(
-        "NetCDFFile::writeMetadata()> Read file accessed for writing...");
+        "File::writeMetadata()> Read file accessed for writing...");
   }
 }
 
-void lfriclite::NetCDFFile::writeDimensions(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::writeDimensions()" << std::endl;
+void monio::File::writeDimensions(Metadata& metadata) {
+  oops::Log::debug() << "File::writeDimensions()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     std::map<std::string, int>& dimMap = metadata.getDimensionsMap();
     for (auto const& dimPair : dimMap) {
       getFile()->addDim(dimPair.first, dimPair.second);
     }
   } else {
-    throw std::runtime_error("NetCDFFile::writeDimensions()> Read file accessed for writing...");
+    throw std::runtime_error("File::writeDimensions()> Read file accessed for writing...");
   }
 }
 
-void lfriclite::NetCDFFile::writeVariables(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::writeVariables()" << std::endl;
+void monio::File::writeVariables(Metadata& metadata) {
+  oops::Log::debug() << "File::writeVariables()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
-    std::map<std::string, NetCDFVariable*>& varsMap = metadata.getVariablesMap();
+    std::map<std::string, Variable*>& varsMap = metadata.getVariablesMap();
     for (auto const& varPair : varsMap) {
-      NetCDFVariable* var = varPair.second;
+      Variable* var = varPair.second;
 
       netCDF::NcVar ncVar = getFile()->addVar(var->getName(),
-                            lfriclite::ncconsts::kDataTypeNames[var->getType()],
-                            var->getDimensionKeys());
+                            constants::kDataTypeNames[var->getType()],
+                            var->getDimensionNames());
 
-      std::map<std::string, NetCDFAttributeBase*>& varAttrsMap = var->getAttributes();
+      std::map<std::string, AttributeBase*>& varAttrsMap = var->getAttributes();
       for (const auto& varAttrPair : varAttrsMap) {
-        NetCDFAttributeBase* varAttr = varAttrPair.second;
+        AttributeBase* varAttr = varAttrPair.second;
         int varAttrType = varAttr->getType();
-        if (varAttrType == lfriclite::ncconsts::eString) {
-          NetCDFAttributeString* varAttrStr = static_cast<NetCDFAttributeString*>(varAttr);
+        if (varAttrType == constants::eString) {
+          AttributeString* varAttrStr = static_cast<AttributeString*>(varAttr);
           ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
-        } else if (varAttrType == lfriclite::ncconsts::eInt) {
-          NetCDFAttributeInt* varAttrInt = static_cast<NetCDFAttributeInt*>(varAttr);
+        } else if (varAttrType == constants::eInt) {
+          AttributeInt* varAttrInt = static_cast<AttributeInt*>(varAttr);
           ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT, varAttrInt->getValue());
         } else {
-          throw std::runtime_error("NetCDFFile::writeVariables()> "
+          throw std::runtime_error("File::writeVariables()> "
               "Variable attribute data type not coded for...");
         }
       }
     }
   } else {
-    throw std::runtime_error("NetCDFFile::writeVariables()> Read file accessed for writing...");
+    throw std::runtime_error("File::writeVariables()> Read file accessed for writing...");
   }
 }
 
-void lfriclite::NetCDFFile::writeAttributes(NetCDFMetadata& metadata) {
-  oops::Log::debug() << "NetCDFFile::writeAttributes()" << std::endl;
+void monio::File::writeAttributes(Metadata& metadata) {
+  oops::Log::debug() << "File::writeAttributes()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
-    std::map<std::string, NetCDFAttributeBase*>& globalAttrMap = metadata.getGlobalAttrsMap();
+    std::map<std::string, AttributeBase*>& globalAttrMap = metadata.getGlobalAttrsMap();
     for (auto const& globalAttrPair : globalAttrMap) {
-      NetCDFAttributeBase* globAttr = globalAttrPair.second;
+      AttributeBase* globAttr = globalAttrPair.second;
 
-      if (globAttr->getType() == lfriclite::ncconsts::eString) {
-        NetCDFAttributeString* globAttrStr = static_cast<NetCDFAttributeString*>(globAttr);
+      if (globAttr->getType() == constants::eString) {
+        AttributeString* globAttrStr = static_cast<AttributeString*>(globAttr);
         std::string globAttrName = globAttrStr->getName();
         getFile()->putAtt(globAttrName, globAttrStr->getValue());
-      } else if (globAttr->getType() == lfriclite::ncconsts::eInt) {
-        NetCDFAttributeInt* globAttrInt = static_cast<NetCDFAttributeInt*>(globAttr);
+      } else if (globAttr->getType() == constants::eInt) {
+        AttributeInt* globAttrInt = static_cast<AttributeInt*>(globAttr);
         getFile()->putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
       } else {
-        throw std::runtime_error("NetCDFFile::writeVariables()> "
+        throw std::runtime_error("File::writeVariables()> "
             "Variable attribute data type not coded for...");
       }
     }
   } else {
-    throw std::runtime_error("NetCDFFile::writeAttributes()> Read file accessed for writing...");
+    throw std::runtime_error("File::writeAttributes()> Read file accessed for writing...");
   }
 }
 
 template<typename T>
-void lfriclite::NetCDFFile::writeData(const std::string &varName, const std::vector<T>& dataVec) {
-  oops::Log::debug() << "NetCDFFile::writeData()" << std::endl;
+void monio::File::writeData(const std::string &varName, const std::vector<T>& dataVec) {
+  oops::Log::debug() << "File::writeData()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
     var.putVar(dataVec.data());
   } else {
-    throw std::runtime_error("NetCDFFile::writeData()> Read file accessed for writing...");
+    throw std::runtime_error("File::writeData()> Read file accessed for writing...");
   }
 }
 
-template void lfriclite::NetCDFFile::writeData<double>(const std::string& varName,
-                                                       const std::vector<double>& dataVec);
-template void lfriclite::NetCDFFile::writeData<float>(const std::string& varName,
-                                                      const std::vector<float>& dataVec);
-template void lfriclite::NetCDFFile::writeData<int>(const std::string& varName,
-                                                    const std::vector<int>& dataVec);
+template void monio::File::writeData<double>(const std::string& varName,
+                                             const std::vector<double>& dataVec);
+template void monio::File::writeData<float>(const std::string& varName,
+                                            const std::vector<float>& dataVec);
+template void monio::File::writeData<int>(const std::string& varName,
+                                          const std::vector<int>& dataVec);
 
 // Encapsulation functions ////////////////////////////////////////////////////////////////////////
 
-const std::string& lfriclite::NetCDFFile::getPath() {
+const std::string& monio::File::getPath() {
   return filePath_;
 }
 
-void lfriclite::NetCDFFile::setPath(const std::string filePath) {
+void monio::File::setPath(const std::string filePath) {
   filePath_ = filePath;
 }
 
-const netCDF::NcFile::FileMode& lfriclite::NetCDFFile::getFileMode() {
+const netCDF::NcFile::FileMode& monio::File::getFileMode() {
   return fileMode_;
 }
 
-void lfriclite::NetCDFFile::setFileMode(const netCDF::NcFile::FileMode fileMode) {
+void monio::File::setFileMode(const netCDF::NcFile::FileMode fileMode) {
   fileMode_ = fileMode;
 }
 
-const bool lfriclite::NetCDFFile::isRead() {
+const bool monio::File::isRead() {
   return fileMode_ == netCDF::NcFile::read;
 }
 
-const bool lfriclite::NetCDFFile::isWrite() {
+const bool monio::File::isWrite() {
   return fileMode_ != netCDF::NcFile::read;
 }
 
-netCDF::NcFile* lfriclite::NetCDFFile::getFile() {
+netCDF::NcFile* monio::File::getFile() {
   if (dataFile_ == nullptr)
-    throw std::runtime_error("NetCDFFile::getFile()> Data file has not been initialised...");
+    throw std::runtime_error("File::getFile()> Data file has not been initialised...");
 
   return dataFile_.get();
 }

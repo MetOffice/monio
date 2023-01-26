@@ -12,8 +12,8 @@
 #include <tuple>
 #include <vector>
 
-#include "NetCDFData.h"
-#include "NetCDFMetadata.h"
+#include "Data.h"
+#include "Metadata.h"
 
 #include "atlas/field.h"
 #include "atlas/functionspace/CubedSphereColumns.h"
@@ -21,30 +21,29 @@
 #include "atlas/mesh/Mesh.h"
 #include "atlas/util/Point.h"
 
-namespace lfriclite {
+namespace monio {
 /// \brief Converts data to and from LFRic format and Atlas
-class NetCDFAtlasData {
+class AtlasData {
  public:
-  NetCDFAtlasData(const std::map<std::string, NetCDFDataContainerBase*>& coordDataMap,
-                  const std::map<std::string,
-                        std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
-                  const std::string gridName,
-                  const std::string partitionerType,
-                  const std::string meshType);
+  AtlasData(const std::map<std::string, DataContainerBase*>& coordDataMap,
+            const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
+            const std::string gridName,
+            const std::string partitionerType,
+            const std::string meshType);
 
-  ~NetCDFAtlasData();
+  ~AtlasData();
 
-  NetCDFAtlasData()                                  = delete;  //!< Deleted default constructor
-  NetCDFAtlasData(const NetCDFAtlasData&)            = delete;  //!< Deleted copy constructor
-  NetCDFAtlasData(NetCDFAtlasData&&)                 = delete;  //!< Deleted move constructor
+  AtlasData()                            = delete;  //!< Deleted default constructor
+  AtlasData(const AtlasData&)            = delete;  //!< Deleted copy constructor
+  AtlasData(AtlasData&&)                 = delete;  //!< Deleted move constructor
 
-  NetCDFAtlasData& operator=(const NetCDFAtlasData&) = delete;  //!< Deleted copy assign
-  NetCDFAtlasData& operator=(NetCDFAtlasData&&)      = delete;       //!< Deleted move assign
+  AtlasData& operator=(const AtlasData&) = delete;  //!< Deleted copy assignment
+  AtlasData& operator=(AtlasData&&)      = delete;  //!< Deleted move assignment
 
-  void toAtlasFields(NetCDFData* data);  // Needs to be called on default rank only.
+  void toAtlasFields(Data* data);  // Needs to be called on default rank only.
   void scatterAtlasFields();  // Needs to be called on all PEs.
   void gatherAtlasFields();  // Needs to be called on all PEs
-  void fromAtlasFields(NetCDFData* data);   // Needs to be called on default rank only
+  void fromAtlasFields(Data* data);   // Needs to be called on default rank only
 
   atlas::FieldSet getGlobalFieldSet();
   atlas::FieldSet getFieldSet();
@@ -57,7 +56,7 @@ class NetCDFAtlasData {
                                          const int& numLevels,
                                          std::vector<T>& dataVec);
   std::vector<atlas::PointLonLat> processLfricCoordData(
-                          const std::map<std::string, NetCDFDataContainerBase*>& coordDataMap);
+                          const std::map<std::string, DataContainerBase*>& coordDataMap);
   void addField(atlas::Field field);
 
   std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap_;

@@ -12,26 +12,26 @@
 #include <string>
 #include <vector>
 
-#include "NetCDFMetadata.h"
+#include "Metadata.h"
 
 #include "atlas/field.h"
 
-namespace lfriclite {
+namespace monio {
 /// \brief Uses Unidata's C++ NetCDF library and holds handle to NetCDF file for reading or writing
-class NetCDFFile {
+class File {
  public:
-  NetCDFFile(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
-  ~NetCDFFile();
+  File(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
+  ~File();
 
-  NetCDFFile()                  = delete;  //!< Deleted default constructor
-  NetCDFFile(const NetCDFFile&) = delete;  //!< Deleted copy constructor
-  NetCDFFile(NetCDFFile&&)      = delete;  //!< Deleted move constructor
+  File()                       = delete;  //!< Deleted default constructor
+  File(const File&)            = delete;  //!< Deleted copy constructor
+  File(File&&)                 = delete;  //!< Deleted move constructor
 
-  NetCDFFile& operator=(const NetCDFFile&) = delete;  //!< Deleted copy assign
-  NetCDFFile& operator=(NetCDFFile&&) = delete;       //!< Deleted move assign
+  File& operator=(const File&) = delete;  //!< Deleted copy assignment
+  File& operator=(File&&)      = delete;  //!< Deleted move assignment
 
-  void readMetadata(NetCDFMetadata& metadata);
-  void readMetadata(NetCDFMetadata& metadata,
+  void readMetadata(Metadata& metadata);
+  void readMetadata(Metadata& metadata,
                     const std::vector<std::string>& varNames);
 
   template<typename T> void readData(const std::string& varName,
@@ -44,7 +44,7 @@ class NetCDFFile {
                                       const std::vector<size_t>& countVec,
                                       std::vector<T>& dataVec);
 
-  void writeMetadata(NetCDFMetadata& metadata);
+  void writeMetadata(Metadata& metadata);
   template<typename T> void writeData(const std::string& varName,
                                       const std::vector<T>& dataVec);
 
@@ -60,16 +60,16 @@ class NetCDFFile {
  private:
   netCDF::NcFile* getFile();
 
-  void readDimensions(NetCDFMetadata& metadata);
-  void readVariables(NetCDFMetadata& metadata);
-  void readVariables(NetCDFMetadata& metadata,
+  void readDimensions(Metadata& metadata);
+  void readVariables(Metadata& metadata);
+  void readVariables(Metadata& metadata,
                      const std::vector<std::string>& variableNames);
-  void readVariable(NetCDFMetadata& metadata, netCDF::NcVar var);
-  void readAttributes(NetCDFMetadata& metadata);
+  void readVariable(Metadata& metadata, netCDF::NcVar var);
+  void readAttributes(Metadata& metadata);
 
-  void writeDimensions(NetCDFMetadata& metadata);
-  void writeVariables(NetCDFMetadata& metadata);
-  void writeAttributes(NetCDFMetadata& metadata);
+  void writeDimensions(Metadata& metadata);
+  void writeVariables(Metadata& metadata);
+  void writeAttributes(Metadata& metadata);
 
   std::unique_ptr<netCDF::NcFile> dataFile_;
 

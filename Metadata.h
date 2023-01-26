@@ -10,45 +10,45 @@
 #include <string>
 #include <vector>
 
-#include "NetCDFConstants.h"
-#include "NetCDFVariable.h"
+#include "Constants.h"
+#include "Variable.h"
 
-namespace lfriclite {
+namespace monio {
 /// \brief Holds metadata read from or to be written to a NetCDF file
-class NetCDFMetadata {
+class Metadata {
  public:
-  NetCDFMetadata();
-  ~NetCDFMetadata();
+  Metadata();
+  ~Metadata();
 
-  NetCDFMetadata(const NetCDFMetadata&) = delete;  //!< Deleted copy constructor
-  NetCDFMetadata(NetCDFMetadata&&)      = delete;  //!< Deleted move constructor
+  Metadata(const Metadata&)            = delete;  //!< Deleted copy constructor
+  Metadata(Metadata&&)                 = delete;  //!< Deleted move constructor
 
-  NetCDFMetadata& operator=(const NetCDFMetadata&) = delete;  //!< Deleted copy assign
-  NetCDFMetadata& operator=(NetCDFMetadata&&) = delete;       //!< Deleted move assign
+  Metadata& operator=(const Metadata&) = delete;  //!< Deleted copy assignment
+  Metadata& operator=(Metadata&&)      = delete;  //!< Deleted move assignment
 
-  friend bool operator==(const NetCDFMetadata& lhs,
-                         const NetCDFMetadata& rhs);
+  friend bool operator==(const Metadata& lhs,
+                         const Metadata& rhs);
 
   bool isDimDefined(const std::string& dimName);
   int getDimension(const std::string& dimName);
-  NetCDFVariable* getVariable(const std::string& varName);
+  Variable* getVariable(const std::string& varName);
 
-  std::vector<NetCDFVariable*> getVariables(const std::vector<std::string>& varNames);
+  std::vector<Variable*> getVariables(const std::vector<std::string>& varNames);
   std::vector<std::string> getVarStrAttrs(const std::string& attrName);
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
   void addDimension(const std::string& dimName, const int value);
-  void addGlobalAttr(const std::string& attrName, NetCDFAttributeBase* attr);
-  void addVariable(const std::string& varName, NetCDFVariable* var);
+  void addGlobalAttr(const std::string& attrName, AttributeBase* attr);
+  void addVariable(const std::string& varName, Variable* var);
 
   std::vector<std::string> getDimensionNames();
   std::vector<std::string> getVariableNames();
   std::vector<std::string> getGlobalAttrNames();
 
   std::map<std::string, int>& getDimensionsMap();
-  std::map<std::string, NetCDFVariable*>& getVariablesMap();
-  std::map<std::string, NetCDFAttributeBase*>& getGlobalAttrsMap();
+  std::map<std::string, Variable*>& getVariablesMap();
+  std::map<std::string, AttributeBase*>& getGlobalAttrsMap();
 
   void removeAllButTheseVariables(const std::vector<std::string>& varNames);
 
@@ -63,10 +63,10 @@ class NetCDFMetadata {
   template<typename T> void printMap(std::map<std::string, T>& map);
 
   std::map<std::string, int> dimensions_;
-  std::map<std::string, NetCDFAttributeBase*> globalAttrs_;
-  std::map<std::string, NetCDFVariable*> variables_;
+  std::map<std::string, AttributeBase*> globalAttrs_;
+  std::map<std::string, Variable*> variables_;
 };
 
-bool operator==(const NetCDFMetadata& lhs,
-                const NetCDFMetadata& rhs);
+bool operator==(const Metadata& lhs,
+                const Metadata& rhs);
 }  // namespace lfriclite

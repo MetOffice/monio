@@ -4,7 +4,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/NetCDFMetadata.h"
+#include "lfriclitejedi/IO/Metadata.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -14,8 +14,8 @@
 
 #include "oops/util/Logger.h"
 
-#include "NetCDFAttributeInt.h"
-#include "NetCDFAttributeString.h"
+#include "AttributeInt.h"
+#include "AttributeString.h"
 
 namespace  {
 template<typename keyValue, typename typeValue>
@@ -38,11 +38,11 @@ int findInVector(std::vector<T> vector, T searchTerm) {
 }
 }  // anonymous namespace
 
-lfriclite::NetCDFMetadata::NetCDFMetadata() {
-  oops::Log::debug() << "NetCDFMetadata::NetCDFMetadata()" << std::endl;
+monio::Metadata::Metadata() {
+  oops::Log::debug() << "Metadata::Metadata()" << std::endl;
 }
 
-lfriclite::NetCDFMetadata::~NetCDFMetadata() {
+monio::Metadata::~Metadata() {
   for (auto it = variables_.begin(); it != variables_.end(); ++it) {
     delete it->second;
   }
@@ -51,8 +51,8 @@ lfriclite::NetCDFMetadata::~NetCDFMetadata() {
   }
 }
 
-bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
-                           const lfriclite::NetCDFMetadata& rhs) {
+bool monio::operator==(const monio::Metadata& lhs,
+                       const monio::Metadata& rhs) {
   // Compare dimensions
   if (lhs.dimensions_.size() == rhs.dimensions_.size()) {
     for (auto lhsIt = lhs.dimensions_.begin(), rhsIt = rhs.dimensions_.begin();
@@ -66,8 +66,8 @@ bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
   if (lhs.variables_.size() == rhs.variables_.size()) {
     for (auto lhsIt = lhs.variables_.begin(), rhsIt = rhs.variables_.begin();
          lhsIt != lhs.variables_.end(); ++lhsIt , ++rhsIt) {
-      NetCDFVariable* lhsVariable = lhsIt->second;
-      NetCDFVariable* rhsVariable = rhsIt->second;
+      Variable* lhsVariable = lhsIt->second;
+      Variable* rhsVariable = rhsIt->second;
 
       std::string lhsName = lhsVariable->getName();
       std::string rhsName = rhsVariable->getName();
@@ -78,18 +78,15 @@ bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
       int lhsTotSize = lhsVariable->getTotalSize();
       int rhsTotSize = rhsVariable->getTotalSize();
 
-      std::vector<std::string> lhsDimsVec = lhsVariable->getDimensionKeys();
-      std::vector<std::string> rhsDimsVec = rhsVariable->getDimensionKeys();
-
-      std::map<std::string, size_t>& lhsDimsMap = lhsVariable->getDimensions();
-      std::map<std::string, size_t>& rhsDimsMap = rhsVariable->getDimensions();
+      std::vector<std::pair<std::string, size_t>>& lhsDimsVec = lhsVariable->getDimensions();
+      std::vector<std::pair<std::string, size_t>>& rhsDimsVec = rhsVariable->getDimensions();
 
 
       if (lhsName == rhsName && lhsDataType == rhsDataType && lhsTotSize == rhsTotSize &&
-          lhsDimsMap.size() == rhsDimsMap.size()) {
+          lhsDimsVec.size() == rhsDimsVec.size()) {
         // Compare dimensions vectors
-        for (auto lhsIt = lhsDimsMap.begin(), rhsIt = rhsDimsMap.begin();
-             lhsIt != lhsDimsMap.end(); ++lhsIt , ++rhsIt) {
+        for (auto lhsIt = lhsDimsVec.begin(), rhsIt = rhsDimsVec.begin();
+             lhsIt != lhsDimsVec.end(); ++lhsIt , ++rhsIt) {
           if (lhsIt->first != rhsIt->first || lhsIt->second != rhsIt->second)
             return false;
         }
@@ -98,8 +95,8 @@ bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
                rhsIt = rhsVariable->getAttributes().begin();
                lhsIt != lhsVariable->getAttributes().end(); ++lhsIt , ++rhsIt)
           {
-            NetCDFAttributeBase* lhsVarAttr = lhsIt->second;
-            NetCDFAttributeBase* rhsVarAttr = rhsIt->second;
+            AttributeBase* lhsVarAttr = lhsIt->second;
+            AttributeBase* rhsVarAttr = rhsIt->second;
 
             int lhsVarAttrType = rhsVarAttr->getType();
             int rhsVarAttrType = lhsVarAttr->getType();
@@ -109,20 +106,20 @@ bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
 
             if (lhsVarAttrType == rhsVarAttrType && lhsVarAttrName == rhsVarAttrName) {
               switch (lhsVarAttrType) {
-                case lfriclite::ncconsts::dataTypesEnum::eInt: {
-                  NetCDFAttributeInt* lhsVarAttrInt =
-                      static_cast<NetCDFAttributeInt*>(lhsVarAttr);
-                  NetCDFAttributeInt* rhsVarAttrInt =
-                      static_cast<NetCDFAttributeInt*>(rhsVarAttr);
+                case monio::constants::dataTypesEnum::eInt: {
+                  AttributeInt* lhsVarAttrInt =
+                      static_cast<AttributeInt*>(lhsVarAttr);
+                  AttributeInt* rhsVarAttrInt =
+                      static_cast<AttributeInt*>(rhsVarAttr);
                   if (lhsVarAttrInt->getValue() != rhsVarAttrInt->getValue())
                     return false;
                   break;
                 }
-                case lfriclite::ncconsts::dataTypesEnum::eString: {
-                  NetCDFAttributeString* lhsVarAttrStr =
-                      static_cast<NetCDFAttributeString*>(lhsVarAttr);
-                  NetCDFAttributeString* rhsVarAttrStr =
-                      static_cast<NetCDFAttributeString*>(rhsVarAttr);
+                case monio::constants::dataTypesEnum::eString: {
+                  AttributeString* lhsVarAttrStr =
+                      static_cast<AttributeString*>(lhsVarAttr);
+                  AttributeString* rhsVarAttrStr =
+                      static_cast<AttributeString*>(rhsVarAttr);
                   if (lhsVarAttrStr->getValue() != rhsVarAttrStr->getValue())
                     return false;
                   break;
@@ -149,8 +146,8 @@ bool lfriclite::operator==(const lfriclite::NetCDFMetadata& lhs,
   return true;
 }
 
-bool lfriclite::NetCDFMetadata::isDimDefined(const std::string& dimName) {
-  oops::Log::debug() << "NetCDFMetadata::isDimDefined()" << std::endl;
+bool monio::Metadata::isDimDefined(const std::string& dimName) {
+  oops::Log::debug() << "Metadata::isDimDefined()" << std::endl;
   auto it = dimensions_.find(dimName);
   if (it != dimensions_.end())
     return true;
@@ -158,129 +155,129 @@ bool lfriclite::NetCDFMetadata::isDimDefined(const std::string& dimName) {
     return false;
 }
 
-int lfriclite::NetCDFMetadata::getDimension(const std::string& dimName) {
-  oops::Log::debug() << "NetCDFMetadata::getDimension()" << std::endl;
+int monio::Metadata::getDimension(const std::string& dimName) {
+  oops::Log::debug() << "Metadata::getDimension()" << std::endl;
   int dimVal;
   if (isDimDefined(dimName) == true)
     dimVal = dimensions_.at(dimName);
   else
-    throw std::runtime_error("NetCDFMetadata::getDimension()> dimension \"" +
+    throw std::runtime_error("Metadata::getDimension()> dimension \"" +
                                 dimName + "\" not found...");
   return dimVal;
 }
 
-lfriclite::NetCDFVariable* lfriclite::NetCDFMetadata::getVariable(const std::string& varName) {
-  oops::Log::debug() << "NetCDFMetadata::getVariable()> " << varName << std::endl;
+monio::Variable* monio::Metadata::getVariable(const std::string& varName) {
+  oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
-  lfriclite::NetCDFVariable* variable;
+  monio::Variable* variable;
   if (it != variables_.end())
     variable = variables_.at(varName);
   else
-    throw std::runtime_error("NetCDFMetadata::getVariable()> variable \"" +
+    throw std::runtime_error("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
 
   return variable;
 }
 
-std::vector<lfriclite::NetCDFVariable*>
-    lfriclite::NetCDFMetadata::getVariables(const std::vector<std::string>& varNames) {
-  oops::Log::debug() << "NetCDFMetadata::getVariables()> " << std::endl;
-  std::vector<lfriclite::NetCDFVariable*> variables;
+std::vector<monio::Variable*>
+    monio::Metadata::getVariables(const std::vector<std::string>& varNames) {
+  oops::Log::debug() << "Metadata::getVariables()> " << std::endl;
+  std::vector<monio::Variable*> variables;
   for (const auto& varName : varNames) {
     variables.push_back(getVariable(varName));
   }
   return variables;
 }
 
-std::vector<std::string> lfriclite::NetCDFMetadata::getVarStrAttrs(const std::string& attrName) {
-  oops::Log::debug() << "NetCDFMetadata::getVarStrAttrs()" << std::endl;
+std::vector<std::string> monio::Metadata::getVarStrAttrs(const std::string& attrName) {
+  oops::Log::debug() << "Metadata::getVarStrAttrs()" << std::endl;
   std::vector<std::string> varNames = getVariableNames();
   return getVarStrAttrs(varNames, attrName);
 }
 
-std::vector<std::string> lfriclite::NetCDFMetadata::getVarStrAttrs(
+std::vector<std::string> monio::Metadata::getVarStrAttrs(
                                                   const std::vector<std::string>& varNames,
                                                   const std::string& attrName) {
-  oops::Log::debug() << "NetCDFMetadata::getVarStrAttrs()" << std::endl;
-  std::vector<lfriclite::NetCDFVariable*> variables = getVariables(varNames);
+  oops::Log::debug() << "Metadata::getVarStrAttrs()" << std::endl;
+  std::vector<monio::Variable*> variables = getVariables(varNames);
   std::vector<std::string> varStrAttrs;
   for (const auto& var : variables) {
       std::string attr = var->getStrAttr(attrName);
       varStrAttrs.push_back(attr);
   }
   if (varNames.size() != varStrAttrs.size())
-    throw std::runtime_error("NetCDFMetadata::getVarStrAttrs()> "
+    throw std::runtime_error("Metadata::getVarStrAttrs()> "
         "Unmatched number of variables and attributes...");
 
   return varStrAttrs;
 }
 
-void lfriclite::NetCDFMetadata::addDimension(const std::string& dimName, const int value) {
-  oops::Log::debug() << "NetCDFMetadata::addDimension()" << std::endl;
+void monio::Metadata::addDimension(const std::string& dimName, const int value) {
+  oops::Log::debug() << "Metadata::addDimension()" << std::endl;
   auto it = dimensions_.find(dimName);
   if (it == dimensions_.end())
     dimensions_.insert({dimName, value});
   else
-    throw std::runtime_error("NetCDFMetadata::addDimension()> multiple definitions of \"" +
+    throw std::runtime_error("Metadata::addDimension()> multiple definitions of \"" +
                                 dimName + "\"...");
 }
 
 
-void lfriclite::NetCDFMetadata::addGlobalAttr(const std::string& attrName,
-                                               NetCDFAttributeBase* attr) {
-  oops::Log::debug() << "NetCDFMetadata::addGlobalAttr()" << std::endl;
+void monio::Metadata::addGlobalAttr(const std::string& attrName,
+                                               AttributeBase* attr) {
+  oops::Log::debug() << "Metadata::addGlobalAttr()" << std::endl;
   auto it = globalAttrs_.find(attrName);
   if (it == globalAttrs_.end())
     globalAttrs_.insert({attrName, attr});
   else
-    throw std::runtime_error("NetCDFMetadata::addGlobalAttr()> multiple definitions of \"" +
+    throw std::runtime_error("Metadata::addGlobalAttr()> multiple definitions of \"" +
                              attrName + "\"...");
 }
 
-void lfriclite::NetCDFMetadata::addVariable(const std::string& varName,
-                                            NetCDFVariable* var) {
-  oops::Log::debug() << "NetCDFMetadata::addVariable()" << std::endl;
+void monio::Metadata::addVariable(const std::string& varName,
+                                            Variable* var) {
+  oops::Log::debug() << "Metadata::addVariable()" << std::endl;
   auto it = variables_.find(varName);
   if (it == variables_.end())
     variables_.insert({varName, var});
   else
-    throw std::runtime_error("NetCDFMetadata::addVariable()> multiple definitions of \"" +
+    throw std::runtime_error("Metadata::addVariable()> multiple definitions of \"" +
                                 varName + "\"...");
 }
 
-std::vector<std::string> lfriclite::NetCDFMetadata::getDimensionNames() {
-  oops::Log::debug() << "NetCDFMetadata::getDimensionNames()" << std::endl;
+std::vector<std::string> monio::Metadata::getDimensionNames() {
+  oops::Log::debug() << "Metadata::getDimensionNames()" << std::endl;
   return extractKeys(dimensions_);
 }
 
-std::vector<std::string> lfriclite::NetCDFMetadata::getVariableNames() {
-  oops::Log::debug() << "NetCDFMetadata::getVariableNames()" << std::endl;
+std::vector<std::string> monio::Metadata::getVariableNames() {
+  oops::Log::debug() << "Metadata::getVariableNames()" << std::endl;
   return extractKeys(variables_);
 }
 
-std::vector<std::string> lfriclite::NetCDFMetadata::getGlobalAttrNames() {
-  oops::Log::debug() << "NetCDFMetadata::getGlobalAttrNames()" << std::endl;
+std::vector<std::string> monio::Metadata::getGlobalAttrNames() {
+  oops::Log::debug() << "Metadata::getGlobalAttrNames()" << std::endl;
   return extractKeys(globalAttrs_);
 }
 
-std::map<std::string, int>& lfriclite::NetCDFMetadata::getDimensionsMap() {
-  oops::Log::debug() << "NetCDFMetadata::getDimensionsMap()" << std::endl;
+std::map<std::string, int>& monio::Metadata::getDimensionsMap() {
+  oops::Log::debug() << "Metadata::getDimensionsMap()" << std::endl;
   return dimensions_;
 }
-std::map<std::string, lfriclite::NetCDFVariable*>& lfriclite::NetCDFMetadata::getVariablesMap() {
-  oops::Log::debug() << "NetCDFMetadata::getVariablesMap()" << std::endl;
+std::map<std::string, monio::Variable*>& monio::Metadata::getVariablesMap() {
+  oops::Log::debug() << "Metadata::getVariablesMap()" << std::endl;
   return variables_;
 }
 
-std::map<std::string, lfriclite::NetCDFAttributeBase*>&
-                      lfriclite::NetCDFMetadata::getGlobalAttrsMap() {
-  oops::Log::debug() << "NetCDFMetadata::getGlobalAttrsMap()" << std::endl;
+std::map<std::string, monio::AttributeBase*>&
+                      monio::Metadata::getGlobalAttrsMap() {
+  oops::Log::debug() << "Metadata::getGlobalAttrsMap()" << std::endl;
   return globalAttrs_;
 }
 
-void lfriclite::NetCDFMetadata::removeAllButTheseVariables(
+void monio::Metadata::removeAllButTheseVariables(
     const std::vector<std::string>& varNames) {
-  oops::Log::debug() << "NetCDFMetadata::removeAllButTheseVariables()" << std::endl;
+  oops::Log::debug() << "Metadata::removeAllButTheseVariables()" << std::endl;
   std::vector<std::string> variableKeys = extractKeys(variables_);
   for (const std::string& variableKey : variableKeys) {
     int index = findInVector(varNames, variableKey);
@@ -289,11 +286,11 @@ void lfriclite::NetCDFMetadata::removeAllButTheseVariables(
   }
 }
 
-void lfriclite::NetCDFMetadata::deleteDimension(const std::string& dimName) {
-  oops::Log::debug() << "NetCDFMetadata::deleteDimension()" << std::endl;
+void monio::Metadata::deleteDimension(const std::string& dimName) {
+  oops::Log::debug() << "Metadata::deleteDimension()" << std::endl;
   std::map<std::string, int>::iterator itDim = dimensions_.find(dimName);
   if (itDim == dimensions_.end()) {
-    throw std::runtime_error("NetCDFMetadata::deleteDimension()> Dimension \"" +
+    throw std::runtime_error("Metadata::deleteDimension()> Dimension \"" +
                              dimName + "\" not found...");
   } else {
     dimensions_.erase(dimName);
@@ -303,20 +300,20 @@ void lfriclite::NetCDFMetadata::deleteDimension(const std::string& dimName) {
   }
 }
 
-void lfriclite::NetCDFMetadata::deleteVariable(const std::string& varName) {
-  oops::Log::debug() << "NetCDFMetadata::deleteVariable()" << std::endl;
-  std::map<std::string, NetCDFVariable*>::iterator it = variables_.find(varName);
+void monio::Metadata::deleteVariable(const std::string& varName) {
+  oops::Log::debug() << "Metadata::deleteVariable()" << std::endl;
+  std::map<std::string, Variable*>::iterator it = variables_.find(varName);
   if (it == variables_.end()) {
-    throw std::runtime_error("NetCDFMetadata::deleteVariable()> Variable \"" +
+    throw std::runtime_error("Metadata::deleteVariable()> Variable \"" +
                              varName + "\" not found...");
   } else {
-    NetCDFVariable* netCDFVar = it->second;
+    Variable* netCDFVar = it->second;
     delete netCDFVar;
     variables_.erase(varName);
   }
 }
 
-void lfriclite::NetCDFMetadata::print() {
+void monio::Metadata::print() {
   oops::Log::debug() << "dimensions:" << std::endl;
   printMap(dimensions_);
   oops::Log::debug() << "variables:" << std::endl;
@@ -325,14 +322,14 @@ void lfriclite::NetCDFMetadata::print() {
   printGlobalAttrs();
 }
 
-void lfriclite::NetCDFMetadata::printVariables() {
+void monio::Metadata::printVariables() {
   for (auto const& var : variables_) {
-    NetCDFVariable* netCDFVar = var.second;
-    oops::Log::debug() << lfriclite::ncconsts::kTabSpace <<
-                         lfriclite::ncconsts::kDataTypeNames[netCDFVar->getType()] <<
-                         " " << netCDFVar->getName();
+    Variable* netCDFVar = var.second;
+    oops::Log::debug() << monio::constants::kTabSpace <<
+                          monio::constants::kDataTypeNames[netCDFVar->getType()] <<
+                           " " << netCDFVar->getName();
 
-    std::vector<std::string> varDims = netCDFVar->getDimensionKeys();
+    std::vector<std::string> varDims = netCDFVar->getDimensionNames();
 
     if (varDims.size() > 0)
     {
@@ -345,67 +342,67 @@ void lfriclite::NetCDFMetadata::printVariables() {
       oops::Log::debug() << std::endl;
     }
 
-    std::map<std::string, NetCDFAttributeBase*> varAttrsMap = netCDFVar->getAttributes();
+    std::map<std::string, AttributeBase*> varAttrsMap = netCDFVar->getAttributes();
     for (auto const& varAttrPair : varAttrsMap) {
-      NetCDFAttributeBase* netCDFAttr = varAttrPair.second;
+      AttributeBase* netCDFAttr = varAttrPair.second;
 
-      oops::Log::debug() << lfriclite::ncconsts::kTabSpace <<
-                           lfriclite::ncconsts::kTabSpace <<
-                           netCDFVar->getName() << ":" <<
-                           netCDFAttr->getName() << " = ";
+      oops::Log::debug() << monio::constants::kTabSpace <<
+                            monio::constants::kTabSpace <<
+                            netCDFVar->getName() << ":" <<
+                            netCDFAttr->getName() << " = ";
       int dataType = netCDFAttr->getType();
 
       switch (dataType) {
-        case lfriclite::ncconsts::dataTypesEnum::eInt: {
-          NetCDFAttributeInt* netCDFAttrInt = static_cast<NetCDFAttributeInt*>(netCDFAttr);
+        case monio::constants::dataTypesEnum::eInt: {
+          AttributeInt* netCDFAttrInt = static_cast<AttributeInt*>(netCDFAttr);
           oops::Log::debug() << netCDFAttrInt->getValue() << " ;" << std::endl;
           break;
         }
-        case lfriclite::ncconsts::dataTypesEnum::eString: {
-          NetCDFAttributeString* netCDFAttrStr = static_cast<NetCDFAttributeString*>(netCDFAttr);
+        case monio::constants::dataTypesEnum::eString: {
+          AttributeString* netCDFAttrStr = static_cast<AttributeString*>(netCDFAttr);
           oops::Log::debug() << std::quoted(netCDFAttrStr->getValue()) << std::endl;
           break;
         }
         default:
-          throw std::runtime_error("NetCDFMetadata::printGlobalAttrs()> "
+          throw std::runtime_error("Metadata::printGlobalAttrs()> "
                                    "Data type not coded for...");
       }
     }
   }
 }
 
-void lfriclite::NetCDFMetadata::printGlobalAttrs() {
+void monio::Metadata::printGlobalAttrs() {
   for (const auto& globAttrPair : globalAttrs_) {
-    oops::Log::debug() << lfriclite::ncconsts::kTabSpace << globAttrPair.first;
-    NetCDFAttributeBase* globalAttr = globAttrPair.second;
+    oops::Log::debug() << monio::constants::kTabSpace << globAttrPair.first;
+    AttributeBase* globalAttr = globAttrPair.second;
     int type = globalAttr->getType();
     switch (type) {
-      case lfriclite::ncconsts::dataTypesEnum::eInt: {
-        NetCDFAttributeInt* globalAttrInt = static_cast<NetCDFAttributeInt*>(globalAttr);
+      case monio::constants::dataTypesEnum::eInt: {
+        AttributeInt* globalAttrInt = static_cast<AttributeInt*>(globalAttr);
         oops::Log::debug() << globalAttrInt->getValue() << " ;" << std::endl;
         break;
       }
-      case lfriclite::ncconsts::dataTypesEnum::eString: {
-        NetCDFAttributeString* globAttrStr = static_cast<NetCDFAttributeString*>(globalAttr);
+      case monio::constants::dataTypesEnum::eString: {
+        AttributeString* globAttrStr = static_cast<AttributeString*>(globalAttr);
         oops::Log::debug() << " = " << std::quoted(globAttrStr->getValue()) << " ;"  << std::endl;
         break;
       }
       default:
-        throw std::runtime_error("NetCDFMetadata::printGlobalAttrs()> Data type not coded for...");
+        throw std::runtime_error("Metadata::printGlobalAttrs()> Data type not coded for...");
     }
   }
 }
 
 template<typename T>
-void lfriclite::NetCDFMetadata::printMap(std::map<std::string, T>& map) {
+void monio::Metadata::printMap(std::map<std::string, T>& map) {
   for (const auto& entry : map) {
-    oops::Log::debug() << lfriclite::ncconsts::kTabSpace << entry.first <<
+    oops::Log::debug() << monio::constants::kTabSpace << entry.first <<
                            " = " << entry.second << " ;" << std::endl;
   }
 }
 
-template void lfriclite::NetCDFMetadata::printMap<int>(
+template void monio::Metadata::printMap<int>(
     std::map<std::string, int>& map);
-template void lfriclite::NetCDFMetadata::printMap<std::string>(
+template void monio::Metadata::printMap<std::string>(
     std::map<std::string, std::string>& map);
 

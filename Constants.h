@@ -7,12 +7,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "atlas/mesh/Mesh.h"
 
-namespace lfriclite {
-namespace ncconsts {
+namespace monio {
+namespace constants {
 
   enum fieldMetadataEnum {
       eAtlasFieldName,
@@ -20,7 +19,7 @@ namespace ncconsts {
       eNumLevels
   };
 
-  enum dataTypesEnum {  // Used in NetCDFReader and NetCDFFile
+  enum dataTypesEnum {  // Used in Reader and File
     eByte,
     eChar,
     eShort,

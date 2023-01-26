@@ -15,27 +15,31 @@
 #include "eckit/mpi/Comm.h"
 #include "oops/util/DateTime.h"
 
-#include "NetCDFData.h"
-#include "NetCDFDataContainerBase.h"
-#include "NetCDFFile.h"
-#include "NetCDFMetadata.h"
+#include "Data.h"
+#include "DataContainerBase.h"
+#include "File.h"
+#include "Metadata.h"
 
-namespace lfriclite {
-/// \brief Top-level class uses NetCDFFile, NetCDFMetadata,
-/// and NetCDFData to read from a NetCDF file
-class NetCDFReader {
+namespace monio {
+/// \brief Top-level class uses File, Metadata,
+/// and Data to read from a NetCDF file
+class Reader {
  public:
-  NetCDFReader(const eckit::mpi::Comm& mpiCommunicator,
-               const atlas::idx_t mpiRankOwner,
-               const std::string& filePath);
-  ~NetCDFReader();
+  Reader(const eckit::mpi::Comm& mpiCommunicator,
+         const atlas::idx_t mpiRankOwner,
+         const std::string& filePath);
+  ~Reader();
 
-  NetCDFReader()                    = delete;  //!< Deleted default constructor
-  NetCDFReader(const NetCDFReader&) = delete;  //!< Deleted copy constructor
-  NetCDFReader(NetCDFReader&&)      = delete;  //!< Deleted move constructor
+  Reader()                         = delete;  //!< Deleted default constructor
+  Reader(const Reader&)            = delete;  //!< Deleted copy constructor
+  Reader(Reader&&)                 = delete;  //!< Deleted move constructor
 
-  NetCDFReader& operator=(const NetCDFReader&) = delete;  //!< Deleted copy assign
-  NetCDFReader& operator=(NetCDFReader&&) = delete;       //!< Deleted move assign
+  Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
+  Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
+
+  void readMetadata();
+  void readVariablesData();
+  void readVariable(const std::string varName);
 
   void createDateTimes(const std::string& timeVarName, const std::string& timeOriginName);
 
@@ -43,10 +47,14 @@ class NetCDFReader {
                      const std::string& dateString,
                      const std::string& timeDimName);
 
+  void readFieldData(const std::vector<std::string>& variableNames,
+                     const util::DateTime dateToRead,
+                     const std::string& timeDimName);
+
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
-  std::map<std::string, NetCDFDataContainerBase*> getCoordMap(
+  std::map<std::string, DataContainerBase*> getCoordMap(
                                            const std::vector<std::string>& coordNames);
   std::map<std::string, std::tuple<std::string, int, size_t>> getFieldToMetadataMap(
                                            const std::vector<std::string>& lfricFieldNames,
@@ -56,29 +64,26 @@ class NetCDFReader {
   void deleteDimension(const std::string& dimName);
   void deleteVariable(const std::string& varName);
 
-  NetCDFMetadata* getMetadata();
-  NetCDFData* getData();
+  Metadata* getMetadata();
+  Data* getData();
 
  private:
-  void readMetadata();
-  void readVariablesData();
   int getVarDataType(const std::string& varName);
   size_t getVarNumLevels(const std::string& varName, const std::string& levelsSearchTerm);
 
-  void readVariable(const std::string varName);
   void readField(const std::string varName,
-                 const std::string dateString,
+                 const util::DateTime dateToRead,
                  const std::string timeDimName);
   size_t findTimeStep(const util::DateTime dateTime);
 
-  NetCDFFile* getFile();
+  File* getFile();
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
 
-  std::unique_ptr<NetCDFFile> file_;
-  NetCDFMetadata metadata_;
-  NetCDFData data_;
+  std::unique_ptr<File> file_;
+  Metadata metadata_;
+  Data data_;
 
   std::vector<util::DateTime> dateTimes_;
 };

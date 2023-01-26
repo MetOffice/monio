@@ -4,18 +4,18 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/NetCDFAtlasData.h"
+#include "lfriclitejedi/IO/AtlasData.h"
 
 #include <algorithm>
 #include <limits>
 #include <map>
 #include <stdexcept>
 
-#include "NetCDFConstants.h"
-#include "NetCDFDataContainerDouble.h"
-#include "NetCDFDataContainerFloat.h"
-#include "NetCDFDataContainerInt.h"
-#include "NetCDFMetadata.h"
+#include "Constants.h"
+#include "DataContainerDouble.h"
+#include "DataContainerFloat.h"
+#include "DataContainerInt.h"
+#include "Metadata.h"
 
 #include "atlas/grid/Iterator.h"
 #include "atlas/meshgenerator/MeshGenerator.h"
@@ -25,8 +25,8 @@
 
 namespace  {
 atlas::Mesh createMesh(const atlas::CubedSphereGrid& grid,
-                                  const std::string& partitionerType,
-                                  const std::string& meshType)
+                       const std::string& partitionerType,
+                       const std::string& meshType)
 {
   oops::Log::trace() << "createMesh()" << std::endl;
   const auto meshConfig = atlas::util::Config("partitioner", partitionerType) |
@@ -51,21 +51,21 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldToMetadataMap) {
     std::string atlasFieldName =
-            std::get<lfriclite::ncconsts::eAtlasFieldName>(fieldMetadata.second);
-    int dataType = std::get<lfriclite::ncconsts::eDataType>(fieldMetadata.second);
-    size_t numLevels = std::get<lfriclite::ncconsts::eNumLevels>(fieldMetadata.second);
+            std::get<monio::constants::eAtlasFieldName>(fieldMetadata.second);
+    int dataType = std::get<monio::constants::eDataType>(fieldMetadata.second);
+    size_t numLevels = std::get<monio::constants::eNumLevels>(fieldMetadata.second);
     atlas::util::Config atlasOptions = atlas::option::name(atlasFieldName) |
                                        atlas::option::levels(numLevels);
     if (isGlobal == true)
       atlasOptions = atlasOptions | atlas::option::global(0);
     switch (dataType) {
-      case lfriclite::ncconsts::dataTypesEnum::eDouble:
+      case monio::constants::dataTypesEnum::eDouble:
         fieldSet.add(functionSpace.createField<double>(atlasOptions));
         break;
-      case lfriclite::ncconsts::dataTypesEnum::eFloat:
+      case monio::constants::dataTypesEnum::eFloat:
         fieldSet.add(functionSpace.createField<float>(atlasOptions));
         break;
-      case lfriclite::ncconsts::dataTypesEnum::eInt:
+      case monio::constants::dataTypesEnum::eInt:
         fieldSet.add(functionSpace.createField<int>(atlasOptions));
         break;
       default:
@@ -76,13 +76,13 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
 }
 
 atlas::Field createField(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               const std::string& fieldName,
-                               const bool isGlobal) {
+                         const std::string& fieldName,
+                         const bool isGlobal) {
   oops::Log::trace() << "createField()" << std::endl;
   atlas::util::Config atlasOptions = atlas::option::name(fieldName);
   if (isGlobal == true)
     atlasOptions = atlas::option::name(fieldName) |
-                   atlas::option::global(lfriclite::ncconsts::kMPIRankOwner);
+                   atlas::option::global(monio::constants::kMPIRankOwner);
   // Currently hard-coded to create double precision fields. Type info stored in meta/data.
   atlas::Field field = functionSpace.createField<double>(atlasOptions);
 
@@ -124,8 +124,8 @@ std::vector<size_t> createLfricToAtlasMap(const std::vector<atlas::PointLonLat>&
 }
 }  // anonymous namespace
 
-lfriclite::NetCDFAtlasData::NetCDFAtlasData(
-           const std::map<std::string, NetCDFDataContainerBase*>& coordDataMap,
+monio::AtlasData::AtlasData(
+           const std::map<std::string, DataContainerBase*>& coordDataMap,
            const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
            const std::string gridName,
            const std::string partitionerType,
@@ -137,116 +137,116 @@ lfriclite::NetCDFAtlasData::NetCDFAtlasData(
     pointsLonLat_(initPointsLonLat(grid_)),
     lfricCoordData_(processLfricCoordData(coordDataMap)),
     lfricToAtlasMap_(createLfricToAtlasMap(pointsLonLat_, lfricCoordData_)) {
-  oops::Log::trace() << "NetCDFAtlasData::NetCDFAtlasData()" << std::endl;
+  oops::Log::trace() << "AtlasData::AtlasData()" << std::endl;
   fieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, false);
   globalFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, true);
 }
 
-lfriclite::NetCDFAtlasData::~NetCDFAtlasData() {}
+monio::AtlasData::~AtlasData() {}
 
-void lfriclite::NetCDFAtlasData::toAtlasFields(NetCDFData* data) {
-  oops::Log::trace() << "NetCDFAtlasData::toAtlasFields()" << std::endl;
-  std::map<std::string, NetCDFDataContainerBase*>& dataContainers = data->getContainers();
+void monio::AtlasData::toAtlasFields(Data* data) {
+  oops::Log::trace() << "AtlasData::toAtlasFields()" << std::endl;
+  std::map<std::string, DataContainerBase*>& dataContainers = data->getContainers();
   for (auto& fieldMetadata : fieldToMetadataMap_) {
     std::string lfricFieldName = fieldMetadata.first;
     std::string atlasFieldName =
-            std::get<lfriclite::ncconsts::eAtlasFieldName>(fieldMetadata.second);
-    int dataType = std::get<lfriclite::ncconsts::eDataType>(fieldMetadata.second);
-    size_t numLevels = std::get<lfriclite::ncconsts::eNumLevels>(fieldMetadata.second);
+            std::get<constants::eAtlasFieldName>(fieldMetadata.second);
+    int dataType = std::get<constants::eDataType>(fieldMetadata.second);
+    size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
 
-    NetCDFDataContainerBase* dataContainer = dataContainers[lfricFieldName];
+    DataContainerBase* dataContainer = dataContainers[lfricFieldName];
     switch (dataType) {
-    case lfriclite::ncconsts::dataTypesEnum::eDouble: {
-      NetCDFDataContainerDouble* dataContainerDouble =
-          static_cast<NetCDFDataContainerDouble*>(dataContainer);
+    case constants::dataTypesEnum::eDouble: {
+      DataContainerDouble* dataContainerDouble =
+          static_cast<DataContainerDouble*>(dataContainer);
       fieldToAtlas(atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
     }
-    case lfriclite::ncconsts::dataTypesEnum::eFloat: {
-      NetCDFDataContainerFloat* dataContainerFloat =
-          static_cast<NetCDFDataContainerFloat*>(dataContainer);
+    case constants::dataTypesEnum::eFloat: {
+      DataContainerFloat* dataContainerFloat =
+          static_cast<DataContainerFloat*>(dataContainer);
       fieldToAtlas(atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
-    case lfriclite::ncconsts::dataTypesEnum::eInt: {
-      NetCDFDataContainerInt* dataContainerInt =
-          static_cast<NetCDFDataContainerInt*>(dataContainer);
+    case constants::dataTypesEnum::eInt: {
+      DataContainerInt* dataContainerInt =
+          static_cast<DataContainerInt*>(dataContainer);
       fieldToAtlas(atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
     default:
-      throw std::runtime_error("NetCDFAtlasData::toAtlasFields()> Data type not coded for...");
+      throw std::runtime_error("AtlasData::toAtlasFields()> Data type not coded for...");
     }
   }
 }
 
-void lfriclite::NetCDFAtlasData::scatterAtlasFields() {
-  oops::Log::trace() << "NetCDFAtlasData::scatterAtlasFields()" << std::endl;
+void monio::AtlasData::scatterAtlasFields() {
+  oops::Log::trace() << "AtlasData::scatterAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataMap_) {
     std::string atlasFieldName =
-            std::get<lfriclite::ncconsts::eAtlasFieldName>(fieldMetadata.second);
+            std::get<constants::eAtlasFieldName>(fieldMetadata.second);
     functionSpace_.scatter(globalFieldSet_[atlasFieldName], fieldSet_[atlasFieldName]);
     fieldSet_[atlasFieldName].haloExchange();
   }
 }
 
-void lfriclite::NetCDFAtlasData::gatherAtlasFields() {
-  oops::Log::trace() << "NetCDFAtlasData::gatherAtlasFields()" << std::endl;
+void monio::AtlasData::gatherAtlasFields() {
+  oops::Log::trace() << "AtlasData::gatherAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataMap_) {
     std::string atlasFieldName =
-            std::get<lfriclite::ncconsts::eAtlasFieldName>(fieldMetadata.second);
+            std::get<constants::eAtlasFieldName>(fieldMetadata.second);
     fieldSet_[atlasFieldName].haloExchange();
     functionSpace_.gather(fieldSet_[atlasFieldName], globalFieldSet_[atlasFieldName]);
   }
 }
 
-void lfriclite::NetCDFAtlasData::fromAtlasFields(NetCDFData* data) {
-  oops::Log::trace() << "NetCDFAtlasData::fromAtlasFields()" << std::endl;
-  std::map<std::string, NetCDFDataContainerBase*>& dataContainers = data->getContainers();
+void monio::AtlasData::fromAtlasFields(Data* data) {
+  oops::Log::trace() << "AtlasData::fromAtlasFields()" << std::endl;
+  std::map<std::string, DataContainerBase*>& dataContainers = data->getContainers();
 
   for (auto& fieldMetadata : fieldToMetadataMap_) {
     std::string lfricFieldName = fieldMetadata.first;
     std::string atlasFieldName =
-            std::get<lfriclite::ncconsts::eAtlasFieldName>(fieldMetadata.second);
-    size_t numLevels = std::get<lfriclite::ncconsts::eNumLevels>(fieldMetadata.second);
+            std::get<constants::eAtlasFieldName>(fieldMetadata.second);
+    size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
 
-    NetCDFDataContainerBase* dataContainer = dataContainers[lfricFieldName];
+    DataContainerBase* dataContainer = dataContainers[lfricFieldName];
     atlas::Field field = fieldSet_[atlasFieldName];
     atlas::array::DataType atlasType = field.datatype();
 
     switch (atlasType.kind()) {
     case atlasType.KIND_INT32: {
-      NetCDFDataContainerInt* dataContainerInt =
-          static_cast<NetCDFDataContainerInt*>(dataContainer);
+      DataContainerInt* dataContainerInt =
+          static_cast<DataContainerInt*>(dataContainer);
       dataContainerInt->resetData();
       atlasToField(atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
     case atlasType.KIND_REAL32: {
-      NetCDFDataContainerFloat* dataContainerFloat =
-          static_cast<NetCDFDataContainerFloat*>(dataContainer);
+      DataContainerFloat* dataContainerFloat =
+          static_cast<DataContainerFloat*>(dataContainer);
       dataContainerFloat->resetData();
       atlasToField(atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
     case atlasType.KIND_REAL64: {
-      NetCDFDataContainerDouble* dataContainerDouble =
-          static_cast<NetCDFDataContainerDouble*>(dataContainer);
+      DataContainerDouble* dataContainerDouble =
+          static_cast<DataContainerDouble*>(dataContainer);
       dataContainerDouble->resetData();
       atlasToField(atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
     }
     default:
-      throw std::runtime_error("NetCDFAtlasData::fromAtlasFields()> Data type not coded for...");
+      throw std::runtime_error("AtlasData::fromAtlasFields()> Data type not coded for...");
     }
   }
 }
 
 template<typename T>
-void lfriclite::NetCDFAtlasData::fieldToAtlas(const std::string& atlasFieldName,
-                                              const int& numLevels,
-                                              const std::vector<T>& dataVec) {
-  oops::Log::trace() << "NetCDFAtlasData::fieldToAtlas()" << std::endl;
+void monio::AtlasData::fieldToAtlas(const std::string& atlasFieldName,
+                                    const int& numLevels,
+                                    const std::vector<T>& dataVec) {
+  oops::Log::trace() << "AtlasData::fieldToAtlas()" << std::endl;
 
   auto atlasField = globalFieldSet_[atlasFieldName];
   auto fieldView = atlas::array::make_view<T, 2>(atlasField);
@@ -259,21 +259,21 @@ void lfriclite::NetCDFAtlasData::fieldToAtlas(const std::string& atlasFieldName,
   }
 }
 
-template void lfriclite::NetCDFAtlasData::fieldToAtlas<double>(const std::string& atlasFieldName,
-                                                               const int& numLevels,
-                                                               const std::vector<double>& dataVec);
-template void lfriclite::NetCDFAtlasData::fieldToAtlas<float>(const std::string& atlasFieldName,
-                                                              const int& numLevels,
-                                                              const std::vector<float>& dataVec);
-template void lfriclite::NetCDFAtlasData::fieldToAtlas<int>(const std::string& atlasFieldName,
-                                                            const int& numLevels,
-                                                            const std::vector<int>& dataVec);
+template void monio::AtlasData::fieldToAtlas<double>(const std::string& atlasFieldName,
+                                                     const int& numLevels,
+                                                     const std::vector<double>& dataVec);
+template void monio::AtlasData::fieldToAtlas<float>(const std::string& atlasFieldName,
+                                                    const int& numLevels,
+                                                    const std::vector<float>& dataVec);
+template void monio::AtlasData::fieldToAtlas<int>(const std::string& atlasFieldName,
+                                                  const int& numLevels,
+                                                  const std::vector<int>& dataVec);
 
 template<typename T>
-void lfriclite::NetCDFAtlasData::atlasToField(const std::string& atlasFieldName,
+void monio::AtlasData::atlasToField(const std::string& atlasFieldName,
                                               const int& numLevels,
                                               std::vector<T>& dataVec) {
-  oops::Log::trace() << "NetCDFAtlasData::atlasToField()" << std::endl;
+  oops::Log::trace() << "AtlasData::atlasToField()" << std::endl;
 
   auto atlasField = globalFieldSet_[atlasFieldName];
   auto fieldView = atlas::array::make_view<T, 2>(atlasField);
@@ -286,48 +286,48 @@ void lfriclite::NetCDFAtlasData::atlasToField(const std::string& atlasFieldName,
   }
 }
 
-template void lfriclite::NetCDFAtlasData::atlasToField<double>(const std::string& atlasFieldName,
-                                                               const int& numLevels,
-                                                               std::vector<double>& dataVec);
-template void lfriclite::NetCDFAtlasData::atlasToField<float>(const std::string& atlasFieldName,
-                                                              const int& numLevels,
-                                                              std::vector<float>& dataVec);
-template void lfriclite::NetCDFAtlasData::atlasToField<int>(const std::string& atlasFieldName,
-                                                            const int& numLevels,
-                                                            std::vector<int>& dataVec);
+template void monio::AtlasData::atlasToField<double>(const std::string& atlasFieldName,
+                                                     const int& numLevels,
+                                                     std::vector<double>& dataVec);
+template void monio::AtlasData::atlasToField<float>(const std::string& atlasFieldName,
+                                                    const int& numLevels,
+                                                    std::vector<float>& dataVec);
+template void monio::AtlasData::atlasToField<int>(const std::string& atlasFieldName,
+                                                  const int& numLevels,
+                                                  std::vector<int>& dataVec);
 
-atlas::FieldSet lfriclite::NetCDFAtlasData::getGlobalFieldSet() {
+atlas::FieldSet monio::AtlasData::getGlobalFieldSet() {
   return globalFieldSet_;
 }
 
-atlas::FieldSet lfriclite::NetCDFAtlasData::getFieldSet() {
+atlas::FieldSet monio::AtlasData::getFieldSet() {
   return fieldSet_;
 }
 
-std::vector<atlas::PointLonLat> lfriclite::NetCDFAtlasData::processLfricCoordData(
-                        const std::map<std::string, NetCDFDataContainerBase*>& coordDataMap) {
-  oops::Log::trace() << "NetCDFAtlasData::processLfricCoordData()" << std::endl;
+std::vector<atlas::PointLonLat> monio::AtlasData::processLfricCoordData(
+                        const std::map<std::string, DataContainerBase*>& coordDataMap) {
+  oops::Log::trace() << "AtlasData::processLfricCoordData()" << std::endl;
   std::vector<atlas::PointLonLat> lfricLonLat;
   if (coordDataMap.size() <= 2) {
     std::array<std::vector<float>, 2> coordVectorArray;
     int coordCount = 0;
     for (auto& coordDataPair : coordDataMap) {
-      NetCDFDataContainerBase* coordContainer = coordDataPair.second;
+      DataContainerBase* coordContainer = coordDataPair.second;
       // LFRic coordinate data are currently stored as floats
-      if (coordContainer->getType() == lfriclite::ncconsts::eFloat) {
-        NetCDFDataContainerFloat* cooordContainerFloat =
-                  static_cast<NetCDFDataContainerFloat*>(coordContainer);
+      if (coordContainer->getType() == constants::eFloat) {
+        DataContainerFloat* cooordContainerFloat =
+                  static_cast<DataContainerFloat*>(coordContainer);
         std::vector<float> coordData = cooordContainerFloat->getData();
 
         // Essential check to ensure grid is configured to accommodate the data
         if (coordData.size() != grid_.size()) {
-          throw std::runtime_error("NetCDFAtlasData::processLfricCoordData()> "
+          throw std::runtime_error("AtlasData::processLfricCoordData()> "
               "Configured grid is not compatible with input file...");
         }
         coordVectorArray[coordCount] = coordData;
         coordCount++;
       } else {
-        throw std::runtime_error("NetCDFAtlasData::processLfricCoordData()> "
+        throw std::runtime_error("AtlasData::processLfricCoordData()> "
             "Data type not coded for...");
       }
     }
@@ -338,13 +338,13 @@ std::vector<atlas::PointLonLat> lfriclite::NetCDFAtlasData::processLfricCoordDat
       lfricLonLat.push_back(atlas::PointLonLat(*lonIt, *latIt));
     }
   } else {
-      throw std::runtime_error("NetCDFAtlasData::processLfricCoordData()> "
+      throw std::runtime_error("AtlasData::processLfricCoordData()> "
           "More than 2 coordinate axis...");
   }
   return lfricLonLat;
 }
 
-void lfriclite::NetCDFAtlasData::addField(atlas::Field field) {
-  oops::Log::trace() << "NetCDFAtlasData::addField()" << std::endl;
+void monio::AtlasData::addField(atlas::Field field) {
+  oops::Log::trace() << "AtlasData::addField()" << std::endl;
   globalFieldSet_.add(field);
 }

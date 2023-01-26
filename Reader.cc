@@ -4,18 +4,18 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/NetCDFReader.h"
+#include "lfriclitejedi/IO/Reader.h"
 
 #include <netcdf>
 #include <map>
 #include <sstream>
 #include <stdexcept>
 
-#include "NetCDFConstants.h"
-#include "NetCDFDataContainerDouble.h"
-#include "NetCDFDataContainerFloat.h"
-#include "NetCDFDataContainerInt.h"
-#include "NetCDFVariable.h"
+#include "Constants.h"
+#include "DataContainerDouble.h"
+#include "DataContainerFloat.h"
+#include "DataContainerInt.h"
+#include "Variable.h"
 
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
@@ -48,39 +48,37 @@ std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
 }
 }  // anonymous namespace
 
-lfriclite::NetCDFReader::NetCDFReader(const eckit::mpi::Comm& mpiCommunicator,
+monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                                       const atlas::idx_t mpiRankOwner,
                                       const std::string& filePath):
   mpiCommunicator_(mpiCommunicator),
   mpiRankOwner_(mpiRankOwner),
   data_(),
   metadata_() {
-  oops::Log::debug() << "NetCDFReader::NetCDFReader()" << std::endl;
+  oops::Log::debug() << "Reader::Reader()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
-      file_ = std::make_unique<NetCDFFile>(filePath, netCDF::NcFile::read);
-      readMetadata();
-      readVariablesData();
+      file_ = std::make_unique<File>(filePath, netCDF::NcFile::read);
     } catch (netCDF::exceptions::NcException& exception) {
       std::string message =
-          "NetCDFReader::NetCDFReader()> An exception occurred while creating NetCDFFile...";
+          "Reader::Reader()> An exception occurred while creating File...";
       message.append(exception.what());
       throw std::runtime_error(message);
     }
   }
 }
 
-lfriclite::NetCDFReader::~NetCDFReader() {}
+monio::Reader::~Reader() {}
 
-void lfriclite::NetCDFReader::readMetadata() {
-  oops::Log::debug() << "NetCDFReader::readMetadata()" << std::endl;
+void monio::Reader::readMetadata() {
+  oops::Log::debug() << "Reader::readMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     getFile()->readMetadata(metadata_);
   }
 }
 
-void lfriclite::NetCDFReader::readVariablesData() {
-  oops::Log::debug() << "NetCDFReader::readVariableData()" << std::endl;
+void monio::Reader::readVariablesData() {
+  oops::Log::debug() << "Reader::readVariableData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::vector<std::string> varNames = metadata_.getVariableNames();
     for (const auto& varName : varNames) {
@@ -89,21 +87,21 @@ void lfriclite::NetCDFReader::readVariablesData() {
   }
 }
 
-void lfriclite::NetCDFReader::createDateTimes(const std::string& timeVarName,
+void monio::Reader::createDateTimes(const std::string& timeVarName,
                                               const std::string& timeOriginName) {
-  oops::Log::debug() << "NetCDFReader::createDateTimes()" << std::endl;
+  oops::Log::debug() << "Reader::createDateTimes()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (dateTimes_.size() != 0)
-      throw std::runtime_error("NetCDFReader::createDateTimes()> "
+      throw std::runtime_error("Reader::createDateTimes()> "
                                "Date times already initialised...");
 
-    NetCDFVariable* timeVar = metadata_.getVariable(timeVarName);
-    NetCDFDataContainerBase* timeDataBase = data_.getContainer(timeVarName);
-    if (timeDataBase->getType() != ncconsts::eDouble)
-      throw std::runtime_error("NetCDFReader::createDateTimes()> "
+    Variable* timeVar = metadata_.getVariable(timeVarName);
+    DataContainerBase* timeDataBase = data_.getContainer(timeVarName);
+    if (timeDataBase->getType() != constants::eDouble)
+      throw std::runtime_error("Reader::createDateTimes()> "
                                "Time data not stored as double...");
 
-    NetCDFDataContainerDouble* timeData = static_cast<NetCDFDataContainerDouble*>(timeDataBase);
+    DataContainerDouble* timeData = static_cast<DataContainerDouble*>(timeDataBase);
 
     std::string timeOrigin = timeVar->getStrAttr(timeOriginName);
     std::string timeAtlasOrigin = convertToAtlasDateTimeStr(timeOrigin);
@@ -122,65 +120,73 @@ void lfriclite::NetCDFReader::createDateTimes(const std::string& timeVarName,
   }
 }
 
-void lfriclite::NetCDFReader::readFieldData(const std::vector<std::string>& fieldNames,
+void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
                                             const std::string& dateString,
                                             const std::string& timeDimName) {
-  oops::Log::debug() << "NetCDFReader::readFieldData()" << std::endl;
+  oops::Log::debug() << "Reader::readFieldData()" << std::endl;
+  util::DateTime dateToRead(dateString);
+  readFieldData(fieldNames, dateToRead, timeDimName);
+}
+
+void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
+                                            const util::DateTime dateToRead,
+                                            const std::string& timeDimName) {
+  oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     for (auto& fieldName : fieldNames) {
-      readField(fieldName, dateString, timeDimName);
+      readField(fieldName, dateToRead, timeDimName);
     }
   }
 }
 
-void lfriclite::NetCDFReader::readVariable(const std::string varName) {
-  oops::Log::debug() << "NetCDFReader::readVariable()" << std::endl;
+void monio::Reader::readVariable(const std::string varName) {
+  oops::Log::debug() << "Reader::readVariable()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    NetCDFDataContainerBase* dataContainer = nullptr;
-    NetCDFVariable* variable = metadata_.getVariable(varName);
+    DataContainerBase* dataContainer = nullptr;
+    Variable* variable = metadata_.getVariable(varName);
     int dataType = variable->getType();
     switch (dataType) {
-      case lfriclite::ncconsts::dataTypesEnum::eDouble: {
-        NetCDFDataContainerDouble* dataContainerDouble = new NetCDFDataContainerDouble(varName);
+      case constants::dataTypesEnum::eDouble: {
+        DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerDouble->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerDouble);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
         break;
       }
-      case lfriclite::ncconsts::dataTypesEnum::eFloat: {
-        NetCDFDataContainerFloat* dataContainerFloat = new NetCDFDataContainerFloat(varName);
+      case constants::dataTypesEnum::eFloat: {
+        DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerFloat->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerFloat);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
         break;
       }
-      case lfriclite::ncconsts::dataTypesEnum::eInt: {
-        NetCDFDataContainerInt* dataContainerInt = new NetCDFDataContainerInt(varName);
+      case constants::dataTypesEnum::eInt: {
+        DataContainerInt* dataContainerInt = new DataContainerInt(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerInt->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerInt);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerInt);
         break;
       }
       default:
-        throw std::runtime_error("NetCDFReader::readVariable()> Data type not coded for...");
+        throw std::runtime_error("Reader::readVariable()> Data type not coded for...");
     }
 
     if (dataContainer != nullptr)
       data_.addContainer(dataContainer);
     else
-      throw std::runtime_error("NetCDFReader::readVariable()> "
+      throw std::runtime_error("Reader::readVariable()> "
           "An exception occurred while creating data container...");
   }
 }
 
-void lfriclite::NetCDFReader::readField(const std::string varName,
-                                        const std::string dateString,
+void monio::Reader::readField(const std::string varName,
+                                        const util::DateTime dateToRead,
                                         const std::string timeDimName) {
-  oops::Log::debug() << "NetCDFReader::readField()" << std::endl;
+  oops::Log::debug() << "Reader::readField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    NetCDFDataContainerBase* dataContainer = nullptr;
-    NetCDFVariable* variable = metadata_.getVariable(varName);
+    DataContainerBase* dataContainer = nullptr;
+    Variable* variable = metadata_.getVariable(varName);
     int dataType = variable->getType();
     size_t varSizeNoTime = 1;
 
-    size_t timeStep = findTimeStep(util::DateTime(dateString));
+    size_t timeStep = findTimeStep(dateToRead);
 
     std::vector<size_t> startVec;
     std::vector<size_t> countVec;
@@ -188,8 +194,8 @@ void lfriclite::NetCDFReader::readField(const std::string varName,
     startVec.push_back(timeStep);
     countVec.push_back(1);
 
-    std::map<std::string, size_t> dimMap = variable->getDimensions();
-    for (auto const& dimPair : dimMap) {
+    std::vector<std::pair<std::string, size_t>> dimensions = variable->getDimensions();
+    for (auto const& dimPair : dimensions) {
       if (dimPair.first != timeDimName) {
         varSizeNoTime *= dimPair.second;
         startVec.push_back(0);
@@ -199,41 +205,41 @@ void lfriclite::NetCDFReader::readField(const std::string varName,
       }
     }
     switch (dataType) {
-      case lfriclite::ncconsts::dataTypesEnum::eDouble: {
-        NetCDFDataContainerDouble* dataContainerDouble = new NetCDFDataContainerDouble(varName);
+      case constants::dataTypesEnum::eDouble: {
+        DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
         getFile()->readField(varName, varSizeNoTime,
                             startVec, countVec, dataContainerDouble->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerDouble);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
         break;
       }
-      case lfriclite::ncconsts::dataTypesEnum::eFloat: {
-        NetCDFDataContainerFloat* dataContainerFloat = new NetCDFDataContainerFloat(varName);
+      case constants::dataTypesEnum::eFloat: {
+        DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerFloat->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerFloat);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
         break;
       }
-      case lfriclite::ncconsts::dataTypesEnum::eInt: {
-        NetCDFDataContainerInt* dataContainerInt = new NetCDFDataContainerInt(varName);
+      case constants::dataTypesEnum::eInt: {
+        DataContainerInt* dataContainerInt = new DataContainerInt(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerInt->getData());
-        dataContainer = static_cast<NetCDFDataContainerBase*>(dataContainerInt);
+        dataContainer = static_cast<DataContainerBase*>(dataContainerInt);
         break;
       }
       default:
-        throw std::runtime_error("NetCDFReader::readField()> Data type not coded for...");
+        throw std::runtime_error("Reader::readField()> Data type not coded for...");
     }
     if (dataContainer != nullptr)
       data_.addContainer(dataContainer);
     else
-      throw std::runtime_error("NetCDFReader::readField()> "
+      throw std::runtime_error("Reader::readField()> "
           "An exception occurred while creating data container...");
   }
 }
 
-size_t lfriclite::NetCDFReader::findTimeStep(const util::DateTime dateTime) {
+size_t monio::Reader::findTimeStep(const util::DateTime dateTime) {
   if (dateTimes_.size() == 0)
-    throw std::runtime_error("NetCDFReader::findTimeStep()> Date times not initialised...");
+    throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
 
   for (size_t timeStep = 0; timeStep < dateTimes_.size(); ++timeStep) {
     if (dateTimes_[timeStep] == dateTime)
@@ -242,17 +248,17 @@ size_t lfriclite::NetCDFReader::findTimeStep(const util::DateTime dateTime) {
   return -1;
 }
 
-lfriclite::NetCDFFile* lfriclite::NetCDFReader::getFile() {
+monio::File* monio::Reader::getFile() {
     if (file_ == nullptr)
-      throw std::runtime_error("NetCDFReader::getFile()> File has not been initialised...");
+      throw std::runtime_error("Reader::getFile()> File has not been initialised...");
 
     return file_.get();
 }
 
-std::vector<std::string> lfriclite::NetCDFReader::getVarStrAttrs(
+std::vector<std::string> monio::Reader::getVarStrAttrs(
                                                   const std::vector<std::string>& varNames,
                                                   const std::string& attrName) {
-  oops::Log::debug() << "NetCDFReader::getVarStrAttrs()" << std::endl;
+  oops::Log::debug() << "Reader::getVarStrAttrs()" << std::endl;
   std::vector<std::string> varStrAttrs;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     varStrAttrs = metadata_.getVarStrAttrs(varNames, attrName);
@@ -260,16 +266,16 @@ std::vector<std::string> lfriclite::NetCDFReader::getVarStrAttrs(
   return varStrAttrs;
 }
 
-std::map<std::string, lfriclite::NetCDFDataContainerBase*>
-                 lfriclite::NetCDFReader::getCoordMap(const std::vector<std::string>& coordNames) {
-  oops::Log::debug() << "NetCDFReader::getCoordMap()" << std::endl;
-  std::map<std::string, NetCDFDataContainerBase*> coordContainers;
+std::map<std::string, monio::DataContainerBase*>
+                 monio::Reader::getCoordMap(const std::vector<std::string>& coordNames) {
+  oops::Log::debug() << "Reader::getCoordMap()" << std::endl;
+  std::map<std::string, DataContainerBase*> coordContainers;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::map<std::string, NetCDFDataContainerBase*>& dataContainers = data_.getContainers();
+    std::map<std::string, DataContainerBase*>& dataContainers = data_.getContainers();
 
     for (auto& dataPair : dataContainers) {
       if (isStringInVector(dataPair.first, coordNames) == true) {
-        NetCDFDataContainerBase* dataContainer = dataContainers[dataPair.first];
+        DataContainerBase* dataContainer = dataContainers[dataPair.first];
         coordContainers.insert({dataContainer->getName(), dataContainer});
       }
     }
@@ -278,11 +284,11 @@ std::map<std::string, lfriclite::NetCDFDataContainerBase*>
 }
 
 std::map<std::string, std::tuple<std::string, int, size_t>>
-                                      lfriclite::NetCDFReader::getFieldToMetadataMap(
+                                      monio::Reader::getFieldToMetadataMap(
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
                                            const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "NetCDFReader::getMapOfVarsToDataTypes()" << std::endl;
+  oops::Log::debug() << "Reader::getMapOfVarsToDataTypes()" << std::endl;
   // No MPI rank check - used to call private functions that broadcast data to all PEs
   std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap;
 
@@ -297,48 +303,48 @@ std::map<std::string, std::tuple<std::string, int, size_t>>
   return fieldToMetadataMap;
 }
 
-int lfriclite::NetCDFReader::getVarDataType(const std::string& varName) {
-  oops::Log::debug() << "NetCDFReader::getVarDataType()" << std::endl;
+int monio::Reader::getVarDataType(const std::string& varName) {
+  oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   int dataType;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    NetCDFVariable* variable = metadata_.getVariable(varName);
+    Variable* variable = metadata_.getVariable(varName);
     dataType = variable->getType();
   }
   mpiCommunicator_.broadcast(dataType, mpiRankOwner_);
   return dataType;
 }
 
-size_t lfriclite::NetCDFReader::getVarNumLevels(const std::string& varName,
+size_t monio::Reader::getVarNumLevels(const std::string& varName,
                                                 const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "NetCDFReader::getVarDataType()" << std::endl;
+  oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   size_t numLevels;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    NetCDFVariable* variable = metadata_.getVariable(varName);
-    numLevels = variable->findDimension(levelsSearchTerm);
+    Variable* variable = metadata_.getVariable(varName);
+    numLevels = variable->findDimensionSize(levelsSearchTerm);
   }
   mpiCommunicator_.broadcast(numLevels, mpiRankOwner_);
   return numLevels;
 }
 
-void lfriclite::NetCDFReader::deleteDimension(const std::string& dimName) {
-  oops::Log::debug() << "NetCDFReader::deleteDimension()" << std::endl;
+void monio::Reader::deleteDimension(const std::string& dimName) {
+  oops::Log::debug() << "Reader::deleteDimension()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     metadata_.deleteDimension(dimName);
   }
 }
 
-void lfriclite::NetCDFReader::deleteVariable(const std::string& varName) {
-  oops::Log::debug() << "NetCDFReader::deleteVariable()" << std::endl;
+void monio::Reader::deleteVariable(const std::string& varName) {
+  oops::Log::debug() << "Reader::deleteVariable()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     metadata_.deleteVariable(varName);
     data_.deleteContainer(varName);
   }
 }
 
-lfriclite::NetCDFMetadata* lfriclite::NetCDFReader::getMetadata() {
+monio::Metadata* monio::Reader::getMetadata() {
   return &metadata_;
 }
 
-lfriclite::NetCDFData* lfriclite::NetCDFReader::getData() {
+monio::Data* monio::Reader::getData() {
   return &data_;
 }

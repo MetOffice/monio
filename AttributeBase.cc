@@ -4,13 +4,13 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/NetCDFAttributeBase.h"
+#include "lfriclitejedi/IO/AttributeBase.h"
 
-lfriclite::NetCDFAttributeBase::NetCDFAttributeBase(
+monio::AttributeBase::AttributeBase(
     const std::string& name,
     const int type):
   name_(name), type_(type) {}
 
-const int lfriclite::NetCDFAttributeBase::getType() const {
+const int monio::AttributeBase::getType() const {
   return type_;
 }
