@@ -94,10 +94,8 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
 }
 
 void monio::Variable::addDimension(const std::string& dimName, const size_t size) {
-
-
-  auto it = std::find_if (dimensions_.begin(), dimensions_.end(),
-      [&](const std::pair<std::string, size_t>& element){ return element.first == dimName;} );
+  auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
+      [&](const std::pair<std::string, size_t>& element) { return element.first == dimName; });
 
   if (it == dimensions_.end()) {
     dimensions_.push_back(std::make_pair(dimName, size));
@@ -122,9 +120,8 @@ void monio::Variable::setTotalSize(const size_t totalSize) {
 }
 
 void monio::Variable::deleteDimension(const std::string& dimName) {
-
-  auto it = std::find_if (dimensions_.begin(), dimensions_.end(),
-      [&](const std::pair<std::string, size_t>& element){ return element.first == dimName;} );
+  auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
+      [&](const std::pair<std::string, size_t>& element){ return element.first == dimName; });
 
   if (it != dimensions_.end()) {
     dimensions_.erase(it);

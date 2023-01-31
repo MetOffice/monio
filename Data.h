@@ -41,4 +41,4 @@ class Data {
 
 bool operator==(const Data& lhs,
                 const Data& rhs);
-}  // namespace lfriclite
+}  // namespace monio

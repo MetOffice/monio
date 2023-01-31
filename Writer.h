@@ -57,4 +57,4 @@ class Writer {
 
   std::unique_ptr<File> file_;
 };
-}  // namespace lfriclite
+}  // namespace monio

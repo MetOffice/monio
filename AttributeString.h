@@ -29,4 +29,4 @@ class AttributeString : public AttributeBase {
  private:
   std::string value_;
 };
-}  // namespace lfriclite
+}  // namespace monio

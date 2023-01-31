@@ -29,4 +29,4 @@ class AttributeInt : public AttributeBase {
  private:
   int value_;
 };
-}  // namespace lfriclite
+}  // namespace monio

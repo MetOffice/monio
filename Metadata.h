@@ -69,4 +69,4 @@ class Metadata {
 
 bool operator==(const Metadata& lhs,
                 const Metadata& rhs);
-}  // namespace lfriclite
+}  // namespace monio

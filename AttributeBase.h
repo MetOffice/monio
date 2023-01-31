@@ -29,4 +29,4 @@ class AttributeBase {
   std::string name_;
   int type_;
 };
-}  // namespace lfriclite
+}  // namespace monio

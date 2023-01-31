@@ -76,4 +76,4 @@ class File {
   std::string filePath_;
   netCDF::NcFile::FileMode fileMode_;
 };
-}  // namespace lfriclite
+}  // namespace monio

@@ -37,4 +37,4 @@ class DataContainerInt : public DataContainerBase {
  private:
   std::vector<int> dataVector_;
 };
-}  // namespace lfriclite
+}  // namespace monio

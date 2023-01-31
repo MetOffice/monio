@@ -51,5 +51,5 @@ namespace constants {
 
   const std::string kTabSpace = "    ";
   const std::string kLevelsSearchTerm = "levels";
-}  // namespace ncconsts
-}  // namespace lfriclite
+}  // namespace constants
+}  // namespace monio

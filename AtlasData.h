@@ -88,4 +88,4 @@ class AtlasData {
   std::map<std::string, atlas::FieldSet> localFieldSetMap_;
   std::map<std::string, atlas::FieldSet> globalFieldSetMap_;
 };
-}  // namespace lfriclite
+}  // namespace monio

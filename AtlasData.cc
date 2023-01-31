@@ -146,8 +146,10 @@ monio::AtlasData::AtlasData(
 monio::AtlasData::~AtlasData() {}
 
 void monio::AtlasData::initialiseNewFieldSet(const std::string& fieldSetName) {
-  localFieldSetMap_.insert({fieldSetName, createFieldSet(functionSpace_, fieldToMetadataMap_, false)});
-  globalFieldSetMap_.insert({fieldSetName, createFieldSet(functionSpace_, fieldToMetadataMap_, true)});
+  localFieldSetMap_.insert({fieldSetName,
+                            createFieldSet(functionSpace_, fieldToMetadataMap_, false)});
+  globalFieldSetMap_.insert({fieldSetName,
+                            createFieldSet(functionSpace_, fieldToMetadataMap_, true)});
 }
 
 void monio::AtlasData::toFieldSet(const std::string& fieldSetName, const Data& data) {
