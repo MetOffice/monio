@@ -27,6 +27,8 @@ class DataContainerInt : public DataContainerBase {
   const std::string& getName() const;
 
   std::vector<int>& getData();
+  const std::vector<int>& getData() const;
+
   const int* getDataPointer();
   const int& getDatum(const std::size_t index);
 

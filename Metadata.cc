@@ -106,7 +106,7 @@ bool monio::operator==(const monio::Metadata& lhs,
 
             if (lhsVarAttrType == rhsVarAttrType && lhsVarAttrName == rhsVarAttrName) {
               switch (lhsVarAttrType) {
-                case monio::constants::dataTypesEnum::eInt: {
+                case monio::constants::eDataTypes::eInt: {
                   AttributeInt* lhsVarAttrInt =
                       static_cast<AttributeInt*>(lhsVarAttr);
                   AttributeInt* rhsVarAttrInt =
@@ -115,7 +115,7 @@ bool monio::operator==(const monio::Metadata& lhs,
                     return false;
                   break;
                 }
-                case monio::constants::dataTypesEnum::eString: {
+                case monio::constants::eDataTypes::eString: {
                   AttributeString* lhsVarAttrStr =
                       static_cast<AttributeString*>(lhsVarAttr);
                   AttributeString* rhsVarAttrStr =
@@ -353,12 +353,12 @@ void monio::Metadata::printVariables() {
       int dataType = netCDFAttr->getType();
 
       switch (dataType) {
-        case monio::constants::dataTypesEnum::eInt: {
+        case monio::constants::eDataTypes::eInt: {
           AttributeInt* netCDFAttrInt = static_cast<AttributeInt*>(netCDFAttr);
           oops::Log::debug() << netCDFAttrInt->getValue() << " ;" << std::endl;
           break;
         }
-        case monio::constants::dataTypesEnum::eString: {
+        case monio::constants::eDataTypes::eString: {
           AttributeString* netCDFAttrStr = static_cast<AttributeString*>(netCDFAttr);
           oops::Log::debug() << std::quoted(netCDFAttrStr->getValue()) << std::endl;
           break;
@@ -377,12 +377,12 @@ void monio::Metadata::printGlobalAttrs() {
     AttributeBase* globalAttr = globAttrPair.second;
     int type = globalAttr->getType();
     switch (type) {
-      case monio::constants::dataTypesEnum::eInt: {
+      case monio::constants::eDataTypes::eInt: {
         AttributeInt* globalAttrInt = static_cast<AttributeInt*>(globalAttr);
         oops::Log::debug() << globalAttrInt->getValue() << " ;" << std::endl;
         break;
       }
-      case monio::constants::dataTypesEnum::eString: {
+      case monio::constants::eDataTypes::eString: {
         AttributeString* globAttrStr = static_cast<AttributeString*>(globalAttr);
         oops::Log::debug() << " = " << std::quoted(globAttrStr->getValue()) << " ;"  << std::endl;
         break;
@@ -394,7 +394,7 @@ void monio::Metadata::printGlobalAttrs() {
 }
 
 template<typename T>
-void monio::Metadata::printMap(std::map<std::string, T>& map) {
+void monio::Metadata::printMap(const std::map<std::string, T>& map) {
   for (const auto& entry : map) {
     oops::Log::debug() << monio::constants::kTabSpace << entry.first <<
                            " = " << entry.second << " ;" << std::endl;
@@ -402,7 +402,7 @@ void monio::Metadata::printMap(std::map<std::string, T>& map) {
 }
 
 template void monio::Metadata::printMap<int>(
-    std::map<std::string, int>& map);
+    const std::map<std::string, int>& map);
 template void monio::Metadata::printMap<std::string>(
-    std::map<std::string, std::string>& map);
+    const std::map<std::string, std::string>& map);
 

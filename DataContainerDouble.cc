@@ -21,6 +21,10 @@ std::vector<double>& monio::DataContainerDouble::getData() {
   return dataVector_;
 }
 
+const std::vector<double>& monio::DataContainerDouble::getData() const {
+  return dataVector_;
+}
+
 const double* monio::DataContainerDouble::getDataPointer() {
   return dataVector_.data();
 }

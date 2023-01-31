@@ -58,13 +58,11 @@ std::vector<std::string> monio::Variable::getDimensionNames() {
   return dimNames;
 }
 
-std::map<std::string, monio::AttributeBase*>&
-    monio::Variable::getAttributes() {
+std::map<std::string, monio::AttributeBase*>& monio::Variable::getAttributes() {
   return attributes_;
 }
 
-monio::AttributeBase* monio::Variable::getAttribute(
-                                                  const std::string& attrName) {
+monio::AttributeBase* monio::Variable::getAttribute(const std::string& attrName) {
   if (attributes_.find(attrName) != attributes_.end()) {
     return attributes_[attrName];
   } else {

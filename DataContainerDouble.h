@@ -27,6 +27,8 @@ class DataContainerDouble : public DataContainerBase {
   const std::string& getName() const;
 
   std::vector<double>& getData();
+  const std::vector<double>& getData() const;
+
   const double* getDataPointer();
   const double& getDatum(const std::size_t index);
 

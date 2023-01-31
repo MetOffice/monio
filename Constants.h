@@ -13,13 +13,13 @@
 namespace monio {
 namespace constants {
 
-  enum fieldMetadataEnum {
+  enum eFieldMetadata {
       eAtlasFieldName,
       eDataType,
       eNumLevels
   };
 
-  enum dataTypesEnum {  // Used in Reader and File
+  enum eDataTypes {  // Used in Reader and File
     eByte,
     eChar,
     eShort,

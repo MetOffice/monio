@@ -60,7 +60,7 @@ class Metadata {
  private:
   void printVariables();
   void printGlobalAttrs();
-  template<typename T> void printMap(std::map<std::string, T>& map);
+  template<typename T> void printMap(const std::map<std::string, T>& map);
 
   std::map<std::string, int> dimensions_;
   std::map<std::string, AttributeBase*> globalAttrs_;

@@ -54,7 +54,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
 
       if (lhsDataType == rhsDataType && lhsName == rhsName) {
         switch (lhsDataType) {
-          case monio::constants::dataTypesEnum::eDouble: {
+          case monio::constants::eDataTypes::eDouble: {
             DataContainerDouble* lhsDataContainerDouble =
               static_cast<DataContainerDouble*>(lhsDataContainer);
             DataContainerDouble* rhsDataContainerDouble =
@@ -64,7 +64,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::constants::dataTypesEnum::eFloat: {
+          case monio::constants::eDataTypes::eFloat: {
             DataContainerFloat* lhsDataContainerFloat =
               static_cast<DataContainerFloat*>(lhsDataContainer);
             DataContainerFloat* rhsDataContainerFloat =
@@ -74,7 +74,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::constants::dataTypesEnum::eInt: {
+          case monio::constants::eDataTypes::eInt: {
             DataContainerInt* lhsDataContainerInt =
               static_cast<DataContainerInt*>(lhsDataContainer);
             DataContainerInt* rhsDataContainerInt =
@@ -108,8 +108,7 @@ void monio::Data::addContainer(DataContainerBase* container) {
         "definitions of \"" + name + "\"...");
 }
 
-monio::DataContainerBase* monio::Data::getContainer(
-    const std::string& name) const {
+monio::DataContainerBase* monio::Data::getContainer(const std::string& name) const {
   oops::Log::debug() << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end())
@@ -119,11 +118,16 @@ monio::DataContainerBase* monio::Data::getContainer(
         "definitions of \"" + name + "\"...");
 }
 
-std::map<std::string,
-         monio::DataContainerBase*>& monio::Data::getContainers() {
+std::map<std::string, monio::DataContainerBase*>& monio::Data::getContainers() {
   oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
+
+const std::map<std::string, monio::DataContainerBase*>& monio::Data::getContainers() const {
+  oops::Log::debug() << "Data::getContainers()" << std::endl;
+  return dataContainers_;
+}
+
 
 
 void monio::Data::deleteContainer(const std::string& name) {

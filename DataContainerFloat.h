@@ -27,6 +27,8 @@ class DataContainerFloat : public DataContainerBase {
   const std::string& getName() const;
 
   std::vector<float>& getData();
+  const std::vector<float>& getData() const;
+
   const float* getDataPointer();
   const float& getDatum(const std::size_t index);
 

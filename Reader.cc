@@ -31,7 +31,7 @@ bool isStringInVector(std::string searchStr, const std::vector<std::string>& str
 }
 
 std::vector<std::string> stringToWords(const std::string& inputStr,
-                                             const char separatorChar) {
+                                       const char separatorChar) {
     std::stringstream stringStream(inputStr);
     std::string word = "";
     std::vector<std::string> wordList;
@@ -49,8 +49,8 @@ std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
 }  // anonymous namespace
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
-                                      const atlas::idx_t mpiRankOwner,
-                                      const std::string& filePath):
+                      const atlas::idx_t mpiRankOwner,
+                      const std::string& filePath):
   mpiCommunicator_(mpiCommunicator),
   mpiRankOwner_(mpiRankOwner),
   data_(),
@@ -88,7 +88,7 @@ void monio::Reader::readVariablesData() {
 }
 
 void monio::Reader::createDateTimes(const std::string& timeVarName,
-                                              const std::string& timeOriginName) {
+                                    const std::string& timeOriginName) {
   oops::Log::debug() << "Reader::createDateTimes()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (dateTimes_.size() != 0)
@@ -121,16 +121,16 @@ void monio::Reader::createDateTimes(const std::string& timeVarName,
 }
 
 void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
-                                            const std::string& dateString,
-                                            const std::string& timeDimName) {
+                                  const std::string& dateString,
+                                  const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   util::DateTime dateToRead(dateString);
   readFieldData(fieldNames, dateToRead, timeDimName);
 }
 
 void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
-                                            const util::DateTime dateToRead,
-                                            const std::string& timeDimName) {
+                                  const util::DateTime dateToRead,
+                                  const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     for (auto& fieldName : fieldNames) {
@@ -146,19 +146,19 @@ void monio::Reader::readVariable(const std::string varName) {
     Variable* variable = metadata_.getVariable(varName);
     int dataType = variable->getType();
     switch (dataType) {
-      case constants::dataTypesEnum::eDouble: {
+      case constants::eDataTypes::eDouble: {
         DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerDouble->getData());
         dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
         break;
       }
-      case constants::dataTypesEnum::eFloat: {
+      case constants::eDataTypes::eFloat: {
         DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerFloat->getData());
         dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
         break;
       }
-      case constants::dataTypesEnum::eInt: {
+      case constants::eDataTypes::eInt: {
         DataContainerInt* dataContainerInt = new DataContainerInt(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerInt->getData());
         dataContainer = static_cast<DataContainerBase*>(dataContainerInt);
@@ -177,8 +177,8 @@ void monio::Reader::readVariable(const std::string varName) {
 }
 
 void monio::Reader::readField(const std::string varName,
-                                        const util::DateTime dateToRead,
-                                        const std::string timeDimName) {
+                              const util::DateTime dateToRead,
+                              const std::string timeDimName) {
   oops::Log::debug() << "Reader::readField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     DataContainerBase* dataContainer = nullptr;
@@ -205,21 +205,21 @@ void monio::Reader::readField(const std::string varName,
       }
     }
     switch (dataType) {
-      case constants::dataTypesEnum::eDouble: {
+      case constants::eDataTypes::eDouble: {
         DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
         getFile()->readField(varName, varSizeNoTime,
                             startVec, countVec, dataContainerDouble->getData());
         dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
         break;
       }
-      case constants::dataTypesEnum::eFloat: {
+      case constants::eDataTypes::eFloat: {
         DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerFloat->getData());
         dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
         break;
       }
-      case constants::dataTypesEnum::eInt: {
+      case constants::eDataTypes::eInt: {
         DataContainerInt* dataContainerInt = new DataContainerInt(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerInt->getData());
@@ -238,6 +238,7 @@ void monio::Reader::readField(const std::string varName,
 }
 
 size_t monio::Reader::findTimeStep(const util::DateTime dateTime) {
+  oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
   if (dateTimes_.size() == 0)
     throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
 
@@ -249,15 +250,15 @@ size_t monio::Reader::findTimeStep(const util::DateTime dateTime) {
 }
 
 monio::File* monio::Reader::getFile() {
-    if (file_ == nullptr)
-      throw std::runtime_error("Reader::getFile()> File has not been initialised...");
+  oops::Log::debug() << "Reader::getFile()" << std::endl;
+  if (file_ == nullptr)
+    throw std::runtime_error("Reader::getFile()> File has not been initialised...");
 
-    return file_.get();
+  return file_.get();
 }
 
-std::vector<std::string> monio::Reader::getVarStrAttrs(
-                                                  const std::vector<std::string>& varNames,
-                                                  const std::string& attrName) {
+std::vector<std::string> monio::Reader::getVarStrAttrs(const std::vector<std::string>& varNames,
+                                                       const std::string& attrName) {
   oops::Log::debug() << "Reader::getVarStrAttrs()" << std::endl;
   std::vector<std::string> varStrAttrs;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -266,8 +267,8 @@ std::vector<std::string> monio::Reader::getVarStrAttrs(
   return varStrAttrs;
 }
 
-std::map<std::string, monio::DataContainerBase*>
-                 monio::Reader::getCoordMap(const std::vector<std::string>& coordNames) {
+std::map<std::string, monio::DataContainerBase*> monio::Reader::getCoordMap(
+                                                 const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordMap()" << std::endl;
   std::map<std::string, DataContainerBase*> coordContainers;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -275,7 +276,7 @@ std::map<std::string, monio::DataContainerBase*>
 
     for (auto& dataPair : dataContainers) {
       if (isStringInVector(dataPair.first, coordNames) == true) {
-        DataContainerBase* dataContainer = dataContainers[dataPair.first];
+        DataContainerBase* dataContainer = dataContainers.at(dataPair.first);
         coordContainers.insert({dataContainer->getName(), dataContainer});
       }
     }
@@ -283,12 +284,11 @@ std::map<std::string, monio::DataContainerBase*>
   return coordContainers;
 }
 
-std::map<std::string, std::tuple<std::string, int, size_t>>
-                                      monio::Reader::getFieldToMetadataMap(
+std::map<std::string, std::tuple<std::string, int, size_t>> monio::Reader::getFieldToMetadataMap(
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
                                            const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "Reader::getMapOfVarsToDataTypes()" << std::endl;
+  oops::Log::trace() << "Reader::getMapOfVarsToDataTypes()" << std::endl;
   // No MPI rank check - used to call private functions that broadcast data to all PEs
   std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap;
 
@@ -315,7 +315,7 @@ int monio::Reader::getVarDataType(const std::string& varName) {
 }
 
 size_t monio::Reader::getVarNumLevels(const std::string& varName,
-                                                const std::string& levelsSearchTerm) {
+                                      const std::string& levelsSearchTerm) {
   oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   size_t numLevels;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -341,10 +341,10 @@ void monio::Reader::deleteVariable(const std::string& varName) {
   }
 }
 
-monio::Metadata* monio::Reader::getMetadata() {
-  return &metadata_;
+monio::Metadata& monio::Reader::getMetadata() {
+  return metadata_;
 }
 
-monio::Data* monio::Reader::getData() {
-  return &data_;
+monio::Data& monio::Reader::getData() {
+  return data_;
 }

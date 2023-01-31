@@ -31,6 +31,7 @@ class Data {
   DataContainerBase* getContainer(const std::string& name) const;
 
   std::map<std::string, DataContainerBase*>& getContainers();
+  const std::map<std::string, DataContainerBase*>& getContainers() const;
 
   void deleteContainer(const std::string& name);
 

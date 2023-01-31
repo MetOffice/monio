@@ -56,6 +56,8 @@ class Reader {
 
   std::map<std::string, DataContainerBase*> getCoordMap(
                                            const std::vector<std::string>& coordNames);
+  // The following function takes a levels 'search term' as some variables use full- or half-levels
+  // This approach allows the correct number of levels for the variable to be determined
   std::map<std::string, std::tuple<std::string, int, size_t>> getFieldToMetadataMap(
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
@@ -64,8 +66,8 @@ class Reader {
   void deleteDimension(const std::string& dimName);
   void deleteVariable(const std::string& varName);
 
-  Metadata* getMetadata();
-  Data* getData();
+  Metadata& getMetadata();
+  Data& getData();
 
  private:
   int getVarDataType(const std::string& varName);

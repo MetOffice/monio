@@ -21,11 +21,15 @@
 #include "atlas/mesh/Mesh.h"
 #include "atlas/util/Point.h"
 
+#include "eckit/mpi/Comm.h"
+
 namespace monio {
 /// \brief Converts data to and from LFRic format and Atlas
 class AtlasData {
  public:
-  AtlasData(const std::map<std::string, DataContainerBase*>& coordDataMap,
+  AtlasData(const eckit::mpi::Comm& mpiCommunicator,
+            const atlas::idx_t& mpiRankOwner,
+            const std::map<std::string, DataContainerBase*>& coordDataMap,
             const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
             const std::string gridName,
             const std::string partitionerType,
@@ -40,26 +44,38 @@ class AtlasData {
   AtlasData& operator=(const AtlasData&) = delete;  //!< Deleted copy assignment
   AtlasData& operator=(AtlasData&&)      = delete;  //!< Deleted move assignment
 
-  void toAtlasFields(Data* data);  // Needs to be called on default rank only.
-  void scatterAtlasFields();  // Needs to be called on all PEs.
-  void gatherAtlasFields();  // Needs to be called on all PEs
-  void fromAtlasFields(Data* data);   // Needs to be called on default rank only
+  void initialiseNewFieldSet(const std::string& fieldSetName);
 
-  atlas::FieldSet getGlobalFieldSet();
-  atlas::FieldSet getFieldSet();
+  void toFieldSet(const std::string& fieldSetName, const Data& data);
+  void fromFieldSet(const std::string& fieldSetName, Data& data);
+
+  atlas::FieldSet getGlobalFieldSet(const std::string& fieldSetName);
+  atlas::FieldSet getLocalFieldSet(const std::string& fieldSetName);
 
  private:
-  template<typename T> void fieldToAtlas(const std::string& atlasFieldName,
+  void toAtlasFields(const std::string& fieldSetName, const Data& data);
+  void scatterAtlasFields(const std::string& fieldSetName);
+
+  void gatherAtlasFields(const std::string& fieldSetName);
+  void fromAtlasFields(const std::string& fieldSetName, Data& data);
+
+  template<typename T> void fieldToAtlas(const std::string& fieldSetName,
+                                         const std::string& atlasFieldName,
                                          const int& numLevels,
                                          const std::vector<T>& dataVec);
-  template<typename T> void atlasToField(const std::string& atlasFieldName,
+
+  template<typename T> void atlasToField(const std::string& fieldSetName,
+                                         const std::string& atlasFieldName,
                                          const int& numLevels,
                                          std::vector<T>& dataVec);
+
   std::vector<atlas::PointLonLat> processLfricCoordData(
                           const std::map<std::string, DataContainerBase*>& coordDataMap);
-  void addField(atlas::Field field);
+  void addField(const std::string& fieldSetName, atlas::Field field);
 
-  std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap_;
+  const eckit::mpi::Comm& mpiCommunicator_;
+  const atlas::idx_t& mpiRankOwner_;
+  const std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap_;
 
   atlas::CubedSphereGrid grid_;
   atlas::Mesh mesh_;
@@ -69,7 +85,7 @@ class AtlasData {
   std::vector<atlas::PointLonLat> lfricCoordData_;
   std::vector<size_t> lfricToAtlasMap_;
 
-  atlas::FieldSet fieldSet_;
-  atlas::FieldSet globalFieldSet_;
+  std::map<std::string, atlas::FieldSet> localFieldSetMap_;
+  std::map<std::string, atlas::FieldSet> globalFieldSetMap_;
 };
 }  // namespace lfriclite

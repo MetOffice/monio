@@ -14,7 +14,6 @@
 
 #include "eckit/mpi/Comm.h"
 
-#include "AtlasData.h"
 #include "Data.h"
 #include "File.h"
 #include "Metadata.h"
@@ -46,21 +45,16 @@ class Writer {
           const std::string& gridName,
           const std::string& partitionerType,
           const std::string& meshType);
-  void toAtlasFields(Data* data);
-  void fromAtlasFields(Data* data);
 
-  void writeMetadata(Metadata* metadata);
-  void writeVariablesData(Metadata* metadata,
-                          Data* data);
+  void writeMetadata(Metadata& metadata);
+  void writeVariablesData(Metadata& metadata, Data& data);
 
  private:
   File* getFile();
-  AtlasData* getAtlasData();
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
 
   std::unique_ptr<File> file_;
-  std::unique_ptr<AtlasData> atlasData_;
 };
 }  // namespace lfriclite

@@ -21,6 +21,10 @@ std::vector<float>& monio::DataContainerFloat::getData() {
   return dataVector_;
 }
 
+const std::vector<float>& monio::DataContainerFloat::getData() const {
+  return dataVector_;
+}
+
 const float* monio::DataContainerFloat::getDataPointer() {
   return dataVector_.data();
 }
