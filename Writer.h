@@ -39,22 +39,15 @@ class Writer {
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
   Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
 
-  void initialiseAtlasObjects(
-          const std::map<std::string, DataContainerBase*>& coordDataMap,
-          const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
-          const std::string& gridName,
-          const std::string& partitionerType,
-          const std::string& meshType);
-
-  void writeMetadata(Metadata& metadata);
-  void writeVariablesData(Metadata& metadata, Data& data);
+  void writeMetadata(const Metadata& metadata);
+  void writeVariablesData(const Metadata& metadata, const Data& data);
 
  private:
-  File* getFile();
+  std::shared_ptr<File> getFile();
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
 
-  std::unique_ptr<File> file_;
+  std::shared_ptr<File> file_;
 };
 }  // namespace monio

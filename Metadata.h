@@ -31,24 +31,30 @@ class Metadata {
 
   bool isDimDefined(const std::string& dimName);
   int getDimension(const std::string& dimName);
-  Variable* getVariable(const std::string& varName);
 
-  std::vector<Variable*> getVariables(const std::vector<std::string>& varNames);
+  std::shared_ptr<Variable> getVariable(const std::string& varName);
+  const std::shared_ptr<Variable> getVariable(const std::string& varName) const;
+
+  std::vector<std::shared_ptr<Variable>> getVariables(const std::vector<std::string>& varNames);
   std::vector<std::string> getVarStrAttrs(const std::string& attrName);
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
   void addDimension(const std::string& dimName, const int value);
-  void addGlobalAttr(const std::string& attrName, AttributeBase* attr);
-  void addVariable(const std::string& varName, Variable* var);
+  void addGlobalAttr(const std::string& attrName, std::shared_ptr<AttributeBase> attr);
+  void addVariable(const std::string& varName, std::shared_ptr<Variable> var);
 
   std::vector<std::string> getDimensionNames();
-  std::vector<std::string> getVariableNames();
   std::vector<std::string> getGlobalAttrNames();
+  std::vector<std::string> getVariableNames();
 
   std::map<std::string, int>& getDimensionsMap();
-  std::map<std::string, Variable*>& getVariablesMap();
-  std::map<std::string, AttributeBase*>& getGlobalAttrsMap();
+  std::map<std::string, std::shared_ptr<AttributeBase>>& getGlobalAttrsMap();
+  std::map<std::string, std::shared_ptr<Variable>>& getVariablesMap();
+
+  const std::map<std::string, int>& getDimensionsMap() const;
+  const std::map<std::string, std::shared_ptr<AttributeBase>>& getGlobalAttrsMap() const;
+  const std::map<std::string, std::shared_ptr<Variable>>& getVariablesMap() const;
 
   void removeAllButTheseVariables(const std::vector<std::string>& varNames);
 
@@ -63,8 +69,8 @@ class Metadata {
   template<typename T> void printMap(const std::map<std::string, T>& map);
 
   std::map<std::string, int> dimensions_;
-  std::map<std::string, AttributeBase*> globalAttrs_;
-  std::map<std::string, Variable*> variables_;
+  std::map<std::string, std::shared_ptr<AttributeBase>> globalAttrs_;
+  std::map<std::string, std::shared_ptr<Variable>> variables_;
 };
 
 bool operator==(const Metadata& lhs,

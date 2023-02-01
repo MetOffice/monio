@@ -28,11 +28,7 @@ std::vector<key> getVectorOfKeys(std::map<key, value>& map) {
 monio::Variable::Variable(const std::string name, const int type):
   name_(name), type_(type) {}
 
-monio::Variable::~Variable() {
-  for (auto it = attributes_.begin(); it != attributes_.end(); ++it) {
-    delete it->second;
-  }
-}
+monio::Variable::~Variable() {}
 
 const std::string& monio::Variable::getName() const {
   return name_;
@@ -58,13 +54,14 @@ std::vector<std::string> monio::Variable::getDimensionNames() {
   return dimNames;
 }
 
-std::map<std::string, monio::AttributeBase*>& monio::Variable::getAttributes() {
+
+std::map<std::string, std::shared_ptr<monio::AttributeBase>>& monio::Variable::getAttributes() {
   return attributes_;
 }
 
-monio::AttributeBase* monio::Variable::getAttribute(const std::string& attrName) {
+std::shared_ptr<monio::AttributeBase> monio::Variable::getAttribute(const std::string& attrName) {
   if (attributes_.find(attrName) != attributes_.end()) {
-    return attributes_[attrName];
+    return attributes_.at(attrName);
   } else {
     throw std::runtime_error("Variable::getAttribute()> Attribute \"" +
                                     attrName + "\" not found...");
@@ -73,11 +70,12 @@ monio::AttributeBase* monio::Variable::getAttribute(const std::string& attrName)
 
 std::string monio::Variable::getStrAttr(const std::string& attrName) {
   if (attributes_.find(attrName) != attributes_.end()) {
-    AttributeBase* attr = attributes_[attrName];
+    std::shared_ptr<monio::AttributeBase> attr = attributes_.at(attrName);
 
     std::string value;
     if (attr->getType() == constants::eString) {
-      AttributeString* attrStr = static_cast<AttributeString*>(attr);
+      std::shared_ptr<monio::AttributeString> attrStr =
+                        std::dynamic_pointer_cast<monio::AttributeString>(attr);
       value = attrStr->getValue();
       return value;
     } else {
@@ -105,7 +103,7 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
   }
 }
 
-void monio::Variable::addAttribute(monio::AttributeBase* attr) {
+void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
   std::string attrName = attr->getName();
   auto it = attributes_.find(attrName);
   if (it == attributes_.end())
@@ -121,8 +119,9 @@ void monio::Variable::setTotalSize(const size_t totalSize) {
 
 void monio::Variable::deleteDimension(const std::string& dimName) {
   auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
-      [&](const std::pair<std::string, size_t>& element){ return element.first == dimName; });
-
+      [&](const std::pair<std::string, size_t>& element) {
+        return element.first == dimName;
+      });
   if (it != dimensions_.end()) {
     dimensions_.erase(it);
   } else {
@@ -132,10 +131,8 @@ void monio::Variable::deleteDimension(const std::string& dimName) {
 }
 
 void monio::Variable::deleteAttribute(const std::string& attrName) {
-  std::map<std::string, AttributeBase*>::iterator it = attributes_.find(attrName);
+  auto it = attributes_.find(attrName);
   if (it != attributes_.end()) {
-    AttributeBase* netCDFAttr = it->second;
-    delete netCDFAttr;
     attributes_.erase(attrName);
   }
 }

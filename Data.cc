@@ -32,19 +32,15 @@ template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rh
 
 monio::Data::Data() {}
 
-monio::Data::~Data() {
-  for (auto it = dataContainers_.begin(); it != dataContainers_.end(); ++it) {
-    delete it->second;
-  }
-}
+monio::Data::~Data() {}
 
 bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
   if (lhs.dataContainers_.size() == rhs.dataContainers_.size()) {
     for (auto lhsIt = lhs.dataContainers_.begin(), rhsIt = rhs.dataContainers_.begin();
          lhsIt != lhs.dataContainers_.end(); ++lhsIt , ++rhsIt)
     {
-      DataContainerBase* lhsDataContainer = lhsIt->second;
-      DataContainerBase* rhsDataContainer = rhsIt->second;
+      std::shared_ptr<DataContainerBase> lhsDataContainer = lhsIt->second;
+      std::shared_ptr<DataContainerBase> rhsDataContainer = rhsIt->second;
 
       int lhsDataType = lhsDataContainer->getType();
       int rhsDataType = rhsDataContainer->getType();
@@ -55,30 +51,33 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
       if (lhsDataType == rhsDataType && lhsName == rhsName) {
         switch (lhsDataType) {
           case monio::constants::eDataTypes::eDouble: {
-            DataContainerDouble* lhsDataContainerDouble =
-              static_cast<DataContainerDouble*>(lhsDataContainer);
-            DataContainerDouble* rhsDataContainerDouble =
-              static_cast<DataContainerDouble*>(rhsDataContainer);
+            std::shared_ptr<DataContainerDouble> lhsDataContainerDouble =
+              std::static_pointer_cast<DataContainerDouble>(lhsDataContainer);
+            std::shared_ptr<DataContainerDouble> rhsDataContainerDouble =
+              std::static_pointer_cast<DataContainerDouble>(rhsDataContainer);
+
             if (compareData(lhsDataContainerDouble->getData(),
                           rhsDataContainerDouble->getData()) == false)
               return false;
             break;
           }
           case monio::constants::eDataTypes::eFloat: {
-            DataContainerFloat* lhsDataContainerFloat =
-              static_cast<DataContainerFloat*>(lhsDataContainer);
-            DataContainerFloat* rhsDataContainerFloat =
-              static_cast<DataContainerFloat*>(rhsDataContainer);
+            std::shared_ptr<DataContainerFloat> lhsDataContainerFloat =
+              std::static_pointer_cast<DataContainerFloat>(lhsDataContainer);
+            std::shared_ptr<DataContainerFloat> rhsDataContainerFloat =
+              std::static_pointer_cast<DataContainerFloat>(rhsDataContainer);
+
             if (compareData(lhsDataContainerFloat->getData(),
                           rhsDataContainerFloat->getData()) == false)
               return false;
             break;
           }
           case monio::constants::eDataTypes::eInt: {
-            DataContainerInt* lhsDataContainerInt =
-              static_cast<DataContainerInt*>(lhsDataContainer);
-            DataContainerInt* rhsDataContainerInt =
-              static_cast<DataContainerInt*>(rhsDataContainer);
+            std::shared_ptr<DataContainerInt> lhsDataContainerInt =
+              std::static_pointer_cast<DataContainerInt>(lhsDataContainer);
+            std::shared_ptr<DataContainerInt> rhsDataContainerInt =
+              std::static_pointer_cast<DataContainerInt>(rhsDataContainer);
+
             if (compareData(lhsDataContainerInt->getData(),
                           rhsDataContainerInt->getData()) == false)
               return false;
@@ -97,7 +96,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
   return true;
 }
 
-void monio::Data::addContainer(DataContainerBase* container) {
+void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
   oops::Log::debug() << "Data::addContainer()" << std::endl;
   const std::string& name = container->getName();
   auto it = dataContainers_.find(name);
@@ -108,7 +107,7 @@ void monio::Data::addContainer(DataContainerBase* container) {
         "definitions of \"" + name + "\"...");
 }
 
-monio::DataContainerBase* monio::Data::getContainer(const std::string& name) const {
+std::shared_ptr<monio::DataContainerBase> monio::Data::getContainer(const std::string& name) const {
   oops::Log::debug() << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end())
@@ -118,24 +117,20 @@ monio::DataContainerBase* monio::Data::getContainer(const std::string& name) con
         "definitions of \"" + name + "\"...");
 }
 
-std::map<std::string, monio::DataContainerBase*>& monio::Data::getContainers() {
+std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() {
   oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
 
-const std::map<std::string, monio::DataContainerBase*>& monio::Data::getContainers() const {
+const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() const {
   oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
-
-
 
 void monio::Data::deleteContainer(const std::string& name) {
   oops::Log::debug() << "Data::deleteContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end()) {
-    DataContainerBase* netCDFContainer = it->second;
-    delete netCDFContainer;
     dataContainers_.erase(name);
   } else {
     throw std::runtime_error("Data::deleteContainer()> No "

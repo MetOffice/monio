@@ -29,7 +29,7 @@ class AtlasData {
  public:
   AtlasData(const eckit::mpi::Comm& mpiCommunicator,
             const atlas::idx_t& mpiRankOwner,
-            const std::map<std::string, DataContainerBase*>& coordDataMap,
+            const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap,
             const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
             const std::string gridName,
             const std::string partitionerType,
@@ -70,7 +70,7 @@ class AtlasData {
                                          std::vector<T>& dataVec);
 
   std::vector<atlas::PointLonLat> processLfricCoordData(
-                          const std::map<std::string, DataContainerBase*>& coordDataMap);
+        const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap);
   void addField(const std::string& fieldSetName, atlas::Field field);
 
   const eckit::mpi::Comm& mpiCommunicator_;

@@ -54,7 +54,7 @@ class Reader {
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
-  std::map<std::string, DataContainerBase*> getCoordMap(
+  std::map<std::string, std::shared_ptr<DataContainerBase>> getCoordMap(
                                            const std::vector<std::string>& coordNames);
   // The following function takes a levels 'search term' as some variables use full- or half-levels
   // This approach allows the correct number of levels for the variable to be determined
@@ -78,12 +78,12 @@ class Reader {
                  const std::string timeDimName);
   size_t findTimeStep(const util::DateTime dateTime);
 
-  File* getFile();
+  std::shared_ptr<File> getFile();
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
 
-  std::unique_ptr<File> file_;
+  std::shared_ptr<File> file_;
   Metadata metadata_;
   Data data_;
 

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "DataContainerBase.h"
@@ -27,16 +28,16 @@ class Data {
   Data& operator=(const Data&) = delete;  //!< Deleted copy assignment
   Data& operator=(Data&&)      = delete;  //!< Deleted move assignment
 
-  void addContainer(DataContainerBase* container);
-  DataContainerBase* getContainer(const std::string& name) const;
+  void addContainer(std::shared_ptr<DataContainerBase> container);
+  std::shared_ptr<monio::DataContainerBase> getContainer(const std::string& name) const;
 
-  std::map<std::string, DataContainerBase*>& getContainers();
-  const std::map<std::string, DataContainerBase*>& getContainers() const;
+  std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& getContainers();
+  const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& getContainers() const;
 
   void deleteContainer(const std::string& name);
 
  private:
-  std::map<std::string, DataContainerBase*> dataContainers_;
+  std::map<std::string, std::shared_ptr<DataContainerBase>> dataContainers_;
 };
 
 bool operator==(const Data& lhs,

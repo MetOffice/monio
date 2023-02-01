@@ -126,7 +126,7 @@ std::vector<size_t> createLfricToAtlasMap(const std::vector<atlas::PointLonLat>&
 monio::AtlasData::AtlasData(
            const eckit::mpi::Comm& mpiCommunicator,
            const atlas::idx_t& mpiRankOwner,
-           const std::map<std::string, DataContainerBase*>& coordDataMap,
+           const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap,
            const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
            const std::string gridName,
            const std::string partitionerType,
@@ -170,7 +170,7 @@ void monio::AtlasData::fromFieldSet(const std::string& fieldSetName, Data& data)
 
 void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data& data) {
   oops::Log::trace() << "AtlasData::toAtlasFields()" << std::endl;
-  const std::map<std::string, DataContainerBase*>& dataContainers = data.getContainers();
+  const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data.getContainers();
   for (auto& fieldMetadata : fieldToMetadataMap_) {
     std::string lfricFieldName = fieldMetadata.first;
     std::string atlasFieldName =
@@ -178,23 +178,23 @@ void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data
     int dataType = std::get<constants::eDataType>(fieldMetadata.second);
     size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
 
-    const DataContainerBase* dataContainer = dataContainers.at(lfricFieldName);
+    const std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(lfricFieldName);
     switch (dataType) {
     case constants::eDataTypes::eDouble: {
-      const DataContainerDouble* dataContainerDouble =
-          static_cast<const DataContainerDouble*>(dataContainer);
+      const std::shared_ptr<DataContainerDouble> dataContainerDouble =
+          std::static_pointer_cast<DataContainerDouble>(dataContainer);
       fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
     }
     case constants::eDataTypes::eFloat: {
-      const DataContainerFloat* dataContainerFloat =
-          static_cast<const DataContainerFloat*>(dataContainer);
+      const std::shared_ptr<DataContainerFloat> dataContainerFloat =
+          std::static_pointer_cast<DataContainerFloat>(dataContainer);
       fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
     case constants::eDataTypes::eInt: {
-      const DataContainerInt* dataContainerInt =
-          static_cast<const DataContainerInt*>(dataContainer);
+      const std::shared_ptr<DataContainerInt> dataContainerInt =
+          std::static_pointer_cast<DataContainerInt>(dataContainer);
       fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
@@ -226,7 +226,7 @@ void monio::AtlasData::gatherAtlasFields(const std::string& fieldSetName) {
 
 void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& data) {
   oops::Log::trace() << "AtlasData::fromAtlasFields()" << std::endl;
-  std::map<std::string, DataContainerBase*>& dataContainers = data.getContainers();
+  std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data.getContainers();
 
   for (auto& fieldMetadata : fieldToMetadataMap_) {
     std::string lfricFieldName = fieldMetadata.first;
@@ -234,28 +234,28 @@ void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& da
             std::get<constants::eAtlasFieldName>(fieldMetadata.second);
     size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
 
-    DataContainerBase* dataContainer = dataContainers[lfricFieldName];
+    std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(lfricFieldName);
     atlas::Field field = localFieldSetMap_[fieldSetName][atlasFieldName];
     atlas::array::DataType atlasType = field.datatype();
 
     switch (atlasType.kind()) {
     case atlasType.KIND_INT32: {
-      DataContainerInt* dataContainerInt =
-          static_cast<DataContainerInt*>(dataContainer);
+      std::shared_ptr<DataContainerInt> dataContainerInt =
+          std::static_pointer_cast<DataContainerInt>(dataContainer);
       dataContainerInt->resetData();
       atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
     case atlasType.KIND_REAL32: {
-      DataContainerFloat* dataContainerFloat =
-          static_cast<DataContainerFloat*>(dataContainer);
+      std::shared_ptr<DataContainerFloat> dataContainerFloat =
+          std::static_pointer_cast<DataContainerFloat>(dataContainer);
       dataContainerFloat->resetData();
       atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
     case atlasType.KIND_REAL64: {
-      DataContainerDouble* dataContainerDouble =
-          static_cast<DataContainerDouble*>(dataContainer);
+      std::shared_ptr<DataContainerDouble> dataContainerDouble =
+          std::static_pointer_cast<DataContainerDouble>(dataContainer);
       dataContainerDouble->resetData();
       atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
@@ -337,18 +337,18 @@ atlas::FieldSet monio::AtlasData::getLocalFieldSet(const std::string& fieldSetNa
 }
 
 std::vector<atlas::PointLonLat> monio::AtlasData::processLfricCoordData(
-                        const std::map<std::string, DataContainerBase*>& coordDataMap) {
+                        const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap) {
   oops::Log::trace() << "AtlasData::processLfricCoordData()" << std::endl;
   std::vector<atlas::PointLonLat> lfricLonLat;
   if (coordDataMap.size() <= 2) {
     std::array<std::vector<float>, 2> coordVectorArray;
     int coordCount = 0;
     for (auto& coordDataPair : coordDataMap) {
-      DataContainerBase* coordContainer = coordDataPair.second;
+      std::shared_ptr<DataContainerBase> coordContainer = coordDataPair.second;
       // LFRic coordinate data are currently stored as floats
       if (coordContainer->getType() == constants::eFloat) {
-        DataContainerFloat* cooordContainerFloat =
-                  static_cast<DataContainerFloat*>(coordContainer);
+        std::shared_ptr<DataContainerFloat> cooordContainerFloat =
+                  std::static_pointer_cast<DataContainerFloat>(coordContainer);
         std::vector<float> coordData = cooordContainerFloat->getData();
 
         // Essential check to ensure grid is configured to accommodate the data

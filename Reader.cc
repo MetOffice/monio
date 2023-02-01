@@ -59,7 +59,7 @@ monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Reader::Reader()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
-      file_ = std::make_unique<File>(filePath, netCDF::NcFile::read);
+      file_ = std::make_shared<File>(filePath, netCDF::NcFile::read);
     } catch (netCDF::exceptions::NcException& exception) {
       std::string message =
           "Reader::Reader()> An exception occurred while creating File...";
@@ -96,13 +96,14 @@ void monio::Reader::createDateTimes(const std::string& timeVarName,
       throw std::runtime_error("Reader::createDateTimes()> "
                                "Date times already initialised...");
 
-    Variable* timeVar = metadata_.getVariable(timeVarName);
-    DataContainerBase* timeDataBase = data_.getContainer(timeVarName);
+    std::shared_ptr<Variable> timeVar = metadata_.getVariable(timeVarName);
+    std::shared_ptr<DataContainerBase> timeDataBase = data_.getContainer(timeVarName);
     if (timeDataBase->getType() != constants::eDouble)
       throw std::runtime_error("Reader::createDateTimes()> "
                                "Time data not stored as double...");
 
-    DataContainerDouble* timeData = static_cast<DataContainerDouble*>(timeDataBase);
+    std::shared_ptr<DataContainerDouble> timeData =
+                std::static_pointer_cast<DataContainerDouble>(timeDataBase);
 
     std::string timeOrigin = timeVar->getStrAttr(timeOriginName);
     std::string timeAtlasOrigin = convertToAtlasDateTimeStr(timeOrigin);
@@ -143,26 +144,29 @@ void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
 void monio::Reader::readVariable(const std::string varName) {
   oops::Log::debug() << "Reader::readVariable()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    DataContainerBase* dataContainer = nullptr;
-    Variable* variable = metadata_.getVariable(varName);
+    std::shared_ptr<DataContainerBase> dataContainer = nullptr;
+    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
     int dataType = variable->getType();
     switch (dataType) {
       case constants::eDataTypes::eDouble: {
-        DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
+        std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                            std::make_shared<DataContainerDouble>(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerDouble->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
       }
       case constants::eDataTypes::eFloat: {
-        DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
+        std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                            std::make_shared<DataContainerFloat>(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerFloat->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
       }
       case constants::eDataTypes::eInt: {
-        DataContainerInt* dataContainerInt = new DataContainerInt(varName);
+        std::shared_ptr<DataContainerInt> dataContainerInt =
+                            std::make_shared<DataContainerInt>(varName);
         getFile()->readData(varName,  variable->getTotalSize(), dataContainerInt->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerInt);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
       }
       default:
@@ -182,8 +186,8 @@ void monio::Reader::readField(const std::string varName,
                               const std::string timeDimName) {
   oops::Log::debug() << "Reader::readField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    DataContainerBase* dataContainer = nullptr;
-    Variable* variable = metadata_.getVariable(varName);
+    std::shared_ptr<DataContainerBase> dataContainer = nullptr;
+    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
     int dataType = variable->getType();
     size_t varSizeNoTime = 1;
 
@@ -207,24 +211,27 @@ void monio::Reader::readField(const std::string varName,
     }
     switch (dataType) {
       case constants::eDataTypes::eDouble: {
-        DataContainerDouble* dataContainerDouble = new DataContainerDouble(varName);
+        std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                                    std::make_shared<DataContainerDouble>(varName);
         getFile()->readField(varName, varSizeNoTime,
                             startVec, countVec, dataContainerDouble->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerDouble);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
       }
       case constants::eDataTypes::eFloat: {
-        DataContainerFloat* dataContainerFloat = new DataContainerFloat(varName);
+        std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                                    std::make_shared<DataContainerFloat>(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerFloat->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerFloat);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
       }
       case constants::eDataTypes::eInt: {
-        DataContainerInt* dataContainerInt = new DataContainerInt(varName);
+      std::shared_ptr<DataContainerInt> dataContainerInt =
+                                    std::make_shared<DataContainerInt>(varName);
         getFile()->readField(varName, varSizeNoTime,
                              startVec, countVec, dataContainerInt->getData());
-        dataContainer = static_cast<DataContainerBase*>(dataContainerInt);
+        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
       }
       default:
@@ -250,12 +257,12 @@ size_t monio::Reader::findTimeStep(const util::DateTime dateTime) {
   return -1;
 }
 
-monio::File* monio::Reader::getFile() {
+std::shared_ptr<monio::File> monio::Reader::getFile() {
   oops::Log::debug() << "Reader::getFile()" << std::endl;
   if (file_ == nullptr)
     throw std::runtime_error("Reader::getFile()> File has not been initialised...");
 
-  return file_.get();
+  return file_;
 }
 
 std::vector<std::string> monio::Reader::getVarStrAttrs(const std::vector<std::string>& varNames,
@@ -268,16 +275,16 @@ std::vector<std::string> monio::Reader::getVarStrAttrs(const std::vector<std::st
   return varStrAttrs;
 }
 
-std::map<std::string, monio::DataContainerBase*> monio::Reader::getCoordMap(
-                                                 const std::vector<std::string>& coordNames) {
+std::map<std::string, std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordMap(
+                                                   const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordMap()" << std::endl;
-  std::map<std::string, DataContainerBase*> coordContainers;
+  std::map<std::string, std::shared_ptr<DataContainerBase>> coordContainers;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::map<std::string, DataContainerBase*>& dataContainers = data_.getContainers();
+    std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data_.getContainers();
 
     for (auto& dataPair : dataContainers) {
       if (isStringInVector(dataPair.first, coordNames) == true) {
-        DataContainerBase* dataContainer = dataContainers.at(dataPair.first);
+        std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(dataPair.first);
         coordContainers.insert({dataContainer->getName(), dataContainer});
       }
     }
@@ -308,7 +315,7 @@ int monio::Reader::getVarDataType(const std::string& varName) {
   oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   int dataType;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    Variable* variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
     dataType = variable->getType();
   }
   mpiCommunicator_.broadcast(dataType, mpiRankOwner_);
@@ -320,7 +327,7 @@ size_t monio::Reader::getVarNumLevels(const std::string& varName,
   oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   size_t numLevels;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    Variable* variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
     numLevels = variable->findDimensionSize(levelsSearchTerm);
   }
   mpiCommunicator_.broadcast(numLevels, mpiRankOwner_);

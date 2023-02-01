@@ -44,7 +44,7 @@ class File {
                                       const std::vector<size_t>& countVec,
                                       std::vector<T>& dataVec);
 
-  void writeMetadata(Metadata& metadata);
+  void writeMetadata(const Metadata& metadata);
   template<typename T> void writeData(const std::string& varName,
                                       const std::vector<T>& dataVec);
 
@@ -58,7 +58,7 @@ class File {
   void setFileMode(const netCDF::NcFile::FileMode fileMode);
 
  private:
-  netCDF::NcFile* getFile();
+  std::shared_ptr<netCDF::NcFile> getFile();
 
   void readDimensions(Metadata& metadata);
   void readVariables(Metadata& metadata);
@@ -67,11 +67,11 @@ class File {
   void readVariable(Metadata& metadata, netCDF::NcVar var);
   void readAttributes(Metadata& metadata);
 
-  void writeDimensions(Metadata& metadata);
-  void writeVariables(Metadata& metadata);
-  void writeAttributes(Metadata& metadata);
+  void writeDimensions(const Metadata& metadata);
+  void writeVariables(const Metadata& metadata);
+  void writeAttributes(const Metadata& metadata);
 
-  std::unique_ptr<netCDF::NcFile> dataFile_;
+  std::shared_ptr<netCDF::NcFile> dataFile_;
 
   std::string filePath_;
   netCDF::NcFile::FileMode fileMode_;

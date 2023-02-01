@@ -43,14 +43,7 @@ monio::Metadata::Metadata() {
   oops::Log::debug() << "Metadata::Metadata()" << std::endl;
 }
 
-monio::Metadata::~Metadata() {
-  for (auto it = variables_.begin(); it != variables_.end(); ++it) {
-    delete it->second;
-  }
-  for (auto it = globalAttrs_.begin(); it != globalAttrs_.end(); ++it) {
-    delete it->second;
-  }
-}
+monio::Metadata::~Metadata() {}
 
 bool monio::operator==(const monio::Metadata& lhs,
                        const monio::Metadata& rhs) {
@@ -67,8 +60,8 @@ bool monio::operator==(const monio::Metadata& lhs,
   if (lhs.variables_.size() == rhs.variables_.size()) {
     for (auto lhsIt = lhs.variables_.begin(), rhsIt = rhs.variables_.begin();
          lhsIt != lhs.variables_.end(); ++lhsIt , ++rhsIt) {
-      Variable* lhsVariable = lhsIt->second;
-      Variable* rhsVariable = rhsIt->second;
+      std::shared_ptr<Variable> lhsVariable = lhsIt->second;
+      std::shared_ptr<Variable> rhsVariable = rhsIt->second;
 
       std::string lhsName = lhsVariable->getName();
       std::string rhsName = rhsVariable->getName();
@@ -81,7 +74,6 @@ bool monio::operator==(const monio::Metadata& lhs,
 
       std::vector<std::pair<std::string, size_t>>& lhsDimsVec = lhsVariable->getDimensions();
       std::vector<std::pair<std::string, size_t>>& rhsDimsVec = rhsVariable->getDimensions();
-
 
       if (lhsName == rhsName && lhsDataType == rhsDataType && lhsTotSize == rhsTotSize &&
           lhsDimsVec.size() == rhsDimsVec.size()) {
@@ -96,8 +88,8 @@ bool monio::operator==(const monio::Metadata& lhs,
                rhsIt = rhsVariable->getAttributes().begin();
                lhsIt != lhsVariable->getAttributes().end(); ++lhsIt , ++rhsIt)
           {
-            AttributeBase* lhsVarAttr = lhsIt->second;
-            AttributeBase* rhsVarAttr = rhsIt->second;
+            std::shared_ptr<AttributeBase> lhsVarAttr = lhsIt->second;
+            std::shared_ptr<AttributeBase> rhsVarAttr = rhsIt->second;
 
             int lhsVarAttrType = rhsVarAttr->getType();
             int rhsVarAttrType = lhsVarAttr->getType();
@@ -108,19 +100,19 @@ bool monio::operator==(const monio::Metadata& lhs,
             if (lhsVarAttrType == rhsVarAttrType && lhsVarAttrName == rhsVarAttrName) {
               switch (lhsVarAttrType) {
                 case monio::constants::eDataTypes::eInt: {
-                  AttributeInt* lhsVarAttrInt =
-                      static_cast<AttributeInt*>(lhsVarAttr);
-                  AttributeInt* rhsVarAttrInt =
-                      static_cast<AttributeInt*>(rhsVarAttr);
+                 std::shared_ptr<monio::AttributeInt> lhsVarAttrInt =
+                        std::dynamic_pointer_cast<monio::AttributeInt>(lhsVarAttr);
+                  std::shared_ptr<monio::AttributeInt> rhsVarAttrInt =
+                        std::dynamic_pointer_cast<monio::AttributeInt>(rhsVarAttr);
                   if (lhsVarAttrInt->getValue() != rhsVarAttrInt->getValue())
                     return false;
                   break;
                 }
                 case monio::constants::eDataTypes::eString: {
-                  AttributeString* lhsVarAttrStr =
-                      static_cast<AttributeString*>(lhsVarAttr);
-                  AttributeString* rhsVarAttrStr =
-                      static_cast<AttributeString*>(rhsVarAttr);
+                  std::shared_ptr<monio::AttributeString> lhsVarAttrStr =
+                        std::dynamic_pointer_cast<monio::AttributeString>(lhsVarAttr);
+                  std::shared_ptr<monio::AttributeString> rhsVarAttrStr =
+                        std::dynamic_pointer_cast<monio::AttributeString>(rhsVarAttr);
                   if (lhsVarAttrStr->getValue() != rhsVarAttrStr->getValue())
                     return false;
                   break;
@@ -167,10 +159,10 @@ int monio::Metadata::getDimension(const std::string& dimName) {
   return dimVal;
 }
 
-monio::Variable* monio::Metadata::getVariable(const std::string& varName) {
+std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
-  monio::Variable* variable;
+  std::shared_ptr<monio::Variable> variable;
   if (it != variables_.end())
     variable = variables_.at(varName);
   else
@@ -180,10 +172,23 @@ monio::Variable* monio::Metadata::getVariable(const std::string& varName) {
   return variable;
 }
 
-std::vector<monio::Variable*>
-    monio::Metadata::getVariables(const std::vector<std::string>& varNames) {
+const std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) const {
+  oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
+  auto it = variables_.find(varName);
+  std::shared_ptr<monio::Variable> variable;
+  if (it != variables_.end())
+    variable = variables_.at(varName);
+  else
+    throw std::runtime_error("Metadata::getVariable()> variable \"" +
+                                varName + "\" not found...");
+
+  return variable;
+}
+
+std::vector<std::shared_ptr<monio::Variable>>
+      monio::Metadata::getVariables(const std::vector<std::string>& varNames) {
   oops::Log::debug() << "Metadata::getVariables()> " << std::endl;
-  std::vector<monio::Variable*> variables;
+  std::vector<std::shared_ptr<monio::Variable>> variables;
   for (const auto& varName : varNames) {
     variables.push_back(getVariable(varName));
   }
@@ -200,7 +205,7 @@ std::vector<std::string> monio::Metadata::getVarStrAttrs(
                                                   const std::vector<std::string>& varNames,
                                                   const std::string& attrName) {
   oops::Log::debug() << "Metadata::getVarStrAttrs()" << std::endl;
-  std::vector<monio::Variable*> variables = getVariables(varNames);
+  std::vector<std::shared_ptr<monio::Variable>> variables = getVariables(varNames);
   std::vector<std::string> varStrAttrs;
   for (const auto& var : variables) {
       std::string attr = var->getStrAttr(attrName);
@@ -225,7 +230,7 @@ void monio::Metadata::addDimension(const std::string& dimName, const int value) 
 
 
 void monio::Metadata::addGlobalAttr(const std::string& attrName,
-                                               AttributeBase* attr) {
+                                    std::shared_ptr<AttributeBase> attr) {
   oops::Log::debug() << "Metadata::addGlobalAttr()" << std::endl;
   auto it = globalAttrs_.find(attrName);
   if (it == globalAttrs_.end())
@@ -236,7 +241,7 @@ void monio::Metadata::addGlobalAttr(const std::string& attrName,
 }
 
 void monio::Metadata::addVariable(const std::string& varName,
-                                            Variable* var) {
+                                  std::shared_ptr<Variable> var) {
   oops::Log::debug() << "Metadata::addVariable()" << std::endl;
   auto it = variables_.find(varName);
   if (it == variables_.end())
@@ -265,13 +270,28 @@ std::map<std::string, int>& monio::Metadata::getDimensionsMap() {
   oops::Log::debug() << "Metadata::getDimensionsMap()" << std::endl;
   return dimensions_;
 }
-std::map<std::string, monio::Variable*>& monio::Metadata::getVariablesMap() {
+
+std::map<std::string, std::shared_ptr<monio::Variable>>& monio::Metadata::getVariablesMap() {
   oops::Log::debug() << "Metadata::getVariablesMap()" << std::endl;
   return variables_;
 }
 
-std::map<std::string, monio::AttributeBase*>&
-                      monio::Metadata::getGlobalAttrsMap() {
+std::map<std::string, std::shared_ptr<monio::AttributeBase>>& monio::Metadata::getGlobalAttrsMap() {
+  oops::Log::debug() << "Metadata::getGlobalAttrsMap()" << std::endl;
+  return globalAttrs_;
+}
+
+const std::map<std::string, int>& monio::Metadata::getDimensionsMap() const {
+  oops::Log::debug() << "Metadata::getDimensionsMap()" << std::endl;
+  return dimensions_;
+}
+
+const std::map<std::string, std::shared_ptr<monio::Variable>>& monio::Metadata::getVariablesMap() const {
+  oops::Log::debug() << "Metadata::getVariablesMap()" << std::endl;
+  return variables_;
+}
+
+const std::map<std::string, std::shared_ptr<monio::AttributeBase>>& monio::Metadata::getGlobalAttrsMap() const {
   oops::Log::debug() << "Metadata::getGlobalAttrsMap()" << std::endl;
   return globalAttrs_;
 }
@@ -289,12 +309,12 @@ void monio::Metadata::removeAllButTheseVariables(
 
 void monio::Metadata::deleteDimension(const std::string& dimName) {
   oops::Log::debug() << "Metadata::deleteDimension()" << std::endl;
-  std::map<std::string, int>::iterator itDim = dimensions_.find(dimName);
-  if (itDim == dimensions_.end()) {
-    throw std::runtime_error("Metadata::deleteDimension()> Dimension \"" +
-                             dimName + "\" not found...");
-  } else {
+  auto itDim = dimensions_.find(dimName);
+  if (itDim != dimensions_.end()) {
     dimensions_.erase(dimName);
+  } else {
+      throw std::runtime_error("Metadata::deleteDimension()> Dimension \"" +
+                             dimName + "\" not found...");
   }
   for (const auto& varPair : variables_) {
     varPair.second->deleteDimension(dimName);
@@ -303,14 +323,12 @@ void monio::Metadata::deleteDimension(const std::string& dimName) {
 
 void monio::Metadata::deleteVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::deleteVariable()" << std::endl;
-  std::map<std::string, Variable*>::iterator it = variables_.find(varName);
-  if (it == variables_.end()) {
+  auto it = variables_.find(varName);
+  if (it != variables_.end()) {
+    variables_.erase(varName);
+  } else {
     throw std::runtime_error("Metadata::deleteVariable()> Variable \"" +
                              varName + "\" not found...");
-  } else {
-    Variable* netCDFVar = it->second;
-    delete netCDFVar;
-    variables_.erase(varName);
   }
 }
 
@@ -325,7 +343,7 @@ void monio::Metadata::print() {
 
 void monio::Metadata::printVariables() {
   for (auto const& var : variables_) {
-    Variable* netCDFVar = var.second;
+    std::shared_ptr<Variable> netCDFVar = var.second;
     oops::Log::debug() << monio::constants::kTabSpace <<
                           monio::constants::kDataTypeNames[netCDFVar->getType()] <<
                            " " << netCDFVar->getName();
@@ -343,9 +361,9 @@ void monio::Metadata::printVariables() {
       oops::Log::debug() << std::endl;
     }
 
-    std::map<std::string, AttributeBase*> varAttrsMap = netCDFVar->getAttributes();
+    std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = netCDFVar->getAttributes();
     for (auto const& varAttrPair : varAttrsMap) {
-      AttributeBase* netCDFAttr = varAttrPair.second;
+      std::shared_ptr<AttributeBase> netCDFAttr = varAttrPair.second;
 
       oops::Log::debug() << monio::constants::kTabSpace <<
                             monio::constants::kTabSpace <<
@@ -355,12 +373,14 @@ void monio::Metadata::printVariables() {
 
       switch (dataType) {
         case monio::constants::eDataTypes::eInt: {
-          AttributeInt* netCDFAttrInt = static_cast<AttributeInt*>(netCDFAttr);
+          std::shared_ptr<monio::AttributeInt> netCDFAttrInt =
+                        std::dynamic_pointer_cast<monio::AttributeInt>(netCDFAttr);
           oops::Log::debug() << netCDFAttrInt->getValue() << " ;" << std::endl;
           break;
         }
         case monio::constants::eDataTypes::eString: {
-          AttributeString* netCDFAttrStr = static_cast<AttributeString*>(netCDFAttr);
+            std::shared_ptr<monio::AttributeString> netCDFAttrStr =
+                        std::dynamic_pointer_cast<monio::AttributeString>(netCDFAttr);
           oops::Log::debug() << std::quoted(netCDFAttrStr->getValue()) << std::endl;
           break;
         }
@@ -375,16 +395,18 @@ void monio::Metadata::printVariables() {
 void monio::Metadata::printGlobalAttrs() {
   for (const auto& globAttrPair : globalAttrs_) {
     oops::Log::debug() << monio::constants::kTabSpace << globAttrPair.first;
-    AttributeBase* globalAttr = globAttrPair.second;
+    std::shared_ptr<AttributeBase> globalAttr = globAttrPair.second;
     int type = globalAttr->getType();
     switch (type) {
       case monio::constants::eDataTypes::eInt: {
-        AttributeInt* globalAttrInt = static_cast<AttributeInt*>(globalAttr);
+        std::shared_ptr<monio::AttributeInt> globalAttrInt =
+                        std::dynamic_pointer_cast<monio::AttributeInt>(globalAttr);
         oops::Log::debug() << globalAttrInt->getValue() << " ;" << std::endl;
         break;
       }
       case monio::constants::eDataTypes::eString: {
-        AttributeString* globAttrStr = static_cast<AttributeString*>(globalAttr);
+        std::shared_ptr<monio::AttributeString> globAttrStr =
+                        std::dynamic_pointer_cast<monio::AttributeString>(globalAttr);
         oops::Log::debug() << " = " << std::quoted(globAttrStr->getValue()) << " ;"  << std::endl;
         break;
       }

@@ -25,7 +25,7 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Writer::Writer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
-      file_ = std::make_unique<File>(filePath, netCDF::NcFile::replace);
+      file_ = std::make_shared<File>(filePath, netCDF::NcFile::replace);
     } catch (netCDF::exceptions::NcException& exception) {
       std::string message =
           "Writer::Writer()> An exception occurred while creating File...";
@@ -44,39 +44,39 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
 
 monio::Writer::~Writer() {}
 
-void monio::Writer::writeMetadata(Metadata& metadata) {
+void monio::Writer::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     getFile()->writeMetadata(metadata);
   }
 }
 
-void monio::Writer::writeVariablesData(Metadata& metadata, Data& data) {
+void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& data) {
   oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::map<std::string, DataContainerBase*>& dataContainerMap = data.getContainers();
+    const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap = data.getContainers();
     for (const auto& dataContainerPair : dataContainerMap) {
       std::string varName = dataContainerPair.first;
       // Checks variable exists in metadata
       metadata.getVariable(varName);
-      DataContainerBase* dataContainer = dataContainerPair.second;
+      std::shared_ptr<DataContainerBase> dataContainer = dataContainerPair.second;
       int dataType = dataContainerPair.second->getType();
       switch (dataType) {
       case constants::eDataTypes::eDouble: {
-        DataContainerDouble* dataContainerDouble =
-            static_cast<DataContainerDouble*>(dataContainer);
+        std::shared_ptr<DataContainerDouble> dataContainerDouble =
+            std::static_pointer_cast<DataContainerDouble>(dataContainer);
         getFile()->writeData(varName, dataContainerDouble->getData());
         break;
       }
       case constants::eDataTypes::eFloat: {
-        DataContainerFloat* dataContainerFloat =
-            static_cast<DataContainerFloat*>(dataContainer);
+        std::shared_ptr<DataContainerFloat> dataContainerFloat =
+            std::static_pointer_cast<DataContainerFloat>(dataContainer);
         getFile()->writeData(varName, dataContainerFloat->getData());
         break;
       }
       case constants::eDataTypes::eInt: {
-        DataContainerInt* dataContainerInt =
-            static_cast<DataContainerInt*>(dataContainer);
+        std::shared_ptr<DataContainerInt> dataContainerInt =
+            std::static_pointer_cast<DataContainerInt>(dataContainer);
         getFile()->writeData(varName, dataContainerInt->getData());
         break;
       }
@@ -87,10 +87,10 @@ void monio::Writer::writeVariablesData(Metadata& metadata, Data& data) {
   }
 }
 
-monio::File* monio::Writer::getFile() {
+std::shared_ptr<monio::File> monio::Writer::getFile() {
   oops::Log::debug() << "Writer::getFile()" << std::endl;
   if (file_ == nullptr)
     throw std::runtime_error("Writer::getFile()> File has not been initialised...");
 
-  return file_.get();
+  return file_;
 }

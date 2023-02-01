@@ -8,6 +8,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,17 +35,17 @@ class Variable {
   const size_t getTotalSize() const;
 
   std::string getStrAttr(const std::string& attrName);
-  AttributeBase* getAttribute(const std::string& attrName);
+  std::shared_ptr<AttributeBase> getAttribute(const std::string& attrName);
 
   std::vector<std::pair<std::string, size_t>>& getDimensions();
   std::vector<std::string> getDimensionNames();
-  std::map<std::string, AttributeBase*>& getAttributes();
+  std::map<std::string, std::shared_ptr<AttributeBase>>& getAttributes();
 
   size_t findDimensionSize(const std::string& dimSearchTerm);
 
   void setTotalSize(const size_t totalSize);
   void addDimension(const std::string& name, const size_t size);
-  void addAttribute(AttributeBase* attr);
+  void addAttribute(std::shared_ptr<monio::AttributeBase> attr);
 
   void deleteDimension(const std::string& dimName);
   void deleteAttribute(const std::string& attrName);
@@ -54,6 +55,6 @@ class Variable {
   int type_;
   size_t totalSize_;
   std::vector<std::pair<std::string, size_t>> dimensions_;
-  std::map<std::string, AttributeBase*> attributes_;
+  std::map<std::string, std::shared_ptr<AttributeBase>> attributes_;
 };
 }  // namespace monio
