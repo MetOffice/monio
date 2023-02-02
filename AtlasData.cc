@@ -170,7 +170,8 @@ void monio::AtlasData::fromFieldSet(const std::string& fieldSetName, Data& data)
 
 void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data& data) {
   oops::Log::trace() << "AtlasData::toAtlasFields()" << std::endl;
-  const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data.getContainers();
+  const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
+                                                                   data.getContainers();
   for (auto& fieldMetadata : fieldToMetadataMap_) {
     std::string lfricFieldName = fieldMetadata.first;
     std::string atlasFieldName =
@@ -337,7 +338,8 @@ atlas::FieldSet& monio::AtlasData::getLocalFieldSet(const std::string& fieldSetN
 }
 
 std::vector<atlas::PointLonLat> monio::AtlasData::processLfricCoordData(
-                        const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap) {
+                    const std::map<std::string,
+                    std::shared_ptr<monio::DataContainerBase>>& coordDataMap) {
   oops::Log::trace() << "AtlasData::processLfricCoordData()" << std::endl;
   std::vector<atlas::PointLonLat> lfricLonLat;
   if (coordDataMap.size() <= 2) {

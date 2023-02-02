@@ -172,7 +172,8 @@ std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string&
   return variable;
 }
 
-const std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) const {
+const std::shared_ptr<monio::Variable>
+      monio::Metadata::getVariable(const std::string& varName) const {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
   std::shared_ptr<monio::Variable> variable;
@@ -286,12 +287,14 @@ const std::map<std::string, int>& monio::Metadata::getDimensionsMap() const {
   return dimensions_;
 }
 
-const std::map<std::string, std::shared_ptr<monio::Variable>>& monio::Metadata::getVariablesMap() const {
+const std::map<std::string, std::shared_ptr<monio::Variable>>&
+                                                  monio::Metadata::getVariablesMap() const {
   oops::Log::debug() << "Metadata::getVariablesMap()" << std::endl;
   return variables_;
 }
 
-const std::map<std::string, std::shared_ptr<monio::AttributeBase>>& monio::Metadata::getGlobalAttrsMap() const {
+const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
+                                                  monio::Metadata::getGlobalAttrsMap() const {
   oops::Log::debug() << "Metadata::getGlobalAttrsMap()" << std::endl;
   return globalAttrs_;
 }
@@ -361,7 +364,8 @@ void monio::Metadata::printVariables() {
       oops::Log::debug() << std::endl;
     }
 
-    std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = netCDFVar->getAttributes();
+    std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap =
+                                                        netCDFVar->getAttributes();
     for (auto const& varAttrPair : varAttrsMap) {
       std::shared_ptr<AttributeBase> netCDFAttr = varAttrPair.second;
 

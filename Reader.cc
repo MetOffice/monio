@@ -280,8 +280,8 @@ std::map<std::string, std::shared_ptr<monio::DataContainerBase>> monio::Reader::
   oops::Log::debug() << "Reader::getCoordMap()" << std::endl;
   std::map<std::string, std::shared_ptr<DataContainerBase>> coordContainers;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data_.getContainers();
-
+    std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
+                                                                          data_.getContainers();
     for (auto& dataPair : dataContainers) {
       if (isStringInVector(dataPair.first, coordNames) == true) {
         std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(dataPair.first);

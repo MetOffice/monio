@@ -107,7 +107,8 @@ void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
         "definitions of \"" + name + "\"...");
 }
 
-std::shared_ptr<monio::DataContainerBase> monio::Data::getContainer(const std::string& name) const {
+std::shared_ptr<monio::DataContainerBase>
+                                      monio::Data::getContainer(const std::string& name) const {
   oops::Log::debug() << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end())
@@ -122,7 +123,8 @@ std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::g
   return dataContainers_;
 }
 
-const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() const {
+const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
+                                                            monio::Data::getContainers() const {
   oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }

@@ -327,11 +327,13 @@ void monio::File::writeAttributes(const Metadata& metadata) {
       std::shared_ptr<AttributeBase> globAttr = globalAttrPair.second;
 
       if (globAttr->getType() == constants::eString) {
-        std::shared_ptr<AttributeString> globAttrStr = std::static_pointer_cast<AttributeString>(globAttr);
+        std::shared_ptr<AttributeString> globAttrStr =
+                                         std::static_pointer_cast<AttributeString>(globAttr);
         std::string globAttrName = globAttrStr->getName();
         getFile()->putAtt(globAttrName, globAttrStr->getValue());
       } else if (globAttr->getType() == constants::eInt) {
-        std::shared_ptr<AttributeInt> globAttrInt = std::static_pointer_cast<AttributeInt>(globAttr);
+        std::shared_ptr<AttributeInt> globAttrInt =
+                                      std::static_pointer_cast<AttributeInt>(globAttr);
         getFile()->putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
       } else {
         throw std::runtime_error("File::writeVariables()> "

@@ -54,7 +54,8 @@ void monio::Writer::writeMetadata(const Metadata& metadata) {
 void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& data) {
   oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap = data.getContainers();
+    const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap =
+                                                                     data.getContainers();
     for (const auto& dataContainerPair : dataContainerMap) {
       std::string varName = dataContainerPair.first;
       // Checks variable exists in metadata
