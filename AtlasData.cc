@@ -328,11 +328,11 @@ template void monio::AtlasData::atlasToField<int>(const std::string& fieldSetNam
                                                   const int& numLevels,
                                                   std::vector<int>& dataVec);
 
-atlas::FieldSet monio::AtlasData::getGlobalFieldSet(const std::string& fieldSetName) {
+atlas::FieldSet& monio::AtlasData::getGlobalFieldSet(const std::string& fieldSetName) {
   return globalFieldSetMap_[fieldSetName];
 }
 
-atlas::FieldSet monio::AtlasData::getLocalFieldSet(const std::string& fieldSetName) {
+atlas::FieldSet& monio::AtlasData::getLocalFieldSet(const std::string& fieldSetName) {
   return localFieldSetMap_[fieldSetName];
 }
 

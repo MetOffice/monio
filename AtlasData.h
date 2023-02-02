@@ -49,8 +49,8 @@ class AtlasData {
   void toFieldSet(const std::string& fieldSetName, const Data& data);
   void fromFieldSet(const std::string& fieldSetName, Data& data);
 
-  atlas::FieldSet getGlobalFieldSet(const std::string& fieldSetName);
-  atlas::FieldSet getLocalFieldSet(const std::string& fieldSetName);
+  atlas::FieldSet& getGlobalFieldSet(const std::string& fieldSetName);
+  atlas::FieldSet& getLocalFieldSet(const std::string& fieldSetName);
 
  private:
   void toAtlasFields(const std::string& fieldSetName, const Data& data);
