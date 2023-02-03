@@ -36,6 +36,10 @@ class AtlasData {
             const std::string partitionerType,
             const std::string meshType);
 
+  AtlasData(const eckit::mpi::Comm& mpiCommunicator,
+            const atlas::idx_t& mpiRankOwner,
+            const std::vector<size_t>& lfricToAtlasMap);
+
   ~AtlasData();
 
   AtlasData()                            = delete;  //!< Deleted default constructor
@@ -45,34 +49,39 @@ class AtlasData {
   AtlasData& operator=(const AtlasData&) = delete;  //!< Deleted copy assignment
   AtlasData& operator=(AtlasData&&)      = delete;  //!< Deleted move assignment
 
-  void initialiseNewFieldSet(const std::string& fieldSetName);
+  void initialiseNewFieldSet();
 
-  void toFieldSet(const std::string& fieldSetName, const Data& data);
-  void fromFieldSet(const std::string& fieldSetName, Data& data);
+  void toFieldSet(const Data& data);
+  void fromFieldSet(Data& data);
 
-  atlas::FieldSet& getGlobalFieldSet(const std::string& fieldSetName);
-  atlas::FieldSet& getLocalFieldSet(const std::string& fieldSetName);
+  atlas::FieldSet& getGlobalFieldSet();
+  atlas::FieldSet& getLocalFieldSet();
+
+  void populateFieldWithData(atlas::Field& field,
+                             const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
  private:
-  void toAtlasFields(const std::string& fieldSetName, const Data& data);
-  void scatterAtlasFields(const std::string& fieldSetName);
+  void toAtlasFields(const Data& data);
+  void scatterAtlasFields();
 
-  void gatherAtlasFields(const std::string& fieldSetName);
-  void fromAtlasFields(const std::string& fieldSetName, Data& data);
+  void gatherAtlasFields();
+  void fromAtlasFields(Data& data);
 
-  template<typename T> void fieldToAtlas(const std::string& fieldSetName,
-                                         const std::string& atlasFieldName,
+  template<typename T> void toAtlasField(const std::string& atlasFieldName,
                                          const int& numLevels,
                                          const std::vector<T>& dataVec);
 
-  template<typename T> void atlasToField(const std::string& fieldSetName,
-                                         const std::string& atlasFieldName,
-                                         const int& numLevels,
-                                         std::vector<T>& dataVec);
+  template<typename T> void fromAtlasField(const std::string& atlasFieldName,
+                                           const int& numLevels,
+                                           std::vector<T>& dataVec);
+
+  template<typename T> void populateField(atlas::Field field,
+                                          const int& numLevels,
+                                          const std::vector<T>& dataVec);
 
   std::vector<atlas::PointLonLat> processLfricCoordData(
         const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap);
-  void addField(const std::string& fieldSetName, atlas::Field field);
+  void addField(atlas::Field& field);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t& mpiRankOwner_;
@@ -86,7 +95,7 @@ class AtlasData {
   std::vector<atlas::PointLonLat> lfricCoordData_;
   std::vector<size_t> lfricToAtlasMap_;
 
-  std::map<std::string, atlas::FieldSet> localFieldSetMap_;
-  std::map<std::string, atlas::FieldSet> globalFieldSetMap_;
+  atlas::FieldSet localFieldSet_;
+  atlas::FieldSet globalFieldSet_;
 };
 }  // namespace monio

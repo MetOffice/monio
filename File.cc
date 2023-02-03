@@ -23,9 +23,9 @@
 // Constructors ///////////////////////////////////////////////////////////////////////////////////
 
 monio::File::File(const std::string& filePath,
-                              const netCDF::NcFile::FileMode fileMode):
-                              filePath_(filePath),
-                              fileMode_(fileMode) {
+                  const netCDF::NcFile::FileMode fileMode):
+                  filePath_(filePath),
+                  fileMode_(fileMode) {
   try {
     oops::Log::debug() << "File::File(): filePath_> " <<  filePath_  <<
                          ", fileMode_> " << fileMode_ << std::endl;
@@ -55,7 +55,7 @@ void monio::File::readMetadata(Metadata& metadata) {
 }
 
 void monio::File::readMetadata(Metadata& metadata,
-                                         const std::vector<std::string>& varNames) {
+                               const std::vector<std::string>& varNames) {
   oops::Log::debug() << "File::readMetadata()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     readDimensions(metadata);  // Should be called before readVariables()
@@ -97,7 +97,7 @@ void monio::File::readVariables(Metadata& metadata) {
 }
 
 void monio::File::readVariables(Metadata& metadata,
-                                          const std::vector<std::string>& variableNames) {
+                                const std::vector<std::string>& variableNames) {
   oops::Log::debug() << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     // Potentially process getFile()->getGroups() OR getFile()->getId() here?
@@ -204,8 +204,8 @@ void monio::File::readAttributes(Metadata& metadata) {
 
 template<typename T>
 void monio::File::readData(const std::string& varName,
-                                     const int varSize,
-                                     std::vector<T>& dataVec) {
+                           const int varSize,
+                           std::vector<T>& dataVec) {
   oops::Log::debug() << "File::readData()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
@@ -217,14 +217,14 @@ void monio::File::readData(const std::string& varName,
 }
 
 template void monio::File::readData<double>(const std::string& varName,
-                                                      const int varSize,
-                                                      std::vector<double>& dataVec);
+                                            const int varSize,
+                                            std::vector<double>& dataVec);
 template void monio::File::readData<float>(const std::string& varName,
-                                                     const int varSize,
-                                                     std::vector<float>& dataVec);
+                                           const int varSize,
+                                           std::vector<float>& dataVec);
 template void monio::File::readData<int>(const std::string& varName,
-                                                   const int varSize,
-                                                   std::vector<int>& dataVec);
+                                         const int varSize,
+                                         std::vector<int>& dataVec);
 
 template<typename T>
 void monio::File::readField(const std::string& fieldName,

@@ -143,32 +143,39 @@ monio::AtlasData::AtlasData(
   oops::Log::trace() << "AtlasData::AtlasData()" << std::endl;
 }
 
+monio::AtlasData::AtlasData(const eckit::mpi::Comm& mpiCommunicator,
+                            const atlas::idx_t& mpiRankOwner,
+                            const std::vector<size_t>& lfricToAtlasMap):
+    mpiCommunicator_(mpiCommunicator),
+    mpiRankOwner_(mpiRankOwner),
+    lfricToAtlasMap_(lfricToAtlasMap) {
+  oops::Log::trace() << "AtlasData::AtlasData()" << std::endl;
+}
+
 monio::AtlasData::~AtlasData() {}
 
-void monio::AtlasData::initialiseNewFieldSet(const std::string& fieldSetName) {
-  localFieldSetMap_.insert({fieldSetName,
-                            createFieldSet(functionSpace_, fieldToMetadataMap_, false)});
-  globalFieldSetMap_.insert({fieldSetName,
-                            createFieldSet(functionSpace_, fieldToMetadataMap_, true)});
+void monio::AtlasData::initialiseNewFieldSet() {
+  localFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, false);
+  globalFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, true);
 }
 
-void monio::AtlasData::toFieldSet(const std::string& fieldSetName, const Data& data) {
+void monio::AtlasData::toFieldSet(const Data& data) {
   oops::Log::trace() << "AtlasData::populateFieldSet()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    toAtlasFields(fieldSetName, data);
+    toAtlasFields(data);
   }
-  scatterAtlasFields(fieldSetName);
+  scatterAtlasFields();
 }
 
-void monio::AtlasData::fromFieldSet(const std::string& fieldSetName, Data& data) {
+void monio::AtlasData::fromFieldSet(Data& data) {
   oops::Log::trace() << "AtlasData::fromFieldSet()" << std::endl;
-  gatherAtlasFields(fieldSetName);
+  gatherAtlasFields();
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    fromAtlasFields(fieldSetName, data);
+    fromAtlasFields(data);
   }
 }
 
-void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data& data) {
+void monio::AtlasData::toAtlasFields(const Data& data) {
   oops::Log::trace() << "AtlasData::toAtlasFields()" << std::endl;
   const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
                                                                    data.getContainers();
@@ -184,19 +191,19 @@ void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data
     case constants::eDataTypes::eDouble: {
       const std::shared_ptr<DataContainerDouble> dataContainerDouble =
           std::static_pointer_cast<DataContainerDouble>(dataContainer);
-      fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerDouble->getData());
+      toAtlasField(atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
     }
     case constants::eDataTypes::eFloat: {
       const std::shared_ptr<DataContainerFloat> dataContainerFloat =
           std::static_pointer_cast<DataContainerFloat>(dataContainer);
-      fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerFloat->getData());
+      toAtlasField(atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
     case constants::eDataTypes::eInt: {
       const std::shared_ptr<DataContainerInt> dataContainerInt =
           std::static_pointer_cast<DataContainerInt>(dataContainer);
-      fieldToAtlas(fieldSetName, atlasFieldName, numLevels, dataContainerInt->getData());
+      toAtlasField(atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
     default:
@@ -205,27 +212,27 @@ void monio::AtlasData::toAtlasFields(const std::string& fieldSetName, const Data
   }
 }
 
-void monio::AtlasData::scatterAtlasFields(const std::string& fieldSetName) {
+void monio::AtlasData::scatterAtlasFields() {
   oops::Log::trace() << "AtlasData::scatterAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataMap_) {
     std::string atlasFieldName = std::get<constants::eAtlasFieldName>(fieldMetadata.second);
-    functionSpace_.scatter(globalFieldSetMap_[fieldSetName][atlasFieldName],
-                           localFieldSetMap_[fieldSetName][atlasFieldName]);
-    localFieldSetMap_[fieldSetName][atlasFieldName].haloExchange();
+    functionSpace_.scatter(globalFieldSet_[atlasFieldName],
+                           localFieldSet_[atlasFieldName]);
+    localFieldSet_[atlasFieldName].haloExchange();
   }
 }
 
-void monio::AtlasData::gatherAtlasFields(const std::string& fieldSetName) {
+void monio::AtlasData::gatherAtlasFields() {
   oops::Log::trace() << "AtlasData::gatherAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataMap_) {
     std::string atlasFieldName = std::get<constants::eAtlasFieldName>(fieldMetadata.second);
-    localFieldSetMap_[fieldSetName][atlasFieldName].haloExchange();
-    functionSpace_.gather(localFieldSetMap_[fieldSetName][atlasFieldName],
-                          globalFieldSetMap_[fieldSetName][atlasFieldName]);
+    localFieldSet_[atlasFieldName].haloExchange();
+    functionSpace_.gather(localFieldSet_[atlasFieldName],
+                          globalFieldSet_[atlasFieldName]);
   }
 }
 
-void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& data) {
+void monio::AtlasData::fromAtlasFields(Data& data) {
   oops::Log::trace() << "AtlasData::fromAtlasFields()" << std::endl;
   std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers = data.getContainers();
 
@@ -236,7 +243,7 @@ void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& da
     size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
 
     std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(lfricFieldName);
-    atlas::Field field = localFieldSetMap_[fieldSetName][atlasFieldName];
+    atlas::Field field = localFieldSet_[atlasFieldName];
     atlas::array::DataType atlasType = field.datatype();
 
     switch (atlasType.kind()) {
@@ -244,21 +251,21 @@ void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& da
       std::shared_ptr<DataContainerInt> dataContainerInt =
           std::static_pointer_cast<DataContainerInt>(dataContainer);
       dataContainerInt->resetData();
-      atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerInt->getData());
+      fromAtlasField(atlasFieldName, numLevels, dataContainerInt->getData());
       break;
     }
     case atlasType.KIND_REAL32: {
       std::shared_ptr<DataContainerFloat> dataContainerFloat =
           std::static_pointer_cast<DataContainerFloat>(dataContainer);
       dataContainerFloat->resetData();
-      atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerFloat->getData());
+      fromAtlasField(atlasFieldName, numLevels, dataContainerFloat->getData());
       break;
     }
     case atlasType.KIND_REAL64: {
       std::shared_ptr<DataContainerDouble> dataContainerDouble =
           std::static_pointer_cast<DataContainerDouble>(dataContainer);
       dataContainerDouble->resetData();
-      atlasToField(fieldSetName, atlasFieldName, numLevels, dataContainerDouble->getData());
+      fromAtlasField(atlasFieldName, numLevels, dataContainerDouble->getData());
       break;
     }
     default:
@@ -268,13 +275,12 @@ void monio::AtlasData::fromAtlasFields(const std::string& fieldSetName, Data& da
 }
 
 template<typename T>
-void monio::AtlasData::fieldToAtlas(const std::string& fieldSetName,
-                                    const std::string& atlasFieldName,
+void monio::AtlasData::toAtlasField(const std::string& atlasFieldName,
                                     const int& numLevels,
                                     const std::vector<T>& dataVec) {
   oops::Log::trace() << "AtlasData::fieldToAtlas()" << std::endl;
 
-  auto atlasField = globalFieldSetMap_[fieldSetName][atlasFieldName];
+  auto atlasField = globalFieldSet_[atlasFieldName];
   auto fieldView = atlas::array::make_view<T, 2>(atlasField);
 
   for (size_t i = 0; i < lfricToAtlasMap_.size(); ++i) {
@@ -285,56 +291,65 @@ void monio::AtlasData::fieldToAtlas(const std::string& fieldSetName,
   }
 }
 
-template void monio::AtlasData::fieldToAtlas<double>(const std::string& fieldSetName,
-                                                     const std::string& atlasFieldName,
+template void monio::AtlasData::toAtlasField<double>(const std::string& atlasFieldName,
                                                      const int& numLevels,
                                                      const std::vector<double>& dataVec);
-template void monio::AtlasData::fieldToAtlas<float>(const std::string& fieldSetName,
-                                                    const std::string& atlasFieldName,
+template void monio::AtlasData::toAtlasField<float>(const std::string& atlasFieldName,
                                                     const int& numLevels,
                                                     const std::vector<float>& dataVec);
-template void monio::AtlasData::fieldToAtlas<int>(const std::string& fieldSetName,
-                                                  const std::string& atlasFieldName,
+template void monio::AtlasData::toAtlasField<int>(const std::string& atlasFieldName,
                                                   const int& numLevels,
                                                   const std::vector<int>& dataVec);
 
 template<typename T>
-void monio::AtlasData::atlasToField(const std::string& fieldSetName,
-                                    const std::string& atlasFieldName,
-                                    const int& numLevels,
-                                    std::vector<T>& dataVec) {
+void monio::AtlasData::fromAtlasField(const std::string& atlasFieldName,
+                                      const int& numLevels,
+                                      std::vector<T>& dataVec) {
   oops::Log::trace() << "AtlasData::atlasToField()" << std::endl;
+  auto atlasField = globalFieldSet_[atlasFieldName];
+  populateField(atlasField, numLevels, dataVec);
+}
 
-  auto atlasField = globalFieldSetMap_[fieldSetName][atlasFieldName];
-  auto fieldView = atlas::array::make_view<T, 2>(atlasField);
+template void monio::AtlasData::fromAtlasField<double>(const std::string& atlasFieldName,
+                                                       const int& numLevels,
+                                                       std::vector<double>& dataVec);
+template void monio::AtlasData::fromAtlasField<float>(const std::string& atlasFieldName,
+                                                      const int& numLevels,
+                                                      std::vector<float>& dataVec);
+template void monio::AtlasData::fromAtlasField<int>(const std::string& atlasFieldName,
+                                                    const int& numLevels,
+                                                    std::vector<int>& dataVec);
+
+template<typename T>
+void monio::AtlasData::populateField(atlas::Field field,
+                                     const int& numLevels,
+                                     const std::vector<T>& dataVec) {
+  auto fieldView = atlas::array::make_view<T, 2>(field);
 
   for (size_t i = 0; i < lfricToAtlasMap_.size(); ++i) {
     for (size_t j = 0; j < numLevels; ++j) {
       int index = lfricToAtlasMap_[i] + (j * lfricToAtlasMap_.size());
-      dataVec[index] = fieldView(i, j);
+      fieldView(i, j) = dataVec[index];
     }
   }
 }
 
-template void monio::AtlasData::atlasToField<double>(const std::string& fieldSetName,
-                                                     const std::string& atlasFieldName,
+template void monio::AtlasData::populateField<double>(atlas::Field field,
+                                                      const int& numLevels,
+                                                      const std::vector<double>& dataVec);
+template void monio::AtlasData::populateField<float>(atlas::Field field,
                                                      const int& numLevels,
-                                                     std::vector<double>& dataVec);
-template void monio::AtlasData::atlasToField<float>(const std::string& fieldSetName,
-                                                    const std::string& atlasFieldName,
-                                                    const int& numLevels,
-                                                    std::vector<float>& dataVec);
-template void monio::AtlasData::atlasToField<int>(const std::string& fieldSetName,
-                                                  const std::string& atlasFieldName,
-                                                  const int& numLevels,
-                                                  std::vector<int>& dataVec);
+                                                     const std::vector<float>& dataVec);
+template void monio::AtlasData::populateField<int>(atlas::Field field,
+                                                   const int& numLevels,
+                                                   const std::vector<int>& dataVec);
 
-atlas::FieldSet& monio::AtlasData::getGlobalFieldSet(const std::string& fieldSetName) {
-  return globalFieldSetMap_[fieldSetName];
+atlas::FieldSet& monio::AtlasData::getGlobalFieldSet() {
+  return globalFieldSet_;
 }
 
-atlas::FieldSet& monio::AtlasData::getLocalFieldSet(const std::string& fieldSetName) {
-  return localFieldSetMap_[fieldSetName];
+atlas::FieldSet& monio::AtlasData::getLocalFieldSet() {
+  return localFieldSet_;
 }
 
 std::vector<atlas::PointLonLat> monio::AtlasData::processLfricCoordData(
@@ -378,7 +393,38 @@ std::vector<atlas::PointLonLat> monio::AtlasData::processLfricCoordData(
   return lfricLonLat;
 }
 
-void monio::AtlasData::addField(const std::string& fieldSetName, atlas::Field field) {
+void monio::AtlasData::addField(atlas::Field& field) {
   oops::Log::trace() << "AtlasData::addField()" << std::endl;
-  globalFieldSetMap_[fieldSetName].add(field);
+  globalFieldSet_.add(field);
+}
+
+void monio::AtlasData::populateFieldWithData(
+                                 atlas::Field& field,
+                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer) {
+  oops::Log::trace() << "AtlasData::populateFieldWithData()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    int dataType = dataContainer.get()->getType();
+    switch (dataType) {
+    case constants::eDataTypes::eDouble: {
+      const std::shared_ptr<DataContainerDouble> dataContainerDouble =
+          std::static_pointer_cast<DataContainerDouble>(dataContainer);
+          populateField(field, field.levels(), dataContainerDouble->getData());
+      break;
+    }
+    case constants::eDataTypes::eFloat: {
+      const std::shared_ptr<DataContainerFloat> dataContainerFloat =
+          std::static_pointer_cast<DataContainerFloat>(dataContainer);
+          populateField(field, field.levels(), dataContainerFloat->getData());
+      break;
+    }
+    case constants::eDataTypes::eInt: {
+      const std::shared_ptr<DataContainerInt> dataContainerInt =
+          std::static_pointer_cast<DataContainerInt>(dataContainer);
+          populateField(field, field.levels(), dataContainerInt->getData());
+      break;
+    }
+    default:
+      throw std::runtime_error("AtlasData::toAtlasFields()> Data type not coded for...");
+    }
+  }
 }
