@@ -37,8 +37,7 @@ class AtlasData {
             const std::string meshType);
 
   AtlasData(const eckit::mpi::Comm& mpiCommunicator,
-            const atlas::idx_t& mpiRankOwner,
-            const std::vector<size_t>& lfricToAtlasMap);
+            const atlas::idx_t& mpiRankOwner);
 
   ~AtlasData();
 
@@ -51,6 +50,8 @@ class AtlasData {
 
   void initialiseNewFieldSet();
 
+  void setLfricToAtlasMap(const std::vector<size_t>& lfricToAtlasMap);
+
   void toFieldSet(const Data& data);
   void fromFieldSet(Data& data);
 
@@ -58,6 +59,7 @@ class AtlasData {
   atlas::FieldSet& getLocalFieldSet();
 
   void populateFieldWithData(atlas::Field& field,
+                             const int numLevels,
                              const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
  private:
@@ -68,15 +70,15 @@ class AtlasData {
   void fromAtlasFields(Data& data);
 
   template<typename T> void toAtlasField(const std::string& atlasFieldName,
-                                         const int& numLevels,
+                                         const int numLevels,
                                          const std::vector<T>& dataVec);
 
   template<typename T> void fromAtlasField(const std::string& atlasFieldName,
-                                           const int& numLevels,
+                                           const int numLevels,
                                            std::vector<T>& dataVec);
 
-  template<typename T> void populateField(atlas::Field field,
-                                          const int& numLevels,
+  template<typename T> void populateField(atlas::Field& field,
+                                          const int numLevels,
                                           const std::vector<T>& dataVec);
 
   std::vector<atlas::PointLonLat> processLfricCoordData(
