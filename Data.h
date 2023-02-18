@@ -17,16 +17,13 @@ namespace monio {
 class Data {
  public:
   Data();
-  ~Data();
 
   Data(const Data&)            = delete;  //!< Deleted copy constructor
-  Data(Data&&)                 = delete;  //!< Deleted move constructor
+  Data& operator=(const Data&) = delete;  //!< Deleted copy assignment
 
   friend bool operator==(const Data& lhs,
                          const Data& rhs);
 
-  Data& operator=(const Data&) = delete;  //!< Deleted copy assignment
-  Data& operator=(Data&&)      = delete;  //!< Deleted move assignment
 
   void addContainer(std::shared_ptr<DataContainerBase> container);
   std::shared_ptr<monio::DataContainerBase> getContainer(const std::string& name) const;

@@ -18,10 +18,7 @@ class DataContainerBase {
 
   DataContainerBase()                         = delete;             //!< Deleted default construct
   DataContainerBase(const DataContainerBase&) = delete;             //!< Deleted copy constructor
-  DataContainerBase(DataContainerBase&&)      = delete;             //!< Deleted move constructor
-
   DataContainerBase& operator=(const DataContainerBase&) = delete;  //!< Deleted copy assignment
-  DataContainerBase& operator=(DataContainerBase&&)      = delete;  //!< Deleted move assignment
 
   const int getType() const;
   virtual const std::string& getName() const = 0;

@@ -19,10 +19,7 @@ class DataContainerDouble : public DataContainerBase {
 
   DataContainerDouble()                           = delete;  //!< Deleted default constructor
   DataContainerDouble(const DataContainerDouble&) = delete;  //!< Deleted copy constructor
-  DataContainerDouble(DataContainerDouble&&)      = delete;  //!< Deleted move constructor
-
   DataContainerDouble& operator=(const DataContainerDouble&) = delete;  //!< Deleted copy assign
-  DataContainerDouble& operator=(DataContainerDouble&&)      = delete;  //!< Deleted move assign
 
   const std::string& getName() const;
 
@@ -32,6 +29,7 @@ class DataContainerDouble : public DataContainerBase {
   const double* getDataPointer();
   const double& getDatum(const std::size_t index);
 
+  void setSize(const size_t size);
   void resetData();
 
  private:

@@ -32,8 +32,6 @@ template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rh
 
 monio::Data::Data() {}
 
-monio::Data::~Data() {}
-
 bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
   if (lhs.dataContainers_.size() == rhs.dataContainers_.size()) {
     for (auto lhsIt = lhs.dataContainers_.begin(), rhsIt = rhs.dataContainers_.begin();

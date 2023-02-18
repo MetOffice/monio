@@ -19,10 +19,7 @@ class DataContainerFloat : public DataContainerBase {
 
   DataContainerFloat()                          = delete;  //!< Deleted default constructor
   DataContainerFloat(const DataContainerFloat&) = delete;  //!< Deleted copy constructor
-  DataContainerFloat(DataContainerFloat&&)      = delete;  //!< Deleted move constructor
-
   DataContainerFloat& operator=(const DataContainerFloat&) = delete;  //!< Deleted copy assignment
-  DataContainerFloat& operator=(DataContainerFloat&&)      = delete;  //!< Deleted move assignment
 
   const std::string& getName() const;
 
@@ -32,6 +29,7 @@ class DataContainerFloat : public DataContainerBase {
   const float* getDataPointer();
   const float& getDatum(const std::size_t index);
 
+  void setSize(const size_t size);
   void resetData();
 
  private:

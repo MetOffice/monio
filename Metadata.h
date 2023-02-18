@@ -19,13 +19,8 @@ namespace monio {
 class Metadata {
  public:
   Metadata();
-  ~Metadata();
 
-  Metadata(const Metadata&)            = delete;  //!< Deleted copy constructor
-  Metadata(Metadata&&)                 = delete;  //!< Deleted move constructor
-
-  Metadata& operator=(const Metadata&) = delete;  //!< Deleted copy assignment
-  Metadata& operator=(Metadata&&)      = delete;  //!< Deleted move assignment
+  Metadata& operator=(const monio::Metadata& metadata);
 
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);

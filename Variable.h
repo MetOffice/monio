@@ -25,10 +25,7 @@ class Variable {
 
   Variable()                           = delete;  //!< Deleted default constructor
   Variable(const Variable&)            = delete;  //!< Deleted copy constructor
-  Variable(Variable&&)                 = delete;  //!< Deleted move constructor
-
   Variable& operator=(const Variable&) = delete;  //!< Deleted copy assignment
-  Variable& operator=(Variable&&)      = delete;  //!< Deleted move assignment
 
   const std::string& getName() const;
   const int getType() const;

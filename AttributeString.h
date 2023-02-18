@@ -18,10 +18,7 @@ class AttributeString : public AttributeBase {
 
   AttributeString()                                  = delete;  //!< Deleted default constructor
   AttributeString(const AttributeString&)            = delete;  //!< Deleted copy constructor
-  AttributeString(AttributeString&&)                 = delete;  //!< Deleted move constructor
-
   AttributeString& operator=(const AttributeString&) = delete;  //!< Deleted copy assignment
-  AttributeString& operator=(AttributeString&&)      = delete;  //!< Deleted move assignment
 
   const std::string& getName() const;
   const std::string& getValue() const;

@@ -18,11 +18,8 @@ class DataContainerInt : public DataContainerBase {
   explicit DataContainerInt(const std::string& name);
 
   DataContainerInt()                        = delete;  //!< Deleted default constructor
-  DataContainerInt(const DataContainerInt&) = delete;  //!< Deleted copy constructor
   DataContainerInt(DataContainerInt&&)      = delete;  //!< Deleted move constructor
-
   DataContainerInt& operator=(const DataContainerInt&) = delete;  //!< Deleted copy assignment
-  DataContainerInt& operator=(DataContainerInt&&)      = delete;    //!< Deleted move assignment
 
   const std::string& getName() const;
 
@@ -32,6 +29,7 @@ class DataContainerInt : public DataContainerBase {
   const int* getDataPointer();
   const int& getDatum(const std::size_t index);
 
+  void setSize(const size_t size);
   void resetData();
 
  private:

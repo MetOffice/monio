@@ -34,13 +34,11 @@ class Writer {
 
   Writer()                         = delete;  //!< Deleted default constructor
   Writer(const Writer&)            = delete;  //!< Deleted copy constructor
-  Writer(Writer&&)                 = delete;  //!< Deleted move constructor
-
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
-  Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
 
   void writeMetadata(const Metadata& metadata);
   void writeVariablesData(const Metadata& metadata, const Data& data);
+  void writeData(const Metadata& metadata, const Data& data);
 
  private:
   std::shared_ptr<File> getFile();

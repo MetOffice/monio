@@ -43,7 +43,14 @@ monio::Metadata::Metadata() {
   oops::Log::debug() << "Metadata::Metadata()" << std::endl;
 }
 
-monio::Metadata::~Metadata() {}
+monio::Metadata& monio::Metadata::operator=(const monio::Metadata& metadata) {
+  if (this != &metadata) {
+    dimensions_ = metadata.dimensions_;
+    globalAttrs_ = metadata.globalAttrs_;
+    variables_ = metadata.variables_;
+  }
+  return *this;
+}
 
 bool monio::operator==(const monio::Metadata& lhs,
                        const monio::Metadata& rhs) {

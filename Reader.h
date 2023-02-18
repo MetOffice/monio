@@ -32,14 +32,11 @@ class Reader {
 
   Reader()                         = delete;  //!< Deleted default constructor
   Reader(const Reader&)            = delete;  //!< Deleted copy constructor
-  Reader(Reader&&)                 = delete;  //!< Deleted move constructor
-
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
-  Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
 
   void readMetadata();
   void readVariablesData();
-  void readVariable(const std::string varName);
+  void readVariable(const std::string& varName);
 
   void createDateTimes(const std::string& timeVarName, const std::string& timeOriginName);
 
@@ -48,13 +45,13 @@ class Reader {
                      const std::string& timeDimName);
 
   void readFieldData(const std::vector<std::string>& variableNames,
-                     const util::DateTime dateToRead,
+                     const util::DateTime& dateToRead,
                      const std::string& timeDimName);
 
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
-  std::map<std::string, std::shared_ptr<DataContainerBase>> getCoordMap(
+  std::map<std::string, std::shared_ptr<DataContainerBase>> getCoordDataMap(
                                            const std::vector<std::string>& coordNames);
   // The following function takes a levels 'search term' as some variables use full- or half-levels
   // This approach allows the correct number of levels for the variable to be determined
@@ -66,6 +63,8 @@ class Reader {
   void deleteDimension(const std::string& dimName);
   void deleteVariable(const std::string& varName);
 
+  const Metadata& getMetadata() const;
+  const Data& getData() const;
   Metadata& getMetadata();
   Data& getData();
 
@@ -73,10 +72,10 @@ class Reader {
   int getVarDataType(const std::string& varName);
   size_t getVarNumLevels(const std::string& varName, const std::string& levelsSearchTerm);
 
-  void readField(const std::string varName,
-                 const util::DateTime dateToRead,
-                 const std::string timeDimName);
-  size_t findTimeStep(const util::DateTime dateTime);
+  void readField(const std::string& varName,
+                 const util::DateTime& dateToRead,
+                 const std::string& timeDimName);
+  size_t findTimeStep(const util::DateTime& dateTime);
 
   std::shared_ptr<File> getFile();
 

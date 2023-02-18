@@ -131,7 +131,7 @@ void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
 }
 
 void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
-                                  const util::DateTime dateToRead,
+                                  const util::DateTime& dateToRead,
                                   const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -141,7 +141,7 @@ void monio::Reader::readFieldData(const std::vector<std::string>& fieldNames,
   }
 }
 
-void monio::Reader::readVariable(const std::string varName) {
+void monio::Reader::readVariable(const std::string& varName) {
   oops::Log::debug() << "Reader::readVariable()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::shared_ptr<DataContainerBase> dataContainer = nullptr;
@@ -181,9 +181,9 @@ void monio::Reader::readVariable(const std::string varName) {
   }
 }
 
-void monio::Reader::readField(const std::string varName,
-                              const util::DateTime dateToRead,
-                              const std::string timeDimName) {
+void monio::Reader::readField(const std::string& varName,
+                              const util::DateTime& dateToRead,
+                              const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::shared_ptr<DataContainerBase> dataContainer = nullptr;
@@ -245,7 +245,7 @@ void monio::Reader::readField(const std::string varName,
   }
 }
 
-size_t monio::Reader::findTimeStep(const util::DateTime dateTime) {
+size_t monio::Reader::findTimeStep(const util::DateTime& dateTime) {
   oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
   if (dateTimes_.size() == 0)
     throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
@@ -275,7 +275,7 @@ std::vector<std::string> monio::Reader::getVarStrAttrs(const std::vector<std::st
   return varStrAttrs;
 }
 
-std::map<std::string, std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordMap(
+std::map<std::string, std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDataMap(
                                                    const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordMap()" << std::endl;
   std::map<std::string, std::shared_ptr<DataContainerBase>> coordContainers;
@@ -347,6 +347,14 @@ void monio::Reader::deleteVariable(const std::string& varName) {
     metadata_.deleteVariable(varName);
     data_.deleteContainer(varName);
   }
+}
+
+const monio::Metadata& monio::Reader::getMetadata() const {
+  return metadata_;
+}
+
+const monio::Data& monio::Reader::getData() const {
+  return data_;
 }
 
 monio::Metadata& monio::Reader::getMetadata() {

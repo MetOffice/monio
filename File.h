@@ -25,10 +25,7 @@ class File {
 
   File()                       = delete;  //!< Deleted default constructor
   File(const File&)            = delete;  //!< Deleted copy constructor
-  File(File&&)                 = delete;  //!< Deleted move constructor
-
   File& operator=(const File&) = delete;  //!< Deleted copy assignment
-  File& operator=(File&&)      = delete;  //!< Deleted move assignment
 
   void readMetadata(Metadata& metadata);
   void readMetadata(Metadata& metadata,

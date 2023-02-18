@@ -88,6 +88,11 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
   }
 }
 
+void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
+  writeMetadata(metadata);
+  writeVariablesData(metadata, data);
+}
+
 std::shared_ptr<monio::File> monio::Writer::getFile() {
   oops::Log::debug() << "Writer::getFile()" << std::endl;
   if (file_ == nullptr)
