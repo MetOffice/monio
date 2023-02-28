@@ -37,8 +37,6 @@ monio::File::File(const std::string& filePath,
   }
 }
 
-monio::File::~File() {}
-
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 
 void monio::File::readMetadata(Metadata& metadata) {
@@ -203,9 +201,9 @@ void monio::File::readAttributes(Metadata& metadata) {
 }
 
 template<typename T>
-void monio::File::readData(const std::string& varName,
-                           const int varSize,
-                           std::vector<T>& dataVec) {
+void monio::File::readSingleDatum(const std::string& varName,
+                                  const int varSize,
+                                  std::vector<T>& dataVec) {
   oops::Log::debug() << "File::readData()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
@@ -216,22 +214,22 @@ void monio::File::readData(const std::string& varName,
   }
 }
 
-template void monio::File::readData<double>(const std::string& varName,
-                                            const int varSize,
-                                            std::vector<double>& dataVec);
-template void monio::File::readData<float>(const std::string& varName,
-                                           const int varSize,
-                                           std::vector<float>& dataVec);
-template void monio::File::readData<int>(const std::string& varName,
-                                         const int varSize,
-                                         std::vector<int>& dataVec);
+template void monio::File::readSingleDatum<double>(const std::string& varName,
+                                                   const int varSize,
+                                                   std::vector<double>& dataVec);
+template void monio::File::readSingleDatum<float>(const std::string& varName,
+                                                  const int varSize,
+                                                  std::vector<float>& dataVec);
+template void monio::File::readSingleDatum<int>(const std::string& varName,
+                                                const int varSize,
+                                                std::vector<int>& dataVec);
 
 template<typename T>
-void monio::File::readField(const std::string& fieldName,
-                            const int varSize,
-                            const std::vector<size_t>& startVec,
-                            const std::vector<size_t>& countVec,
-                            std::vector<T>& dataVec) {
+void monio::File::readFieldDatum(const std::string& fieldName,
+                                 const int varSize,
+                                 const std::vector<size_t>& startVec,
+                                 const std::vector<size_t>& countVec,
+                                 std::vector<T>& dataVec) {
   oops::Log::debug() << "File::readField()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(fieldName);
@@ -242,21 +240,21 @@ void monio::File::readField(const std::string& fieldName,
   }
 }
 
-template void monio::File::readField<double>(const std::string& varName,
-                                             const int varSize,
-                                             const std::vector<size_t>& startVec,
-                                             const std::vector<size_t>& countVec,
-                                             std::vector<double>& dataVec);
-template void monio::File::readField<float>(const std::string& varName,
-                                            const int varSize,
-                                            const std::vector<size_t>& startVec,
-                                            const std::vector<size_t>& countVec,
-                                            std::vector<float>& dataVec);
-template void monio::File::readField<int>(const std::string& varName,
-                                          const int varSize,
-                                          const std::vector<size_t>& startVec,
-                                          const std::vector<size_t>& countVec,
-                                          std::vector<int>& dataVec);
+template void monio::File::readFieldDatum<double>(const std::string& varName,
+                                                  const int varSize,
+                                                  const std::vector<size_t>& startVec,
+                                                  const std::vector<size_t>& countVec,
+                                                  std::vector<double>& dataVec);
+template void monio::File::readFieldDatum<float>(const std::string& varName,
+                                                 const int varSize,
+                                                 const std::vector<size_t>& startVec,
+                                                 const std::vector<size_t>& countVec,
+                                                 std::vector<float>& dataVec);
+template void monio::File::readFieldDatum<int>(const std::string& varName,
+                                               const int varSize,
+                                               const std::vector<size_t>& startVec,
+                                               const std::vector<size_t>& countVec,
+                                               std::vector<int>& dataVec);
 
 // Writing functions //////////////////////////////////////////////////////////////////////////////
 
@@ -346,7 +344,7 @@ void monio::File::writeAttributes(const Metadata& metadata) {
 }
 
 template<typename T>
-void monio::File::writeData(const std::string &varName, const std::vector<T>& dataVec) {
+void monio::File::writeSingleDatum(const std::string &varName, const std::vector<T>& dataVec) {
   oops::Log::debug() << "File::writeData()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
@@ -356,12 +354,12 @@ void monio::File::writeData(const std::string &varName, const std::vector<T>& da
   }
 }
 
-template void monio::File::writeData<double>(const std::string& varName,
-                                             const std::vector<double>& dataVec);
-template void monio::File::writeData<float>(const std::string& varName,
-                                            const std::vector<float>& dataVec);
-template void monio::File::writeData<int>(const std::string& varName,
-                                          const std::vector<int>& dataVec);
+template void monio::File::writeSingleDatum<double>(const std::string& varName,
+                                                    const std::vector<double>& dataVec);
+template void monio::File::writeSingleDatum<float>(const std::string& varName,
+                                                   const std::vector<float>& dataVec);
+template void monio::File::writeSingleDatum<int>(const std::string& varName,
+                                                 const std::vector<int>& dataVec);
 
 // Encapsulation functions ////////////////////////////////////////////////////////////////////////
 

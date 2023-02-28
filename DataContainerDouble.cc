@@ -37,12 +37,22 @@ const double& monio::DataContainerDouble::getDatum(const std::size_t index) {
   return dataVector_[index];
 }
 
+void monio::DataContainerDouble::setData(const std::vector<double> dataVector) {
+  dataVector_ = dataVector;
+}
+
+void monio::DataContainerDouble::setDatum(const size_t index, const double datum) {
+  dataVector_[index] = datum;
+}
+
+void monio::DataContainerDouble::setDatum(const double datum) {
+  dataVector_.push_back(datum);
+}
+
 void monio::DataContainerDouble::setSize(const size_t size) {
   dataVector_.resize(size);
 }
 
-void monio::DataContainerDouble::resetData() {
-  size_t size = dataVector_.size();
+void monio::DataContainerDouble::clear() {
   dataVector_.clear();
-  dataVector_.resize(size);
 }

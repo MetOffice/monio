@@ -43,15 +43,6 @@ monio::Metadata::Metadata() {
   oops::Log::debug() << "Metadata::Metadata()" << std::endl;
 }
 
-monio::Metadata& monio::Metadata::operator=(const monio::Metadata& metadata) {
-  if (this != &metadata) {
-    dimensions_ = metadata.dimensions_;
-    globalAttrs_ = metadata.globalAttrs_;
-    variables_ = metadata.variables_;
-  }
-  return *this;
-}
-
 bool monio::operator==(const monio::Metadata& lhs,
                        const monio::Metadata& rhs) {
   // Compare dimensions
@@ -164,6 +155,15 @@ int monio::Metadata::getDimension(const std::string& dimName) {
     throw std::runtime_error("Metadata::getDimension()> dimension \"" +
                                 dimName + "\" not found...");
   return dimVal;
+}
+
+std::string monio::Metadata::getDimensionName(const int dimValue) {
+  for (auto it = dimensions_.begin(); it != dimensions_.end(); ++it) {
+    if (it->second == dimValue) {
+      return it->first;
+    }
+  }
+  return monio::constants::kNotFoundError;
 }
 
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {

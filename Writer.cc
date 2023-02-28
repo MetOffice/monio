@@ -42,8 +42,6 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Writer::Writer()" << std::endl;
 }
 
-monio::Writer::~Writer() {}
-
 void monio::Writer::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -66,19 +64,19 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
       case constants::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
             std::static_pointer_cast<DataContainerDouble>(dataContainer);
-        getFile()->writeData(varName, dataContainerDouble->getData());
+        getFile()->writeSingleDatum(varName, dataContainerDouble->getData());
         break;
       }
       case constants::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
             std::static_pointer_cast<DataContainerFloat>(dataContainer);
-        getFile()->writeData(varName, dataContainerFloat->getData());
+        getFile()->writeSingleDatum(varName, dataContainerFloat->getData());
         break;
       }
       case constants::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
             std::static_pointer_cast<DataContainerInt>(dataContainer);
-        getFile()->writeData(varName, dataContainerInt->getData());
+        getFile()->writeSingleDatum(varName, dataContainerInt->getData());
         break;
       }
       default:

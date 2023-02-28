@@ -28,8 +28,6 @@ std::vector<key> getVectorOfKeys(std::map<key, value>& map) {
 monio::Variable::Variable(const std::string name, const int type):
   name_(name), type_(type) {}
 
-monio::Variable::~Variable() {}
-
 const std::string& monio::Variable::getName() const {
   return name_;
 }

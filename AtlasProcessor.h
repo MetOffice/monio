@@ -7,6 +7,8 @@
 #pragma once
 
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "Constants.h"
@@ -16,10 +18,10 @@
 #include "DataContainerInt.h"
 #include "Metadata.h"
 
+#include "atlas/array/DataType.h"
 #include "atlas/field.h"
 #include "atlas/functionspace/CubedSphereColumns.h"
 #include "atlas/grid/CubedSphereGrid.h"
-#include "atlas/mesh/Mesh.h"
 #include "atlas/util/Point.h"
 #include "eckit/mpi/Comm.h"
 
@@ -33,38 +35,73 @@ class AtlasProcessor {
   AtlasProcessor(const AtlasProcessor&)            = delete;  //!< Deleted copy constructor
   AtlasProcessor& operator=(const AtlasProcessor&) = delete;  //!< Deleted copy assignment
 
-  void initAtlasLonLat(atlas::CubedSphereGrid& grid);
+  static void writeFieldSetToFile(atlas::FieldSet fieldSet, std::string outputFilePath);
+
+template<typename T>
+std::vector<T>& getDataVecFromContainer(std::shared_ptr<monio::DataContainerBase>& dataContainer);
+
+  void createGlobalFieldSet(const atlas::FieldSet& localFieldSet,
+                                  atlas::FieldSet& globalFieldSet);
+
+  std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::Field field);
+  std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::CubedSphereGrid& grid);
+  std::vector<atlas::PointLonLat> getLfricCoords(
+                    const std::vector<std::shared_ptr<monio::DataContainerBase>>& coordData);
+  std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& atlasCoords,
+                                          const std::vector<atlas::PointLonLat>& lfricCoords);
+
+  std::vector<std::shared_ptr<DataContainerBase>> convertLatLonToContainers(
+                                        const std::vector<atlas::PointLonLat>& atlasCoords,
+                                        const std::vector<std::string>& coordNames);
 
   // Used where container type is not known - vector cannot be accessed from base class
   void populateFieldWithDataContainer(atlas::Field& field,
-                                const std::shared_ptr<monio::DataContainerBase>& dataContainer);
+                                const std::shared_ptr<monio::DataContainerBase>& dataContainer,
+                                const std::vector<size_t>& lfricToAtlasMap);
+
+  void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
+                                const atlas::Field& field,
+                                const std::vector<size_t>& lfricToAtlasMap);
+
+  void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
+                                const atlas::Field& field);
 
   // Used where container type is known
   template<typename T> void populateField(atlas::Field& field,
-                                          const std::vector<T>& dataVec);
-
-  void populateDataWithField(Data& data, const atlas::Field field);
-
-  void populateDataWithFieldSet(Data& data, const atlas::FieldSet& fieldSet);
+                                    const std::vector<T>& dataVec,
+                                    const std::vector<size_t>& lfricToAtlasMap);
 
   template<typename T> void populateDataVec(std::vector<T>& dataVec,
-                                            const atlas::Field& field);
-  void processLfricCoordData(
-      const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap,
-      const std::vector<atlas::PointLonLat>& atlasCoords);
+                                      const atlas::Field& field,
+                                      const std::vector<size_t>& lfricToAtlasMap);
 
-  void setLfricToAtlasMap(const std::vector<size_t>& lfricToAtlasMap);
+  template<typename T> void populateDataVec(std::vector<T>& dataVec,
+                                      const atlas::Field& field);
+
+  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
+                                                Data& data,
+                                          const atlas::FieldSet& fieldSet,
+                                          const std::vector<size_t>& lfricToAtlasMap);
+
+  void populateMetadataAndDataWithFieldSet(Metadata& metadata,
+                                           Data& data,
+                                     const atlas::FieldSet& fieldSet);
+
+  void populateMetadataWithField(Metadata& metadata, const atlas::Field field);
+
+  void populateDataWithField(Data& data,
+                       const atlas::Field field,
+                       const std::vector<size_t>& lfricToAtlasMap);
+
+  void populateDataWithField(Data& data,
+                       const atlas::Field field);
+
+  atlas::idx_t getSizeOwned(const atlas::Field field);
 
  private:
-  void createLfricToAtlasMap(const std::vector<atlas::PointLonLat>& atlasCoords,
-                             const std::vector<atlas::PointLonLat>& lfricCoords);
+  int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t& mpiRankOwner_;
-
-  std::vector<atlas::PointLonLat> atlasCoords_;
-  std::vector<atlas::PointLonLat> lfricCoords_;
-
-  std::vector<size_t> lfricToAtlasMap_;
 };
 }  // namespace monio

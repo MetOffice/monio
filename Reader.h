@@ -28,15 +28,14 @@ class Reader {
   Reader(const eckit::mpi::Comm& mpiCommunicator,
          const atlas::idx_t mpiRankOwner,
          const std::string& filePath);
-  ~Reader();
 
   Reader()                         = delete;  //!< Deleted default constructor
   Reader(const Reader&)            = delete;  //!< Deleted copy constructor
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
   void readMetadata();
-  void readVariablesData();
-  void readVariable(const std::string& varName);
+  void readAllData();
+  void readSingleDatum(const std::string& varName);
 
   void createDateTimes(const std::string& timeVarName, const std::string& timeOriginName);
 
@@ -48,11 +47,15 @@ class Reader {
                      const util::DateTime& dateToRead,
                      const std::string& timeDimName);
 
+  void readFieldDatum(const std::string& variableName,
+                      const size_t timeStep,
+                      const std::string& timeDimName);
+
   std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
-  std::map<std::string, std::shared_ptr<DataContainerBase>> getCoordDataMap(
-                                           const std::vector<std::string>& coordNames);
+  std::vector<std::shared_ptr<DataContainerBase>> getCoordData(
+                                                  const std::vector<std::string>& coordNames);
   // The following function takes a levels 'search term' as some variables use full- or half-levels
   // This approach allows the correct number of levels for the variable to be determined
   std::map<std::string, std::tuple<std::string, int, size_t>> getFieldToMetadataMap(
@@ -71,10 +74,6 @@ class Reader {
  private:
   int getVarDataType(const std::string& varName);
   size_t getVarNumLevels(const std::string& varName, const std::string& levelsSearchTerm);
-
-  void readField(const std::string& varName,
-                 const util::DateTime& dateToRead,
-                 const std::string& timeDimName);
   size_t findTimeStep(const util::DateTime& dateTime);
 
   std::shared_ptr<File> getFile();

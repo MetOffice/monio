@@ -30,8 +30,8 @@ class AtlasData {
  public:
   AtlasData(const eckit::mpi::Comm& mpiCommunicator,
             const atlas::idx_t& mpiRankOwner,
-            const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& coordDataMap,
             const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
+            const std::vector<std::shared_ptr<monio::DataContainerBase>>& coordData,
             const std::string gridName,
             const std::string partitionerType,
             const std::string meshType);
@@ -66,5 +66,9 @@ class AtlasData {
 
   atlas::FieldSet localFieldSet_;
   atlas::FieldSet globalFieldSet_;
+
+  std::vector<atlas::PointLonLat> lfricCoords_;
+  std::vector<atlas::PointLonLat> atlasCoords_;
+  std::vector<size_t> lfricAtlasMap_;
 };
 }  // namespace monio

@@ -21,7 +21,6 @@ namespace monio {
 class File {
  public:
   File(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
-  ~File();
 
   File()                       = delete;  //!< Deleted default constructor
   File(const File&)            = delete;  //!< Deleted copy constructor
@@ -29,21 +28,21 @@ class File {
 
   void readMetadata(Metadata& metadata);
   void readMetadata(Metadata& metadata,
-                    const std::vector<std::string>& varNames);
+              const std::vector<std::string>& varNames);
 
-  template<typename T> void readData(const std::string& varName,
-                                     const int varSize,
-                                     std::vector<T>& dataVec);
+  template<typename T> void readSingleDatum(const std::string& varName,
+                                            const int varSize,
+                                            std::vector<T>& dataVec);
 
-  template<typename T> void readField(const std::string& fieldName,
-                                      const int varSize,
-                                      const std::vector<size_t>& startVec,
-                                      const std::vector<size_t>& countVec,
-                                      std::vector<T>& dataVec);
+  template<typename T> void readFieldDatum(const std::string& fieldName,
+                                           const int varSize,
+                                           const std::vector<size_t>& startVec,
+                                           const std::vector<size_t>& countVec,
+                                           std::vector<T>& dataVec);
 
   void writeMetadata(const Metadata& metadata);
-  template<typename T> void writeData(const std::string& varName,
-                                      const std::vector<T>& dataVec);
+  template<typename T> void writeSingleDatum(const std::string& varName,
+                                             const std::vector<T>& dataVec);
 
   const std::string& getPath();
   const netCDF::NcFile::FileMode& getFileMode();

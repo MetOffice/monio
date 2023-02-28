@@ -21,7 +21,6 @@ namespace monio {
 class Variable {
  public:
   Variable(const std::string name, const int type);
-  ~Variable();
 
   Variable()                           = delete;  //!< Deleted default constructor
   Variable(const Variable&)            = delete;  //!< Deleted copy constructor

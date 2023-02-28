@@ -30,8 +30,6 @@ class Writer {
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
                   const atlas::idx_t& mpiRankOwner);
 
-  ~Writer();
-
   Writer()                         = delete;  //!< Deleted default constructor
   Writer(const Writer&)            = delete;  //!< Deleted copy constructor
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign

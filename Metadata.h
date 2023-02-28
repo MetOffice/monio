@@ -20,13 +20,15 @@ class Metadata {
  public:
   Metadata();
 
-  Metadata& operator=(const monio::Metadata& metadata);
+  Metadata(const Metadata&)            = default;  //!< Default copy constructor
+  Metadata& operator=(const Metadata&) = default;  //!< Default copy assign
 
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);
 
   bool isDimDefined(const std::string& dimName);
   int getDimension(const std::string& dimName);
+  std::string getDimensionName(const int dimValue);
 
   std::shared_ptr<Variable> getVariable(const std::string& varName);
   const std::shared_ptr<Variable> getVariable(const std::string& varName) const;

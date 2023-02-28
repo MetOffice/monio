@@ -37,12 +37,22 @@ const float& monio::DataContainerFloat::getDatum(const std::size_t index) {
   return dataVector_[index];
 }
 
+void monio::DataContainerFloat::setData(const std::vector<float> dataVector) {
+  dataVector_ = dataVector;
+}
+
+void monio::DataContainerFloat::setDatum(const size_t index, const float datum) {
+  dataVector_[index] = datum;
+}
+
+void monio::DataContainerFloat::setDatum(const float datum) {
+  dataVector_.push_back(datum);
+}
+
 void monio::DataContainerFloat::setSize(const size_t size) {
   dataVector_.resize(size);
 }
 
-void monio::DataContainerFloat::resetData() {
-  size_t size = dataVector_.size();
+void monio::DataContainerFloat::clear() {
   dataVector_.clear();
-  dataVector_.resize(size);
 }

@@ -18,12 +18,11 @@ class Data {
  public:
   Data();
 
-  Data(const Data&)            = delete;  //!< Deleted copy constructor
-  Data& operator=(const Data&) = delete;  //!< Deleted copy assignment
+  Data(const Data&)            = default;  //!< Default copy constructor
+  Data& operator=(const Data&) = default;  //!< Default copy assignment
 
   friend bool operator==(const Data& lhs,
                          const Data& rhs);
-
 
   void addContainer(std::shared_ptr<DataContainerBase> container);
   std::shared_ptr<monio::DataContainerBase> getContainer(const std::string& name) const;
