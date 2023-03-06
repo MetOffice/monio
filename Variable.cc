@@ -10,9 +10,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "Constants.h"
 #include "AttributeInt.h"
 #include "AttributeString.h"
+#include "Constants.h"
 
 namespace {
 template <typename key, typename value>
@@ -37,10 +37,22 @@ const int monio::Variable::getType() const {
 }
 
 const size_t monio::Variable::getTotalSize() const {
-  return totalSize_;
+  size_t totalSize = 1;
+  for (const auto& dim : dimensions_) {
+    totalSize *= dim.second;
+  }
+  return totalSize;
 }
 
-std::vector<std::pair<std::string, size_t>>& monio::Variable::getDimensions() {
+std::vector<int> monio::Variable::getDimensionsVec() {
+  std::vector<int> dimensionsVec;
+  for (const auto& dim : dimensions_) {
+    dimensionsVec.push_back(dim.second);
+  }
+  return dimensionsVec;
+}
+
+std::vector<std::pair<std::string, size_t>>& monio::Variable::getDimensionsMap() {
   return dimensions_;
 }
 
@@ -104,15 +116,12 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
 void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
   std::string attrName = attr->getName();
   auto it = attributes_.find(attrName);
-  if (it == attributes_.end())
+  if (it == attributes_.end()) {
     attributes_.insert(std::make_pair(attrName, attr));
-  else
+  } else {
     throw std::runtime_error("Variable::addAttribute()>  multiple definitions of \"" +
                                 attrName + "\"...");
-}
-
-void monio::Variable::setTotalSize(const size_t totalSize) {
-  totalSize_ = totalSize;
+  }
 }
 
 void monio::Variable::deleteDimension(const std::string& dimName) {
@@ -132,6 +141,22 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
   auto it = attributes_.find(attrName);
   if (it != attributes_.end()) {
     attributes_.erase(attrName);
+  } else {
+      throw std::runtime_error("Variable::deleteAttribute()> Attribute \"" +
+                                    attrName + "\" does not exist...");
+  }
+}
+
+size_t monio::Variable::getDimension(const std::string& dimName) {
+  auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
+      [&](const std::pair<std::string, size_t>& element) {
+        return element.first == dimName;
+      });
+  if (it != dimensions_.end()) {
+    return it->second;
+  } else {
+      throw std::runtime_error("Variable::getDimension()> Dimension \"" +
+                                    dimName + "\" does not exist...");
   }
 }
 

@@ -33,13 +33,14 @@ class Variable {
   std::string getStrAttr(const std::string& attrName);
   std::shared_ptr<AttributeBase> getAttribute(const std::string& attrName);
 
-  std::vector<std::pair<std::string, size_t>>& getDimensions();
+  std::vector<int> getDimensionsVec();
+  std::vector<std::pair<std::string, size_t>>& getDimensionsMap();
   std::vector<std::string> getDimensionNames();
   std::map<std::string, std::shared_ptr<AttributeBase>>& getAttributes();
 
+  size_t getDimension(const std::string& dimName);
   size_t findDimensionSize(const std::string& dimSearchTerm);
 
-  void setTotalSize(const size_t totalSize);
   void addDimension(const std::string& name, const size_t size);
   void addAttribute(std::shared_ptr<monio::AttributeBase> attr);
 
@@ -49,7 +50,6 @@ class Variable {
  private:
   std::string name_;
   int type_;
-  size_t totalSize_;
   std::vector<std::pair<std::string, size_t>> dimensions_;
   std::map<std::string, std::shared_ptr<AttributeBase>> attributes_;
 };

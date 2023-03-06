@@ -27,13 +27,13 @@ class DataContainerInt : public DataContainerBase {
   const std::vector<int>& getData() const;
 
   const int* getDataPointer();
-  const int& getDatum(const std::size_t index);
+  const int& getDatum(const size_t index);
 
   void setData(const std::vector<int> dataVector);
   void setDatum(const size_t index, const int datum);
   void setDatum(const int datum);
 
-  void setSize(const size_t size);
+  void setSize(const int size);
   void clear();
 
  private:

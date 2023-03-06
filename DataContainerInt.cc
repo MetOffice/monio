@@ -29,7 +29,7 @@ const int* monio::DataContainerInt::getDataPointer() {
   return dataVector_.data();
 }
 
-const int& monio::DataContainerInt::getDatum(const std::size_t index) {
+const int& monio::DataContainerInt::getDatum(const size_t index) {
   if (index > dataVector_.size())
     throw std::runtime_error("DataContainerInt::getDatum()> "
         "Passed index exceeds vector size...");
@@ -49,7 +49,7 @@ void monio::DataContainerInt::setDatum(const int datum) {
   dataVector_.push_back(datum);
 }
 
-void monio::DataContainerInt::setSize(const size_t size) {
+void monio::DataContainerInt::setSize(const int size) {
   dataVector_.resize(size);
 }
 

@@ -14,20 +14,17 @@
 namespace monio {
 namespace constants {
 
-  enum eDimension {
-    eHorizontal,
-    eVertical
+  struct FieldMetadata {
+    std::string lfricName;
+    std::string atlasName;
+    size_t numLevels;
+    size_t fieldSize;
+    int dataType;
   };
 
   enum eAtlasLonLat {
     eLongitude,
     eLatitude
-  };
-
-  enum eFieldMetadata {
-    eAtlasFieldName,
-    eDataType,
-    eNumLevels
   };
 
   enum eDataTypes {  // Used in Reader and File
@@ -42,6 +39,11 @@ namespace constants {
     eUInt,
     eUInt64,
     eString
+  };
+
+  enum eDimensions {
+    eHorizontal,
+    eVertical
   };
 
   const std::string kDataTypeNames[eString + 1] = {

@@ -20,14 +20,15 @@ class Metadata {
  public:
   Metadata();
 
-  Metadata(const Metadata&)            = default;  //!< Default copy constructor
-  Metadata& operator=(const Metadata&) = default;  //!< Default copy assign
+  Metadata(const Metadata&)            = delete;  //!< Deleted copy constructor
+  Metadata& operator=(const Metadata&) = delete;  //!< Deleted copy assign
 
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);
 
   bool isDimDefined(const std::string& dimName);
   int getDimension(const std::string& dimName);
+
   std::string getDimensionName(const int dimValue);
 
   std::shared_ptr<Variable> getVariable(const std::string& varName);

@@ -29,8 +29,8 @@ namespace monio {
 class AtlasData {
  public:
   AtlasData(const eckit::mpi::Comm& mpiCommunicator,
-            const atlas::idx_t& mpiRankOwner,
-            const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
+            const atlas::idx_t mpiRankOwner,
+            const std::vector<monio::constants::FieldMetadata> fieldToMetadataVec,
             const std::vector<std::shared_ptr<monio::DataContainerBase>>& coordData,
             const std::string gridName,
             const std::string partitionerType,
@@ -55,8 +55,8 @@ class AtlasData {
   void addField(atlas::Field& field);
 
   const eckit::mpi::Comm& mpiCommunicator_;
-  const atlas::idx_t& mpiRankOwner_;
-  const std::map<std::string, std::tuple<std::string, int, size_t>> fieldToMetadataMap_;
+  const atlas::idx_t mpiRankOwner_;
+  const std::vector<monio::constants::FieldMetadata> fieldToMetadataVec_;
 
   monio::AtlasProcessor atlasProcessor_;
 

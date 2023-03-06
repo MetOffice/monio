@@ -41,19 +41,20 @@ atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Me
 }
 
 atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               const std::map<std::string, std::tuple<std::string, int, size_t>>
-                                                                               fieldToMetadataMap,
+                               const std::vector<monio::constants::FieldMetadata>&
+                                                                              fieldToMetadataVec,
                                const bool isGlobal) {
   oops::Log::trace() << "createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
-  for (const auto& fieldMetadata : fieldToMetadataMap) {
-    std::string atlasFieldName = std::get<monio::constants::eAtlasFieldName>(fieldMetadata.second);
-    int dataType = std::get<monio::constants::eDataType>(fieldMetadata.second);
-    size_t numLevels = std::get<monio::constants::eNumLevels>(fieldMetadata.second);
+  for (const auto& fieldMetadata : fieldToMetadataVec) {
+    std::string atlasFieldName = fieldMetadata.atlasName;
+    size_t numLevels = fieldMetadata.numLevels;
+    int dataType = fieldMetadata.dataType;
     atlas::util::Config atlasOptions = atlas::option::name(atlasFieldName) |
                                        atlas::option::levels(numLevels);
-    if (isGlobal == true)
+    if (isGlobal == true) {
       atlasOptions = atlasOptions | atlas::option::global(0);
+    }
     switch (dataType) {
       case monio::constants::eDataTypes::eDouble:
         fieldSet.add(functionSpace.createField<double>(atlasOptions));
@@ -74,8 +75,8 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
 
 monio::AtlasData::AtlasData(
            const eckit::mpi::Comm& mpiCommunicator,
-           const atlas::idx_t& mpiRankOwner,
-           const std::map<std::string, std::tuple<std::string, int, size_t>>& fieldToMetadataMap,
+           const atlas::idx_t mpiRankOwner,
+           const std::vector<monio::constants::FieldMetadata> fieldToMetadataVec,
            const std::vector<std::shared_ptr<monio::DataContainerBase>>& coordData,
            const std::string gridName,
            const std::string partitionerType,
@@ -83,19 +84,23 @@ monio::AtlasData::AtlasData(
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner),
     atlasProcessor_(mpiCommunicator_, mpiRankOwner_),
-    fieldToMetadataMap_(fieldToMetadataMap),
+    fieldToMetadataVec_(fieldToMetadataVec),
     grid_(gridName),
     mesh_(createMesh(grid_, partitionerType, meshType)),
     functionSpace_(createFunctionSpace(mesh_)) {
   oops::Log::trace() << "AtlasData::AtlasData()" << std::endl;
-  atlasCoords_ = atlasProcessor_.getAtlasCoords(grid_);
-  lfricCoords_ = atlasProcessor_.getLfricCoords(coordData);
-  lfricAtlasMap_ = atlasProcessor_.createLfricAtlasMap(atlasCoords_, lfricCoords_);
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    atlasCoords_ = atlasProcessor_.getAtlasCoords(grid_);
+    lfricCoords_ = atlasProcessor_.getLfricCoords(coordData);
+    lfricAtlasMap_ = atlasProcessor_.createLfricAtlasMap(atlasCoords_, lfricCoords_);
+  }
 }
 
 void monio::AtlasData::initialiseMemberFieldSet() {
-  localFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, false);
-  globalFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataMap_, true);
+  oops::Log::trace() << "AtlasData::initialiseMemberFieldSet()" << std::endl;
+  // This function needs to be called on all PEs - no MPI rank check!
+  localFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataVec_, false);
+  globalFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataVec_, true);
 }
 
 void monio::AtlasData::toFieldSet(const Data& data) {
@@ -103,12 +108,11 @@ void monio::AtlasData::toFieldSet(const Data& data) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
                                                                      data.getContainers();
-    for (auto& fieldMetadata : fieldToMetadataMap_) {
-      std::string lfricFieldName = fieldMetadata.first;
-      std::string atlasFieldName =
-               std::get<constants::eAtlasFieldName>(fieldMetadata.second);
-      // Currently not used: int dataType = std::get<constants::eDataType>(fieldMetadata.second);
-      size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
+    for (auto& fieldMetadata : fieldToMetadataVec_) {
+      std::string lfricFieldName = fieldMetadata.lfricName;
+      std::string atlasFieldName = fieldMetadata.atlasName;
+      size_t numLevels = fieldMetadata.numLevels;
+      // Not currently used: size_t fieldSize = fieldMetadata.fieldSize;
 
       atlas::Field field = globalFieldSet_[atlasFieldName];
       field.set_levels(numLevels);
@@ -125,24 +129,25 @@ void monio::AtlasData::fromFieldSet(Data& data) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers
                                                                   = data.getContainers();
-    for (auto& fieldMetadata : fieldToMetadataMap_) {
-      std::string lfricFieldName = fieldMetadata.first;
-      std::string atlasFieldName =
-              std::get<constants::eAtlasFieldName>(fieldMetadata.second);
-      size_t numLevels = std::get<constants::eNumLevels>(fieldMetadata.second);
+    for (auto& fieldMetadata : fieldToMetadataVec_) {
+      std::string lfricFieldName = fieldMetadata.lfricName;
+      std::string atlasFieldName = fieldMetadata.atlasName;
+      size_t numLevels = fieldMetadata.numLevels;
+      size_t fieldSize = fieldMetadata.fieldSize;
 
       std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(lfricFieldName);
       atlas::Field field = globalFieldSet_[atlasFieldName];
       field.set_levels(numLevels);
-      atlasProcessor_.populateDataContainerWithField(dataContainer, field, lfricAtlasMap_);
+      atlasProcessor_.populateDataContainerWithField(dataContainer, field,
+                                                     lfricAtlasMap_, fieldSize);
     }
   }
 }
 
 void monio::AtlasData::scatterAtlasFields() {
   oops::Log::trace() << "AtlasData::scatterAtlasFields()" << std::endl;
-  for (const auto& fieldMetadata : fieldToMetadataMap_) {
-    std::string atlasFieldName = std::get<constants::eAtlasFieldName>(fieldMetadata.second);
+  for (const auto& fieldMetadata : fieldToMetadataVec_) {
+    std::string atlasFieldName = fieldMetadata.atlasName;
     functionSpace_.scatter(globalFieldSet_[atlasFieldName],
                            localFieldSet_[atlasFieldName]);
     localFieldSet_[atlasFieldName].haloExchange();
@@ -151,8 +156,8 @@ void monio::AtlasData::scatterAtlasFields() {
 
 void monio::AtlasData::gatherAtlasFields() {
   oops::Log::trace() << "AtlasData::gatherAtlasFields()" << std::endl;
-  for (const auto& fieldMetadata : fieldToMetadataMap_) {
-    std::string atlasFieldName = std::get<constants::eAtlasFieldName>(fieldMetadata.second);
+  for (const auto& fieldMetadata : fieldToMetadataVec_) {
+    std::string atlasFieldName = fieldMetadata.atlasName;
     localFieldSet_[atlasFieldName].haloExchange();
     functionSpace_.gather(localFieldSet_[atlasFieldName],
                           globalFieldSet_[atlasFieldName]);

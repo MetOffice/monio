@@ -27,13 +27,13 @@ class DataContainerFloat : public DataContainerBase {
   const std::vector<float>& getData() const;
 
   const float* getDataPointer();
-  const float& getDatum(const std::size_t index);
+  const float& getDatum(const size_t index);
 
   void setData(const std::vector<float> dataVector);
   void setDatum(const size_t index, const float datum);
   void setDatum(const float datum);
 
-  void setSize(const size_t size);
+  void setSize(const int size);
   void clear();
 
  private:

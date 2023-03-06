@@ -29,9 +29,14 @@ class Reader {
          const atlas::idx_t mpiRankOwner,
          const std::string& filePath);
 
+  Reader(const eckit::mpi::Comm& mpiCommunicator,
+         const atlas::idx_t mpiRankOwner);
+
   Reader()                         = delete;  //!< Deleted default constructor
   Reader(const Reader&)            = delete;  //!< Deleted copy constructor
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
+
+  void openFile(const std::string& filePath);
 
   void readMetadata();
   void readAllData();
@@ -58,7 +63,7 @@ class Reader {
                                                   const std::vector<std::string>& coordNames);
   // The following function takes a levels 'search term' as some variables use full- or half-levels
   // This approach allows the correct number of levels for the variable to be determined
-  std::map<std::string, std::tuple<std::string, int, size_t>> getFieldToMetadataMap(
+  std::vector<monio::constants::FieldMetadata> getFieldMetadata(
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
                                            const std::string& levelsSearchTerm);
@@ -72,8 +77,9 @@ class Reader {
   Data& getData();
 
  private:
-  int getVarDataType(const std::string& varName);
+  size_t getSizeOwned(const std::string& varName);
   size_t getVarNumLevels(const std::string& varName, const std::string& levelsSearchTerm);
+  int getVarDataType(const std::string& varName);
   size_t findTimeStep(const util::DateTime& dateTime);
 
   std::shared_ptr<File> getFile();

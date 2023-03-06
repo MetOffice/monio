@@ -128,7 +128,6 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
                                 varType.getName() + " not coded for.");
 
   std::vector<netCDF::NcDim> ncVarDims = ncVar.getDims();
-  int varTotalSize = 1;
   for (auto const& ncVarDim : ncVarDims) {
     std::string varDimName = ncVarDim.getName();
     if (metadata.isDimDefined(varDimName) == false) {
@@ -138,9 +137,7 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
     std::size_t varDimSize = ncVarDim.getSize();
     var->addDimension(varDimName, varDimSize);
     // Potentially store varDim.getId() OR varDim.isNull() here?
-    varTotalSize *= varDimSize;
   }
-  var->setTotalSize(varTotalSize);
 
   std::map<std::string, netCDF::NcVarAtt> ncVarAttrMap = ncVar.getAtts();
   for (auto const& ncVarAttrPair : ncVarAttrMap) {
@@ -288,6 +285,10 @@ void monio::File::writeVariables(const Metadata& metadata) {
     const std::map<std::string, std::shared_ptr<Variable>>& varsMap = metadata.getVariablesMap();
     for (auto const& varPair : varsMap) {
       std::shared_ptr<Variable> var = varPair.second;
+      std::vector<std::string> dimNames = var->getDimensionNames();
+      for (const auto& dimName : dimNames) {
+        int dimSize = var->getDimension(dimName);
+      }
 
       netCDF::NcVar ncVar = getFile()->addVar(var->getName(),
                             constants::kDataTypeNames[var->getType()],

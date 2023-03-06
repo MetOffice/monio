@@ -70,8 +70,8 @@ bool monio::operator==(const monio::Metadata& lhs,
       int lhsTotSize = lhsVariable->getTotalSize();
       int rhsTotSize = rhsVariable->getTotalSize();
 
-      std::vector<std::pair<std::string, size_t>>& lhsDimsVec = lhsVariable->getDimensions();
-      std::vector<std::pair<std::string, size_t>>& rhsDimsVec = rhsVariable->getDimensions();
+      std::vector<std::pair<std::string, size_t>>& lhsDimsVec = lhsVariable->getDimensionsMap();
+      std::vector<std::pair<std::string, size_t>>& rhsDimsVec = rhsVariable->getDimensionsMap();
 
       if (lhsName == rhsName && lhsDataType == rhsDataType && lhsTotSize == rhsTotSize &&
           lhsDimsVec.size() == rhsDimsVec.size()) {
