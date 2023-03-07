@@ -34,9 +34,9 @@ class Writer {
   Writer(const Writer&)            = delete;  //!< Deleted copy constructor
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
+  void writeData(const Metadata& metadata, const Data& data);
   void writeMetadata(const Metadata& metadata);
   void writeVariablesData(const Metadata& metadata, const Data& data);
-  void writeData(const Metadata& metadata, const Data& data);
 
  private:
   std::shared_ptr<File> getFile();

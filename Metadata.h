@@ -35,9 +35,12 @@ class Metadata {
   const std::shared_ptr<Variable> getVariable(const std::string& varName) const;
 
   std::vector<std::shared_ptr<Variable>> getVariables(const std::vector<std::string>& varNames);
+  const std::vector<std::shared_ptr<Variable>>
+                                    getVariables(const std::vector<std::string>& varNames) const;
+
   std::vector<std::string> getVarStrAttrs(const std::string& attrName);
-  std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
-                                          const std::string& attrName);
+  const std::vector<std::string> getVarStrAttrs(const std::vector<std::string>& varNames,
+                                          const std::string& attrName) const;
 
   void addDimension(const std::string& dimName, const int value);
   void addGlobalAttr(const std::string& attrName, std::shared_ptr<AttributeBase> attr);

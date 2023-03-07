@@ -12,15 +12,15 @@
 namespace monio {
 class Monio {
  public:
-  static Monio* get();
+  static Monio& get();
+  static Reader& getReader();
+  static AtlasProcessor& getAtlasProcessor();
 
-  const monio::Reader& getReader() const;
-  monio::Reader& getReader();
-
-  const monio::AtlasProcessor& getAtlasProcessor() const;
+  void createLfricAtlasMap(monio::FileData& fileData, atlas::Field& globalField);
 
  private:
   Monio();
+
   static Monio* this_;
 
   monio::Reader reader_;

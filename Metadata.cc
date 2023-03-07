@@ -203,15 +203,25 @@ std::vector<std::shared_ptr<monio::Variable>>
   return variables;
 }
 
+const std::vector<std::shared_ptr<monio::Variable>>
+      monio::Metadata::getVariables(const std::vector<std::string>& varNames) const {
+  oops::Log::debug() << "Metadata::getVariables()> " << std::endl;
+  std::vector<std::shared_ptr<monio::Variable>> variables;
+  for (const auto& varName : varNames) {
+    variables.push_back(getVariable(varName));
+  }
+  return variables;
+}
+
 std::vector<std::string> monio::Metadata::getVarStrAttrs(const std::string& attrName) {
   oops::Log::debug() << "Metadata::getVarStrAttrs()" << std::endl;
   std::vector<std::string> varNames = getVariableNames();
   return getVarStrAttrs(varNames, attrName);
 }
 
-std::vector<std::string> monio::Metadata::getVarStrAttrs(
+const std::vector<std::string> monio::Metadata::getVarStrAttrs(
                                                   const std::vector<std::string>& varNames,
-                                                  const std::string& attrName) {
+                                                  const std::string& attrName) const {
   oops::Log::debug() << "Metadata::getVarStrAttrs()" << std::endl;
   std::vector<std::shared_ptr<monio::Variable>> variables = getVariables(varNames);
   std::vector<std::string> varStrAttrs;

@@ -51,28 +51,24 @@ std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
-                      const std::string& filePath):
+                      const FileData& fileData):
   mpiCommunicator_(mpiCommunicator),
-  mpiRankOwner_(mpiRankOwner),
-  data_(),
-  metadata_() {
+  mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;
-  openFile(filePath);
+  openFile(fileData);
 }
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner):
   mpiCommunicator_(mpiCommunicator),
-  mpiRankOwner_(mpiRankOwner),
-  data_(),
-  metadata_() {
+  mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;
 }
 
-void monio::Reader::openFile(const std::string& filePath) {
+void monio::Reader::openFile(const FileData& fileData) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
-      file_ = std::make_shared<File>(filePath, netCDF::NcFile::read);
+      file_ = std::make_shared<File>(fileData.getFilePath(), netCDF::NcFile::read);
     } catch (netCDF::exceptions::NcException& exception) {
       std::string message =
           "Reader::openFile()> An exception occurred while creating File...";
@@ -82,33 +78,32 @@ void monio::Reader::openFile(const std::string& filePath) {
   }
 }
 
-void monio::Reader::readMetadata() {
+void monio::Reader::readMetadata(FileData& fileData) {
   oops::Log::debug() << "Reader::readMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    getFile()->readMetadata(metadata_);
+    getFile()->readMetadata(fileData.getMetadata());
   }
 }
 
-void monio::Reader::readAllData() {
-  oops::Log::debug() << "Reader::readVariableData()" << std::endl;
+void monio::Reader::readAllData(FileData& fileData) {
+  oops::Log::debug() << "Reader::readAllData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::vector<std::string> varNames = metadata_.getVariableNames();
-    for (const auto& varName : varNames) {
-      readSingleDatum(varName);
-    }
+    std::vector<std::string> varNames = fileData.getMetadata().getVariableNames();
+    readSingleData(fileData, varNames);
   }
 }
 
-void monio::Reader::createDateTimes(const std::string& timeVarName,
+void monio::Reader::createDateTimes(FileData& fileData,
+                                    const std::string& timeVarName,
                                     const std::string& timeOriginName) {
   oops::Log::debug() << "Reader::createDateTimes()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (dateTimes_.size() != 0)
+    if (fileData.getDateTimes().size() != 0)
       throw std::runtime_error("Reader::createDateTimes()> "
                                "Date times already initialised...");
 
-    std::shared_ptr<Variable> timeVar = metadata_.getVariable(timeVarName);
-    std::shared_ptr<DataContainerBase> timeDataBase = data_.getContainer(timeVarName);
+    std::shared_ptr<Variable> timeVar = fileData.getMetadata().getVariable(timeVarName);
+    std::shared_ptr<DataContainerBase> timeDataBase = fileData.getData().getContainer(timeVarName);
     if (timeDataBase->getType() != constants::eDouble)
       throw std::runtime_error("Reader::createDateTimes()> "
                                "Time data not stored as double...");
@@ -122,43 +117,48 @@ void monio::Reader::createDateTimes(const std::string& timeVarName,
     util::DateTime originDateTime(timeAtlasOrigin);
 
     oops::Log::debug() << "timeVar->getSize()> " << timeVar->getTotalSize() << std::endl;
-    dateTimes_.resize(timeVar->getTotalSize());
+    std::vector<util::DateTime> dateTimes(timeVar->getTotalSize());
     for (std::size_t index = 0; index < timeVar->getTotalSize(); ++index) {
       util::Duration duration(static_cast<uint64_t>(std::round(timeData->getDatum(index))));
       util::DateTime dateTime = originDateTime + duration;
-      dateTimes_[index] = dateTime;
+      dateTimes[index] = dateTime;
       oops::Log::debug() << "index> " << index << ", data> " << timeData->getDatum(index) <<
                            ", dateTime> " << dateTime << std::endl;
     }
+    fileData.setDateTimes(std::move(dateTimes));
   }
 }
 
-void monio::Reader::readFieldData(const std::vector<std::string>& varNames,
+void monio::Reader::readFieldData(FileData& fileData,
+                                  const std::vector<std::string>& varNames,
                                   const std::string& dateString,
                                   const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   util::DateTime dateToRead(dateString);
-  readFieldData(varNames, dateToRead, timeDimName);
+  readFieldData(fileData, varNames, dateToRead, timeDimName);
 }
 
-void monio::Reader::readFieldData(const std::vector<std::string>& varNames,
+void monio::Reader::readFieldData(FileData& fileData,
+                                  const std::vector<std::string>& varNames,
                                   const util::DateTime& dateToRead,
                                   const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    size_t timeStep = findTimeStep(dateToRead);
+    size_t timeStep = findTimeStep(fileData, dateToRead);
     for (auto& varName : varNames) {
-      readFieldDatum(varName, timeStep, timeDimName);
+      readFieldDatum(fileData, varName, timeStep, timeDimName);
     }
   }
 }
 
-void monio::Reader::readFieldDatum(const std::string& varName,
+void monio::Reader::readFieldDatum(FileData& fileData,
+                                   const std::string& varName,
                                    const size_t timeStep,
                                    const std::string& timeDimName) {
+  oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     int dataType = variable->getType();
 
     std::vector<size_t> startVec;
@@ -207,18 +207,27 @@ void monio::Reader::readFieldDatum(const std::string& varName,
         throw std::runtime_error("Reader::readFieldData()> Data type not coded for...");
     }
     if (dataContainer != nullptr)
-      data_.addContainer(dataContainer);
+      fileData.getData().addContainer(dataContainer);
     else
       throw std::runtime_error("Reader::readFieldData()> "
           "An exception occurred while creating data container...");
   }
 }
 
-void monio::Reader::readSingleDatum(const std::string& varName) {
-  oops::Log::debug() << "Reader::readVariable()" << std::endl;
+void monio::Reader::readSingleData(FileData& fileData, const std::vector<std::string>& varNames) {
+  oops::Log::debug() << "Reader::readSingleData()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    for (const auto& varName : varNames) {
+      readSingleDatum(fileData, varName);
+    }
+  }
+}
+
+void monio::Reader::readSingleDatum(FileData& fileData, const std::string& varName) {
+  oops::Log::debug() << "Reader::readSingleDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     int dataType = variable->getType();
     switch (dataType) {
       case constants::eDataTypes::eDouble: {
@@ -250,23 +259,11 @@ void monio::Reader::readSingleDatum(const std::string& varName) {
     }
 
     if (dataContainer != nullptr)
-      data_.addContainer(dataContainer);
+      fileData.getData().addContainer(dataContainer);
     else
       throw std::runtime_error("Reader::readVariable()> "
           "An exception occurred while creating data container...");
   }
-}
-
-size_t monio::Reader::findTimeStep(const util::DateTime& dateTime) {
-  oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
-  if (dateTimes_.size() == 0)
-    throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
-
-  for (size_t timeStep = 0; timeStep < dateTimes_.size(); ++timeStep) {
-    if (dateTimes_[timeStep] == dateTime)
-      return timeStep;
-  }
-  return -1;
 }
 
 std::shared_ptr<monio::File> monio::Reader::getFile() {
@@ -277,24 +274,26 @@ std::shared_ptr<monio::File> monio::Reader::getFile() {
   return file_;
 }
 
-std::vector<std::string> monio::Reader::getVarStrAttrs(const std::vector<std::string>& varNames,
+std::vector<std::string> monio::Reader::getVarStrAttrs(const FileData& fileData,
+                                                       const std::vector<std::string>& varNames,
                                                        const std::string& attrName) {
   oops::Log::debug() << "Reader::getVarStrAttrs()" << std::endl;
   std::vector<std::string> varStrAttrs;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    varStrAttrs = metadata_.getVarStrAttrs(varNames, attrName);
+    varStrAttrs = fileData.getMetadata().getVarStrAttrs(varNames, attrName);
   }
   return varStrAttrs;
 }
 
 std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordData(
+                                                       FileData& fileData,
                                                    const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordData()" << std::endl;
   if (coordNames.size() == 2) {
     std::vector<std::shared_ptr<monio::DataContainerBase>> coordContainers;
     if (mpiCommunicator_.rank() == mpiRankOwner_) {
       std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
-                                                            data_.getContainers();
+                                                            fileData.getData().getContainers();
       for (auto& dataPair : dataContainers) {
         if (isStringInVector(dataPair.first, coordNames) == true) {
           std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(dataPair.first);
@@ -309,6 +308,7 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
 }
 
 std::vector<monio::constants::FieldMetadata> monio::Reader::getFieldMetadata(
+                                           const FileData& fileData,
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
                                            const std::string& levelsSearchTerm) {
@@ -320,75 +320,57 @@ std::vector<monio::constants::FieldMetadata> monio::Reader::getFieldMetadata(
     struct constants::FieldMetadata fieldMetadata;
     fieldMetadata.lfricName = *lfricIt;
     fieldMetadata.atlasName = *atlasIt;
-    fieldMetadata.numLevels = getVarNumLevels(fieldMetadata.lfricName, levelsSearchTerm);
-    fieldMetadata.dataType = getVarDataType(fieldMetadata.lfricName);
-    fieldMetadata.fieldSize = getSizeOwned(fieldMetadata.lfricName);
+    fieldMetadata.numLevels = getVarNumLevels(fileData, fieldMetadata.lfricName, levelsSearchTerm);
+    fieldMetadata.dataType = getVarDataType(fileData, fieldMetadata.lfricName);
+    fieldMetadata.fieldSize = getSizeOwned(fileData, fieldMetadata.lfricName);
     fieldMetadataVec.push_back(fieldMetadata);
   }
   return fieldMetadataVec;
 }
 
-size_t monio::Reader::getSizeOwned(const std::string& varName) {
-  oops::Log::debug() << "Reader::getOwnedSize()" << std::endl;
+size_t monio::Reader::getSizeOwned(const FileData& fileData, const std::string& varName) {
+  oops::Log::debug() << "Reader::getSizeOwned()" << std::endl;
   size_t totalSize;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     totalSize = variable->getTotalSize();
   }
   mpiCommunicator_.broadcast(totalSize, mpiRankOwner_);
   return totalSize;
 }
 
-size_t monio::Reader::getVarNumLevels(const std::string& varName,
+size_t monio::Reader::getVarNumLevels(const FileData& fileData,
+                                      const std::string& varName,
                                       const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
+  oops::Log::debug() << "Reader::getVarNumLevels()" << std::endl;
   size_t numLevels;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     numLevels = variable->findDimensionSize(levelsSearchTerm);
   }
   mpiCommunicator_.broadcast(numLevels, mpiRankOwner_);
   return numLevels;
 }
 
-int monio::Reader::getVarDataType(const std::string& varName) {
+int monio::Reader::getVarDataType(const FileData& fileData, const std::string& varName) {
   oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
   int dataType;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = metadata_.getVariable(varName);
+    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     dataType = variable->getType();
   }
   mpiCommunicator_.broadcast(dataType, mpiRankOwner_);
   return dataType;
 }
 
-void monio::Reader::deleteDimension(const std::string& dimName) {
-  oops::Log::debug() << "Reader::deleteDimension()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    metadata_.deleteDimension(dimName);
+size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTime& dateTime) {
+  oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
+  if (fileData.getDateTimes().size() == 0)
+    throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
+
+  for (size_t timeStep = 0; timeStep < fileData.getDateTimes().size(); ++timeStep) {
+    if (fileData.getDateTimes()[timeStep] == dateTime)
+      return timeStep;
   }
-}
-
-void monio::Reader::deleteVariable(const std::string& varName) {
-  oops::Log::debug() << "Reader::deleteVariable()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    metadata_.deleteVariable(varName);
-    data_.deleteContainer(varName);
-  }
-}
-
-const monio::Metadata& monio::Reader::getMetadata() const {
-  return metadata_;
-}
-
-const monio::Data& monio::Reader::getData() const {
-  return data_;
-}
-
-monio::Metadata& monio::Reader::getMetadata() {
-  return metadata_;
-}
-
-monio::Data& monio::Reader::getData() {
-  return data_;
+  return -1;
 }

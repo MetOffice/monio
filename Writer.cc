@@ -42,6 +42,11 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Writer::Writer()" << std::endl;
 }
 
+void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
+  writeMetadata(metadata);
+  writeVariablesData(metadata, data);
+}
+
 void monio::Writer::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -84,11 +89,6 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
       }
     }
   }
-}
-
-void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
-  writeMetadata(metadata);
-  writeVariablesData(metadata, data);
 }
 
 std::shared_ptr<monio::File> monio::Writer::getFile() {
