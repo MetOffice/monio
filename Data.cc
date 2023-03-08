@@ -98,11 +98,9 @@ void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
   oops::Log::debug() << "Data::addContainer()" << std::endl;
   const std::string& name = container->getName();
   auto it = dataContainers_.find(name);
-  if (it == dataContainers_.end())
+  if (it == dataContainers_.end()) {
     dataContainers_.insert({name, container});
-  else
-    throw std::runtime_error("Data::addContainer()> multiple "
-        "definitions of \"" + name + "\"...");
+  }
 }
 
 std::shared_ptr<monio::DataContainerBase>
@@ -112,8 +110,7 @@ std::shared_ptr<monio::DataContainerBase>
   if (it != dataContainers_.end())
     return it->second;
   else
-    throw std::runtime_error("Data::getContainer()> No "
-        "definitions of \"" + name + "\"...");
+    return nullptr;  // Returning nullptr is now an expected use-case
 }
 
 std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() {

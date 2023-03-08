@@ -98,34 +98,33 @@ void monio::Reader::createDateTimes(FileData& fileData,
                                     const std::string& timeOriginName) {
   oops::Log::debug() << "Reader::createDateTimes()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (fileData.getDateTimes().size() != 0)
-      throw std::runtime_error("Reader::createDateTimes()> "
-                               "Date times already initialised...");
+    if (fileData.getDateTimes().size() == 0) {
+      std::shared_ptr<Variable> timeVar = fileData.getMetadata().getVariable(timeVarName);
+      std::shared_ptr<DataContainerBase> timeDataBase =
+                                             fileData.getData().getContainer(timeVarName);
+      if (timeDataBase->getType() != constants::eDouble)
+        throw std::runtime_error("Reader::createDateTimes()> "
+                                 "Time data not stored as double...");
 
-    std::shared_ptr<Variable> timeVar = fileData.getMetadata().getVariable(timeVarName);
-    std::shared_ptr<DataContainerBase> timeDataBase = fileData.getData().getContainer(timeVarName);
-    if (timeDataBase->getType() != constants::eDouble)
-      throw std::runtime_error("Reader::createDateTimes()> "
-                               "Time data not stored as double...");
+      std::shared_ptr<DataContainerDouble> timeData =
+                  std::static_pointer_cast<DataContainerDouble>(timeDataBase);
 
-    std::shared_ptr<DataContainerDouble> timeData =
-                std::static_pointer_cast<DataContainerDouble>(timeDataBase);
+      std::string timeOrigin = timeVar->getStrAttr(timeOriginName);
+      std::string timeAtlasOrigin = convertToAtlasDateTimeStr(timeOrigin);
 
-    std::string timeOrigin = timeVar->getStrAttr(timeOriginName);
-    std::string timeAtlasOrigin = convertToAtlasDateTimeStr(timeOrigin);
+      util::DateTime originDateTime(timeAtlasOrigin);
 
-    util::DateTime originDateTime(timeAtlasOrigin);
-
-    oops::Log::debug() << "timeVar->getSize()> " << timeVar->getTotalSize() << std::endl;
-    std::vector<util::DateTime> dateTimes(timeVar->getTotalSize());
-    for (std::size_t index = 0; index < timeVar->getTotalSize(); ++index) {
-      util::Duration duration(static_cast<uint64_t>(std::round(timeData->getDatum(index))));
-      util::DateTime dateTime = originDateTime + duration;
-      dateTimes[index] = dateTime;
-      oops::Log::debug() << "index> " << index << ", data> " << timeData->getDatum(index) <<
-                           ", dateTime> " << dateTime << std::endl;
+      oops::Log::debug() << "timeVar->getSize()> " << timeVar->getTotalSize() << std::endl;
+      std::vector<util::DateTime> dateTimes(timeVar->getTotalSize());
+      for (std::size_t index = 0; index < timeVar->getTotalSize(); ++index) {
+        util::Duration duration(static_cast<uint64_t>(std::round(timeData->getDatum(index))));
+        util::DateTime dateTime = originDateTime + duration;
+        dateTimes[index] = dateTime;
+        oops::Log::debug() << "index> " << index << ", data> " << timeData->getDatum(index) <<
+                             ", dateTime> " << dateTime << std::endl;
+      }
+      fileData.setDateTimes(std::move(dateTimes));
     }
-    fileData.setDateTimes(std::move(dateTimes));
   }
 }
 
@@ -153,64 +152,80 @@ void monio::Reader::readFieldData(FileData& fileData,
 
 void monio::Reader::readFieldDatum(FileData& fileData,
                                    const std::string& varName,
+                                   const util::DateTime& dateToRead,
+                                   const std::string& timeDimName) {
+  oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    size_t timeStep = findTimeStep(fileData, dateToRead);
+    readFieldDatum(fileData, varName, timeStep, timeDimName);
+  }
+}
+
+void monio::Reader::readFieldDatum(FileData& fileData,
+                                   const std::string& varName,
                                    const size_t timeStep,
                                    const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
-    int dataType = variable->getType();
+    std::shared_ptr<DataContainerBase> dataContainer = fileData.getData().getContainer(varName);
+    if (dataContainer == nullptr) {
+      std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
+      int dataType = variable->getType();
 
-    std::vector<size_t> startVec;
-    std::vector<size_t> countVec;
+      std::vector<size_t> startVec;
+      std::vector<size_t> countVec;
 
-    startVec.push_back(timeStep);
-    countVec.push_back(1);
+      startVec.push_back(timeStep);
+      countVec.push_back(1);
 
-    size_t varSizeNoTime = 1;
-    std::vector<std::pair<std::string, size_t>> dimensions = variable->getDimensionsMap();
-    for (auto const& dimPair : dimensions) {
-      if (dimPair.first != timeDimName) {
-        varSizeNoTime *= dimPair.second;
-        startVec.push_back(0);
-        countVec.push_back(dimPair.second);
-        oops::Log::debug() << "dimPair.first> " << dimPair.first <<
-                            ", dimPair.second> " << dimPair.second << std::endl;
+      size_t varSizeNoTime = 1;
+      std::vector<std::pair<std::string, size_t>> dimensions = variable->getDimensionsMap();
+      for (auto const& dimPair : dimensions) {
+        if (dimPair.first != timeDimName) {
+          varSizeNoTime *= dimPair.second;
+          startVec.push_back(0);
+          countVec.push_back(dimPair.second);
+          oops::Log::debug() << "dimPair.first> " << dimPair.first <<
+                              ", dimPair.second> " << dimPair.second << std::endl;
+        }
       }
+      switch (dataType) {
+        case constants::eDataTypes::eDouble: {
+          std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                                      std::make_shared<DataContainerDouble>(varName);
+          getFile()->readFieldDatum(varName, varSizeNoTime,
+                              startVec, countVec, dataContainerDouble->getData());
+          dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
+          break;
+        }
+        case constants::eDataTypes::eFloat: {
+          std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                                      std::make_shared<DataContainerFloat>(varName);
+          getFile()->readFieldDatum(varName, varSizeNoTime,
+                               startVec, countVec, dataContainerFloat->getData());
+          dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
+          break;
+        }
+        case constants::eDataTypes::eInt: {
+        std::shared_ptr<DataContainerInt> dataContainerInt =
+                                      std::make_shared<DataContainerInt>(varName);
+          getFile()->readFieldDatum(varName, varSizeNoTime,
+                               startVec, countVec, dataContainerInt->getData());
+          dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
+          break;
+        }
+        default:
+          throw std::runtime_error("Reader::readFieldData()> Data type not coded for...");
+      }
+      if (dataContainer != nullptr)
+        fileData.getData().addContainer(dataContainer);
+      else
+        throw std::runtime_error("Reader::readFieldData()> "
+           "An exception occurred while creating data container...");
+    } else {
+      oops::Log::debug() << "Reader::readFieldDatum()> DataContainer \""
+        << varName << "\" aleady defined." << std::endl;
     }
-    switch (dataType) {
-      case constants::eDataTypes::eDouble: {
-        std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                                    std::make_shared<DataContainerDouble>(varName);
-        getFile()->readFieldDatum(varName, varSizeNoTime,
-                            startVec, countVec, dataContainerDouble->getData());
-        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
-        break;
-      }
-      case constants::eDataTypes::eFloat: {
-        std::shared_ptr<DataContainerFloat> dataContainerFloat =
-                                    std::make_shared<DataContainerFloat>(varName);
-        getFile()->readFieldDatum(varName, varSizeNoTime,
-                             startVec, countVec, dataContainerFloat->getData());
-        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
-        break;
-      }
-      case constants::eDataTypes::eInt: {
-      std::shared_ptr<DataContainerInt> dataContainerInt =
-                                    std::make_shared<DataContainerInt>(varName);
-        getFile()->readFieldDatum(varName, varSizeNoTime,
-                             startVec, countVec, dataContainerInt->getData());
-        dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
-        break;
-      }
-      default:
-        throw std::runtime_error("Reader::readFieldData()> Data type not coded for...");
-    }
-    if (dataContainer != nullptr)
-      fileData.getData().addContainer(dataContainer);
-    else
-      throw std::runtime_error("Reader::readFieldData()> "
-          "An exception occurred while creating data container...");
   }
 }
 

@@ -148,13 +148,11 @@ bool monio::Metadata::isDimDefined(const std::string& dimName) {
 
 int monio::Metadata::getDimension(const std::string& dimName) {
   oops::Log::debug() << "Metadata::getDimension()" << std::endl;
-  int dimVal;
   if (isDimDefined(dimName) == true)
-    dimVal = dimensions_.at(dimName);
+    return dimensions_.at(dimName);
   else
     throw std::runtime_error("Metadata::getDimension()> dimension \"" +
                                 dimName + "\" not found...");
-  return dimVal;
 }
 
 std::string monio::Metadata::getDimensionName(const int dimValue) {
@@ -169,14 +167,11 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
-  std::shared_ptr<monio::Variable> variable;
   if (it != variables_.end())
-    variable = variables_.at(varName);
+    return variables_.at(varName);
   else
     throw std::runtime_error("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
-
-  return variable;
 }
 
 const std::shared_ptr<monio::Variable>
@@ -185,12 +180,10 @@ const std::shared_ptr<monio::Variable>
   auto it = variables_.find(varName);
   std::shared_ptr<monio::Variable> variable;
   if (it != variables_.end())
-    variable = variables_.at(varName);
+    return variables_.at(varName);
   else
     throw std::runtime_error("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
-
-  return variable;
 }
 
 std::vector<std::shared_ptr<monio::Variable>>
@@ -239,11 +232,9 @@ const std::vector<std::string> monio::Metadata::getVarStrAttrs(
 void monio::Metadata::addDimension(const std::string& dimName, const int value) {
   oops::Log::debug() << "Metadata::addDimension()" << std::endl;
   auto it = dimensions_.find(dimName);
-  if (it == dimensions_.end())
+  if (it == dimensions_.end()) {
     dimensions_.insert({dimName, value});
-  else
-    throw std::runtime_error("Metadata::addDimension()> multiple definitions of \"" +
-                                dimName + "\"...");
+  }
 }
 
 
@@ -251,22 +242,18 @@ void monio::Metadata::addGlobalAttr(const std::string& attrName,
                                     std::shared_ptr<AttributeBase> attr) {
   oops::Log::debug() << "Metadata::addGlobalAttr()" << std::endl;
   auto it = globalAttrs_.find(attrName);
-  if (it == globalAttrs_.end())
+  if (it == globalAttrs_.end()) {
     globalAttrs_.insert({attrName, attr});
-  else
-    throw std::runtime_error("Metadata::addGlobalAttr()> multiple definitions of \"" +
-                             attrName + "\"...");
+  }
 }
 
 void monio::Metadata::addVariable(const std::string& varName,
                                   std::shared_ptr<Variable> var) {
   oops::Log::debug() << "Metadata::addVariable()" << std::endl;
   auto it = variables_.find(varName);
-  if (it == variables_.end())
+  if (it == variables_.end()) {
     variables_.insert({varName, var});
-  else
-    throw std::runtime_error("Metadata::addVariable()> multiple definitions of \"" +
-                                varName + "\"...");
+  }
 }
 
 std::vector<std::string> monio::Metadata::getDimensionNames() {

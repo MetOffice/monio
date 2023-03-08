@@ -20,9 +20,6 @@ class Metadata {
  public:
   Metadata();
 
-  Metadata(const Metadata&)            = delete;  //!< Deleted copy constructor
-  Metadata& operator=(const Metadata&) = delete;  //!< Deleted copy assign
-
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);
 

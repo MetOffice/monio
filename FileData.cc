@@ -6,6 +6,12 @@
  */
 #include "lfriclitejedi/IO/FileData.h"
 
+monio::FileData::FileData(const std::string filePath, const util::DateTime date) :
+  filePath_(filePath),
+  date_(date),
+  data_(),
+  metadata_() {}
+
 monio::FileData::FileData(const std::string filePath) :
   filePath_(filePath),
   data_(),
@@ -45,6 +51,10 @@ const std::vector<util::DateTime>& monio::FileData::getDateTimes() const {
 
 void monio::FileData::setFilePath(std::string filePath) {
   filePath_ = filePath;
+}
+
+void monio::FileData::setDate(util::DateTime date) {
+  date_ = date;
 }
 
 void monio::FileData::setLfricAtlasMap(std::vector<size_t> lfricAtlasMap) {

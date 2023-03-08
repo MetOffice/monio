@@ -59,6 +59,11 @@ class Reader {
 
   void readFieldDatum(FileData& fileData,
                       const std::string& variableName,
+                      const util::DateTime& dateToRead,
+                      const std::string& timeDimName);
+
+  void readFieldDatum(FileData& fileData,
+                      const std::string& variableName,
                       const size_t timeStep,
                       const std::string& timeDimName);
 
