@@ -35,13 +35,6 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   }
 }
 
-monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
-                      const atlas::idx_t mpiRankOwner)
-    : mpiCommunicator_(mpiCommunicator),
-      mpiRankOwner_(mpiRankOwner) {
-  oops::Log::debug() << "Writer::Writer()" << std::endl;
-}
-
 void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
   writeMetadata(metadata);
   writeVariablesData(metadata, data);

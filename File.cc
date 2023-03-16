@@ -124,14 +124,14 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
   else if (varType == netCDF::NcType::nc_DOUBLE)
     var = std::make_shared<Variable>(varName, constants::eDouble);
   else
-    throw std::runtime_error("File::readVariables()> Variable data type " +
+    throw std::runtime_error("File::readVariable()> Variable data type " +
                                 varType.getName() + " not coded for.");
 
   std::vector<netCDF::NcDim> ncVarDims = ncVar.getDims();
   for (auto const& ncVarDim : ncVarDims) {
     std::string varDimName = ncVarDim.getName();
     if (metadata.isDimDefined(varDimName) == false) {
-      throw std::runtime_error("File::readVariables()> Variable dimension \"" +
+      throw std::runtime_error("File::readVariable()> Variable dimension \"" +
                                varDimName + "\" not defined.");
     }
     std::size_t varDimSize = ncVarDim.getSize();
@@ -159,13 +159,12 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
       varAttr = std::make_shared<AttributeInt>(ncVarAttr.getName(), intValue);
       var->addAttribute(varAttr);
     } else {
-      throw std::runtime_error("File::readVariables()> Variable attribute data type \""
+      throw std::runtime_error("File::readVariable()> Variable attribute data type \""
                                   + ncVarAttrType.getName() + "\" not coded for.");
     }
   }
   metadata.addVariable(var->getName(), var);
 }
-
 
 void monio::File::readAttributes(Metadata& metadata) {
   oops::Log::debug() << "File::readVariables()" << std::endl;
@@ -207,7 +206,7 @@ void monio::File::readSingleDatum(const std::string& varName,
     dataVec.resize(varSize, 0);
     var.getVar(dataVec.data());
   } else {
-    throw std::runtime_error("File::readData()> Write file accessed for reading...");
+    throw std::runtime_error("File::readSingleDatum()> Write file accessed for reading...");
   }
 }
 
@@ -227,13 +226,13 @@ void monio::File::readFieldDatum(const std::string& fieldName,
                                  const std::vector<size_t>& startVec,
                                  const std::vector<size_t>& countVec,
                                  std::vector<T>& dataVec) {
-  oops::Log::debug() << "File::readField()" << std::endl;
+  oops::Log::debug() << "File::readFieldDatum()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile()->getVar(fieldName);
     dataVec.resize(varSize, 0);
     var.getVar(startVec, countVec, dataVec.data());
   } else {
-    throw std::runtime_error("File::readField()> Write file accessed for reading...");
+    throw std::runtime_error("File::readFieldDatum()> Write file accessed for reading...");
   }
 }
 
@@ -346,12 +345,12 @@ void monio::File::writeAttributes(const Metadata& metadata) {
 
 template<typename T>
 void monio::File::writeSingleDatum(const std::string &varName, const std::vector<T>& dataVec) {
-  oops::Log::debug() << "File::writeData()" << std::endl;
+  oops::Log::debug() << "File::writeSingleDatum()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     auto var = getFile()->getVar(varName);
     var.putVar(dataVec.data());
   } else {
-    throw std::runtime_error("File::writeData()> Read file accessed for writing...");
+    throw std::runtime_error("File::writeSingleDatum()> Read file accessed for writing...");
   }
 }
 

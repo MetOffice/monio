@@ -36,6 +36,7 @@ class AtlasProcessor {
   AtlasProcessor& operator=(const AtlasProcessor&) = delete;  //!< Deleted copy assignment
 
   static void writeFieldSetToFile(atlas::FieldSet fieldSet, std::string outputFilePath);
+  void writeIncrementsToFile(atlas::FieldSet fieldSet, std::string outputFilePath);
 
 template<typename T>
 std::vector<T>& getDataVecFromContainer(std::shared_ptr<monio::DataContainerBase>& dataContainer);

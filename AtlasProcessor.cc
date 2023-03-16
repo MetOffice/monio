@@ -41,14 +41,43 @@ void monio::AtlasProcessor::writeFieldSetToFile(atlas::FieldSet fieldSet,
                                                 std::string outputFilePath) {
   oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
-    monio::Metadata metadata;
-    monio::Data data;
-    monio::AtlasProcessor atlasProcessor(atlas::mpi::comm(), monio::constants::kMPIRankOwner);
-    atlasProcessor.populateMetadataAndDataWithFieldSet(metadata, data, fieldSet);
+    if (outputFilePath.length() != 0) {
+      monio::Metadata metadata;
+      monio::Data data;
+      monio::AtlasProcessor atlasProcessor(atlas::mpi::comm(), monio::constants::kMPIRankOwner);
+      atlasProcessor.populateMetadataAndDataWithFieldSet(metadata, data, fieldSet);
 
-    monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
-    writer.writeMetadata(metadata);
-    writer.writeVariablesData(metadata, data);
+      monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
+      writer.writeMetadata(metadata);
+      writer.writeVariablesData(metadata, data);
+    } else {
+      oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
+                           "NetCDF writing will not take place." << std::endl;
+    }
+  }
+}
+
+void monio::AtlasProcessor::writeIncrementsToFile(atlas::FieldSet fieldSet,
+                                                std::string outputFilePath) {
+  oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
+  if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
+    if (outputFilePath.length() != 0) {
+//      monio::Metadata metadata;
+//      monio::Data data;
+
+//      std::vector<atlas::PointLonLat> atlasCoords = getAtlasCoords(field);
+//      std::vector<atlas::PointLonLat> lfricCoords = getLfricCoords(coordData, atlasCoords);
+//      std::vector<size_t> lfricAtlasMap = createLfricAtlasMap(lfricCoords, atlasCoords);
+
+//      populateMetadataAndDataWithLfricFieldSet(metadata, data, fieldSet, lfricAtlasMap);
+
+//      monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
+//      writer.writeMetadata(metadata);
+//      writer.writeVariablesData(metadata, data);
+    } else {
+      oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
+                           "NetCDF writing will not take place." << std::endl;
+    }
   }
 }
 
@@ -336,9 +365,10 @@ void monio::AtlasProcessor::populateField(atlas::Field& field,
   oops::Log::trace() << "AtlasProcessor::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   size_t numLevels = field.levels();
-  for (size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
-    for (size_t j = 0; j < numLevels; ++j) {
+  for (size_t j = 0; j < numLevels; ++j) {
+    for (size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
+      //int index = j + (lfricToAtlasMap[i] * numLevels);
       fieldView(i, j) = dataVec[index];
     }
   }
@@ -386,7 +416,7 @@ void monio::AtlasProcessor::populateDataVec(std::vector<T>& dataVec,
   auto fieldView = atlas::array::make_view<T, 2>(field);
   for (int i = 0; i < dimensions[constants::eHorizontal]; ++i) {  // Horizontal dimension
     for (int j = 0; j < dimensions[constants::eVertical]; ++j) {  // Levels dimension
-      int index = i + (j * dimensions[constants::eHorizontal]);
+      int index = j + (i * dimensions[constants::eVertical]);
       dataVec[index] = fieldView(i, j);
     }
   }

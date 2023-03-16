@@ -67,13 +67,15 @@ monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
 
 void monio::Reader::openFile(const FileData& fileData) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    try {
-      file_ = std::make_shared<File>(fileData.getFilePath(), netCDF::NcFile::read);
-    } catch (netCDF::exceptions::NcException& exception) {
-      std::string message =
-          "Reader::openFile()> An exception occurred while creating File...";
-      message.append(exception.what());
-      throw std::runtime_error(message);
+    if (fileData.getFilePath().size() != 0) {
+      try {
+        file_ = std::make_shared<File>(fileData.getFilePath(), netCDF::NcFile::read);
+      } catch (netCDF::exceptions::NcException& exception) {
+        std::string message =
+            "Reader::openFile()> An exception occurred while creating File...";
+        message.append(exception.what());
+        throw std::runtime_error(message);
+      }
     }
   }
 }
@@ -387,5 +389,5 @@ size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTim
     if (fileData.getDateTimes()[timeStep] == dateTime)
       return timeStep;
   }
-  return -1;
+  throw std::runtime_error("Reader::findTimeStep()> DateTime specified not located in file...");
 }
