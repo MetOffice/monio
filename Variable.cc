@@ -131,9 +131,6 @@ void monio::Variable::deleteDimension(const std::string& dimName) {
       });
   if (it != dimensions_.end()) {
     dimensions_.erase(it);
-  } else {
-      throw std::runtime_error("Variable::deleteDimension()> Dimension \"" +
-                                    dimName + "\" does not exist...");
   }
 }
 

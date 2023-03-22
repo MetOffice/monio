@@ -14,28 +14,34 @@
 #include "lfriclitejedi/IO/Constants.h"
 #include "oops/util/Logger.h"
 
-monio::Monio* monio::Monio::this_ = nullptr;
+std::unique_ptr<monio::Monio> monio::Monio::this_ = nullptr;
 
-void monio::Monio::readFile(const std::string& filePath, const util::DateTime& date) {
+void monio::Monio::readFile(const std::string& gridName,
+                            const std::string& filePath,
+                            const util::DateTime& date) {
   oops::Log::trace() << "Monio::readFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = getFileData(filePath, date);
+    FileData& fileData = createFileData(gridName, filePath, date);
+    // Storage of read data isn't hugely important at this stage. However, keying and storing
+    // against the grid name allows for data of different resolutions to be read and available
+    // at the point of writing.
     reader_.openFile(fileData);
     reader_.readMetadata(fileData);
+    reader_.readSingleData(fileData, monio::constants::kLfricCoordVarNames);
     reader_.readSingleDatum(fileData, monio::constants::kTimeVarName);
     reader_.createDateTimes(fileData, monio::constants::kTimeVarName,
                                       monio::constants::kTimeOriginName);
   }
 }
 
-void monio::Monio::readVarAndPopulateField(const std::string& filePath,
+void monio::Monio::readVarAndPopulateField(const std::string& gridName,
                                            const std::string& varName,
                                            const util::DateTime& date,
                                            const atlas::idx_t& levels,
                                            atlas::Field& globalField) {
   oops::Log::trace() << "Monio::readVarAndPopulateField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData fileData = getFileData(filePath, date);
+    FileData& fileData = getFileData(gridName);
     createLfricAtlasMap(fileData, globalField);
     reader_.readFieldDatum(fileData, varName, date, monio::constants::kTimeDimName);
     globalField.set_levels(levels);
@@ -45,10 +51,20 @@ void monio::Monio::readVarAndPopulateField(const std::string& filePath,
   }
 }
 
+void monio::Monio::writeIncrementsFile(const std::string& gridName,
+                                       const atlas::FieldSet fieldset,
+                                       const std::vector<std::string>& varNames,
+                                       const std::string& filePath) {
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    FileData& fileData = getFileData(gridName);
+    atlasProcessor_.writeIncrementsToFile(fieldset, varNames, fileData, filePath);
+  }
+}
+
 monio::Monio& monio::Monio::get() {
   oops::Log::trace() << "Monio::get()" << std::endl;
   if (this_ == nullptr) {
-    this_ = new Monio(atlas::mpi::comm(), constants::kMPIRankOwner);
+    this_ = std::unique_ptr<Monio>(new Monio(atlas::mpi::comm(), constants::kMPIRankOwner));
   }
   return *this_;
 }
@@ -77,17 +93,27 @@ void monio::Monio::createLfricAtlasMap(FileData& fileData, atlas::Field& globalF
   }
 }
 
-monio::FileData& monio::Monio::getFileData(const std::string& filePath,
-                                           const util::DateTime& date) {
+monio::FileData& monio::Monio::createFileData(const std::string& gridName,
+                                              const std::string& filePath,
+                                              const util::DateTime& date) {
+  oops::Log::debug() << "Monio::createFileData()" << std::endl;
+  auto it = filesData_.find(gridName);
+  if (it != filesData_.end()) {
+    filesData_.erase(gridName);
+  }
+  // Overwrite existing data
+  filesData_.insert({gridName, FileData(filePath, date)});
+  return filesData_.at(gridName);
+}
+
+monio::FileData& monio::Monio::getFileData(const std::string& gridName) {
   oops::Log::debug() << "Monio::getFileData()" << std::endl;
-  auto it = filesData_.find({filePath, date});
+  auto it = filesData_.find(gridName);
   if (it != filesData_.end()) {
     return it->second;
-  } else {
-    FileData fileData(filePath, date);
-    auto retPair = filesData_.insert({{filePath, date}, fileData});
-    return retPair.first->second;
   }
+  throw std::runtime_error("Monio::getFileData()> FileData with grid name \"" +
+                           gridName + "\" not found...");
 }
 
 monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,

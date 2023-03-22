@@ -7,8 +7,10 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "AtlasProcessor.h"
 #include "FileData.h"
@@ -21,12 +23,26 @@ class Monio {
   static Reader& getReader();
   static AtlasProcessor& getAtlasProcessor();
 
-  void readFile(const std::string& filePath, const util::DateTime& date);
-  void readVarAndPopulateField(const std::string& filePath,
+  Monio()                        = delete;  //!< Deleted default constructor
+  Monio(Monio&&)                 = delete;  //!< Deleted move constructor
+  Monio(const Monio&)            = delete;  //!< Deleted copy constructor
+  Monio& operator=(Monio&&)      = delete;  //!< Deleted move assignment
+  Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
+
+  void readFile(const std::string& gridName,
+                const std::string& filePath,
+                const util::DateTime& date);
+
+  void readVarAndPopulateField(const std::string& gridName,
                                const std::string& varName,
                                const util::DateTime& date,
                                const atlas::idx_t& levels,
                                atlas::Field& globalField);
+
+  void writeIncrementsFile(const std::string& gridName,
+                           const atlas::FieldSet fieldset,
+                           const std::vector<std::string>& varNames,
+                           const std::string& filePath);
 
   void createLfricAtlasMap(FileData& fileData, atlas::Field& globalField);
 
@@ -34,9 +50,13 @@ class Monio {
   Monio(const eckit::mpi::Comm& mpiCommunicator,
         const atlas::idx_t mpiRankOwner);
 
-  FileData& getFileData(const std::string& filePath, const util::DateTime& date);
+  FileData& createFileData(const std::string& gridName,
+                           const std::string& filePath,
+                           const util::DateTime& date);
 
-  static Monio* this_;
+  FileData& getFileData(const std::string& gridName);
+
+  static std::unique_ptr<Monio> this_;
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
@@ -44,6 +64,7 @@ class Monio {
   monio::Reader reader_;
   monio::AtlasProcessor atlasProcessor_;
 
-  std::map<std::pair<std::string, util::DateTime>, monio::FileData> filesData_;
+  // Keyed by grid name for storage of data at different resolutions
+  std::map<std::string, monio::FileData> filesData_;
 };
 }  // namespace monio

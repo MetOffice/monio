@@ -28,7 +28,9 @@ class Writer {
                   const std::string& filePath);
 
   Writer()                         = delete;  //!< Deleted default constructor
+  Writer(Writer&&)                 = delete;  //!< Deleted move constructor
   Writer(const Writer&)            = delete;  //!< Deleted copy constructor
+  Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
   void writeData(const Metadata& metadata, const Data& data);

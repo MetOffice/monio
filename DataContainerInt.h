@@ -17,8 +17,10 @@ class DataContainerInt : public DataContainerBase {
  public:
   explicit DataContainerInt(const std::string& name);
 
-  DataContainerInt()                        = delete;  //!< Deleted default constructor
-  DataContainerInt(DataContainerInt&&)      = delete;  //!< Deleted move constructor
+  DataContainerInt()                                   = delete;  //!< Deleted default constructor
+  DataContainerInt(DataContainerInt&&)                 = delete;  //!< Deleted move constructor
+  DataContainerInt(const DataContainerInt&)            = delete;  //!< Deleted copy constructor
+  DataContainerInt& operator=(DataContainerInt&&)      = delete;  //!< Deleted move assignment
   DataContainerInt& operator=(const DataContainerInt&) = delete;  //!< Deleted copy assignment
 
   const std::string& getName() const;

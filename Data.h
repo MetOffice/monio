@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "DataContainerBase.h"
 
@@ -28,6 +29,7 @@ class Data {
   const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& getContainers() const;
 
   void deleteContainer(const std::string& name);
+  std::vector<std::string> getDataContainerNames();
 
  private:
   std::map<std::string, std::shared_ptr<DataContainerBase>> dataContainers_;

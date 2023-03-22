@@ -17,8 +17,10 @@ class DataContainerDouble : public DataContainerBase {
  public:
   explicit DataContainerDouble(const std::string& name);
 
-  DataContainerDouble()                           = delete;  //!< Deleted default constructor
-  DataContainerDouble(const DataContainerDouble&) = delete;  //!< Deleted copy constructor
+  DataContainerDouble()                                      = delete;  //!< Deleted default constr
+  DataContainerDouble(DataContainerDouble&&)                 = delete;  //!< Deleted move construct
+  DataContainerDouble(const DataContainerDouble&)            = delete;  //!< Deleted copy construct
+  DataContainerDouble& operator=(DataContainerDouble&&)      = delete;  //!< Deleted move assign
   DataContainerDouble& operator=(const DataContainerDouble&) = delete;  //!< Deleted copy assign
 
   const std::string& getName() const;

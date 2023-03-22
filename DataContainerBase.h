@@ -16,8 +16,10 @@ class DataContainerBase {
   DataContainerBase(const std::string& name, const int type);
   virtual ~DataContainerBase() = default;
 
-  DataContainerBase()                         = delete;             //!< Deleted default construct
-  DataContainerBase(const DataContainerBase&) = delete;             //!< Deleted copy constructor
+  DataContainerBase()                                    = delete;  //!< Deleted default construct
+  DataContainerBase(DataContainerBase&&)                 = delete;  //!< Deleted copy constructor
+  DataContainerBase(const DataContainerBase&)            = delete;  //!< Deleted copy constructor
+  DataContainerBase& operator=(DataContainerBase&&)      = delete;  //!< Deleted copy assignment
   DataContainerBase& operator=(const DataContainerBase&) = delete;  //!< Deleted copy assignment
 
   const int getType() const;

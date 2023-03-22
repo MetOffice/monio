@@ -32,7 +32,9 @@ class Reader {
          const atlas::idx_t mpiRankOwner);
 
   Reader()                         = delete;  //!< Deleted default constructor
+  Reader(Reader&&)                 = delete;  //!< Deleted move constructor
   Reader(const Reader&)            = delete;  //!< Deleted copy constructor
+  Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
   void openFile(const FileData& fileData);

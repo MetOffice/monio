@@ -16,6 +16,7 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
+#include "FileData.h"
 #include "Metadata.h"
 
 #include "atlas/array/DataType.h"
@@ -31,12 +32,19 @@ class AtlasProcessor {
   AtlasProcessor(const eckit::mpi::Comm& mpiCommunicator,
                  const atlas::idx_t mpiRankOwner);
 
-  AtlasProcessor()                                 = delete;  //!< Deleted default constructor
-  AtlasProcessor(const AtlasProcessor&)            = delete;  //!< Deleted copy constructor
-  AtlasProcessor& operator=(const AtlasProcessor&) = delete;  //!< Deleted copy assignment
+  AtlasProcessor()                                  = delete;  //!< Deleted default constructor
+  AtlasProcessor(AtlasProcessor&&)                  = delete;  //!< Deleted move constructor
+  AtlasProcessor(const AtlasProcessor&)             = delete;  //!< Deleted copy constructor
+  AtlasProcessor& operator=( AtlasProcessor&&)      = delete;  //!< Deleted move assignment
+  AtlasProcessor& operator=(const AtlasProcessor&)  = delete;  //!< Deleted copy assignment
 
-  static void writeFieldSetToFile(atlas::FieldSet fieldSet, std::string outputFilePath);
-  void writeIncrementsToFile(atlas::FieldSet fieldSet, std::string outputFilePath);
+  static void writeFieldSetToFile(const atlas::FieldSet fieldSet,
+                                  const std::string outputFilePath);
+
+  void writeIncrementsToFile(const atlas::FieldSet fieldSet,
+                             const std::vector<std::string>& varNames,
+                             monio::FileData& fileData,
+                             const std::string outputFilePath);
 
 template<typename T>
 std::vector<T>& getDataVecFromContainer(std::shared_ptr<monio::DataContainerBase>& dataContainer);
@@ -105,6 +113,7 @@ std::vector<T>& getDataVecFromContainer(std::shared_ptr<monio::DataContainerBase
   int getSizeOwned(const atlas::Field field);
 
  private:
+  void reconcileMetadataWithData(Metadata& metdata, Data& data);
   int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
 
   const eckit::mpi::Comm& mpiCommunicator_;

@@ -17,11 +17,10 @@ class AttributeInt : public AttributeBase {
   AttributeInt(const std::string& name, const int value);
 
   AttributeInt()                               = delete;  //!< Deleted default constructor
-  AttributeInt(const AttributeInt&)            = delete;  //!< Deleted copy constructor
   AttributeInt(AttributeInt&&)                 = delete;  //!< Deleted move constructor
-
-  AttributeInt& operator=(const AttributeInt&) = delete;  //!< Deleted copy assignment
+  AttributeInt(const AttributeInt&)            = delete;  //!< Deleted copy constructor
   AttributeInt& operator=(AttributeInt&&)      = delete;  //!< Deleted move assignment
+  AttributeInt& operator=(const AttributeInt&) = delete;  //!< Deleted copy assignment
 
   const std::string& getName() const;
   const int getValue() const;

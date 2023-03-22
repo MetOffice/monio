@@ -23,7 +23,9 @@ class File {
   File(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
 
   File()                       = delete;  //!< Deleted default constructor
+  File(File&&)                 = delete;  //!< Deleted move constructor
   File(const File&)            = delete;  //!< Deleted copy constructor
+  File& operator=(File&&)      = delete;  //!< Deleted move assignment
   File& operator=(const File&) = delete;  //!< Deleted copy assignment
 
   void readMetadata(Metadata& metadata);

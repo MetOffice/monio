@@ -64,6 +64,9 @@ namespace constants {
   const std::string kTimeVarName = "time_instant";
   const std::string kTimeOriginName = "time_origin";
 
+  const std::string kTileDimName = "surface_tiles";
+  const std::string kTileVarName = "tile_fraction";
+
   const std::string kHorizontalName = "nMesh2d_face";
   const std::string kVerticalFullName = "full_levels";
   const std::string kVerticalHalfName = "half_levels";

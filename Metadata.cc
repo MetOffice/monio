@@ -339,6 +339,10 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
   }
 }
 
+void monio::Metadata::clearGlobalAttributes() {
+  globalAttrs_.clear();
+}
+
 void monio::Metadata::print() {
   oops::Log::debug() << "dimensions:" << std::endl;
   printMap(dimensions_);

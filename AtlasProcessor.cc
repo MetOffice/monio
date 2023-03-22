@@ -37,8 +37,8 @@ monio::AtlasProcessor::AtlasProcessor(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::trace() << "AtlasProcessor::AtlasProcessor()" << std::endl;
 }
 
-void monio::AtlasProcessor::writeFieldSetToFile(atlas::FieldSet fieldSet,
-                                                std::string outputFilePath) {
+void monio::AtlasProcessor::writeFieldSetToFile(const atlas::FieldSet fieldSet,
+                                                const std::string outputFilePath) {
   oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {
@@ -57,23 +57,36 @@ void monio::AtlasProcessor::writeFieldSetToFile(atlas::FieldSet fieldSet,
   }
 }
 
-void monio::AtlasProcessor::writeIncrementsToFile(atlas::FieldSet fieldSet,
-                                                std::string outputFilePath) {
+void monio::AtlasProcessor::writeIncrementsToFile(const atlas::FieldSet fieldSet,
+                                                  const std::vector<std::string>& varNames,
+                                                  monio::FileData& fileData,
+                                                  const  std::string outputFilePath) {
   oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {
-//      monio::Metadata metadata;
-//      monio::Data data;
+        monio::Metadata& readMetadata = fileData.getMetadata();
+        monio::Data& readData = fileData.getData();
+        std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
 
-//      std::vector<atlas::PointLonLat> atlasCoords = getAtlasCoords(field);
-//      std::vector<atlas::PointLonLat> lfricCoords = getLfricCoords(coordData, atlasCoords);
-//      std::vector<size_t> lfricAtlasMap = createLfricAtlasMap(lfricCoords, atlasCoords);
+        readMetadata.clearGlobalAttributes();
 
-//      populateMetadataAndDataWithLfricFieldSet(metadata, data, fieldSet, lfricAtlasMap);
+        readMetadata.deleteDimension(monio::constants::kTimeDimName);
+        readMetadata.deleteDimension(monio::constants::kTileDimName);
 
-//      monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
-//      writer.writeMetadata(metadata);
-//      writer.writeVariablesData(metadata, data);
+        readData.deleteContainer(monio::constants::kTimeVarName);
+        readData.deleteContainer(monio::constants::kTileVarName);
+
+        reconcileMetadataWithData(readMetadata, readData);
+
+        // Add data and metadata for increments in fieldSet
+        populateMetadataAndDataWithLfricFieldSet(readMetadata,
+                                                 readData,
+                                                 fieldSet,
+                                                 lfricAtlasMap);
+
+        monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
+        writer.writeMetadata(readMetadata);
+        writer.writeVariablesData(readMetadata, readData);
     } else {
       oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
@@ -368,7 +381,6 @@ void monio::AtlasProcessor::populateField(atlas::Field& field,
   for (size_t j = 0; j < numLevels; ++j) {
     for (size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
-      //int index = j + (lfricToAtlasMap[i] * numLevels);
       fieldView(i, j) = dataVec[index];
     }
   }
@@ -561,6 +573,7 @@ void monio::AtlasProcessor::populateDataWithField(Data& data,
 }
 
 int monio::AtlasProcessor::getSizeOwned(const atlas::Field field) {
+  oops::Log::trace() << "AtlasProcessor::getSizeOwned()" << std::endl;
   atlas::Field ghostField = field.functionspace().ghost();
   int sizeOwned = 0;
   auto ghostView = atlas::array::make_view<int, 1>(ghostField);
@@ -571,6 +584,19 @@ int monio::AtlasProcessor::getSizeOwned(const atlas::Field field) {
     }
   }
   return sizeOwned;
+}
+
+void monio::AtlasProcessor::reconcileMetadataWithData(Metadata& metdata, Data& data) {
+  oops::Log::trace() << "AtlasProcessor::reconcileMetadataWithData()" << std::endl;
+  std::vector<std::string> metadataVarNames = metdata.getVariableNames();
+  std::vector<std::string> dataContainerNames = data.getDataContainerNames();
+
+  for (const auto& metadataVarName : metadataVarNames) {
+    auto it = std::find(begin(dataContainerNames), end(dataContainerNames), metadataVarName);
+    if (it == std::end(dataContainerNames)) {
+      metdata.deleteVariable(metadataVarName);
+    }
+  }
 }
 
 int monio::AtlasProcessor::atlasTypeToMonioEnum(atlas::array::DataType atlasType) {

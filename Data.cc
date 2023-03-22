@@ -28,6 +28,15 @@ template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rh
   }
   return false;
 }
+
+template<typename keyValue, typename typeValue>
+std::vector<std::string> extractKeys(std::map<keyValue, typeValue> const& inputMap) {
+  std::vector<keyValue> keyVector;
+  for (auto const& elementPair : inputMap) {
+    keyVector.push_back(elementPair.first);
+  }
+  return keyVector;
+}
 }  // anonymous namespace
 
 monio::Data::Data() {}
@@ -133,4 +142,9 @@ void monio::Data::deleteContainer(const std::string& name) {
     throw std::runtime_error("Data::deleteContainer()> No "
         "definitions of \"" + name + "\"...");
   }
+}
+
+std::vector<std::string> monio::Data::getDataContainerNames() {
+  oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
+  return extractKeys(dataContainers_);
 }

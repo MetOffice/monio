@@ -17,8 +17,10 @@ class DataContainerFloat : public DataContainerBase {
  public:
   explicit DataContainerFloat(const std::string& name);
 
-  DataContainerFloat()                          = delete;  //!< Deleted default constructor
-  DataContainerFloat(const DataContainerFloat&) = delete;  //!< Deleted copy constructor
+  DataContainerFloat()                                     = delete;  //!< Deleted default construc
+  DataContainerFloat(DataContainerFloat&&)                 = delete;  //!< Deleted move constructor
+  DataContainerFloat(const DataContainerFloat&)            = delete;  //!< Deleted copy constructor
+  DataContainerFloat& operator=(DataContainerFloat&&)      = delete;  //!< Deleted move assignment
   DataContainerFloat& operator=(const DataContainerFloat&) = delete;  //!< Deleted copy assignment
 
   const std::string& getName() const;

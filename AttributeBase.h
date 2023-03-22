@@ -15,9 +15,11 @@ class AttributeBase {
   AttributeBase(const std::string& name, const int type);
   virtual ~AttributeBase() = default;
 
-  AttributeBase()                                = delete;  //!< Deleted default constructor
-  AttributeBase(const AttributeBase&)            = delete;  //!< Deleted copy constructor
-  AttributeBase& operator=(const AttributeBase&) = delete;  //!< Deleted copy assignment
+  AttributeBase()                                 = delete;  //!< Deleted default constructor
+  AttributeBase(AttributeBase&&)                  = delete;  //!< Deleted move constructor
+  AttributeBase(const AttributeBase&)             = delete;  //!< Deleted copy constructor
+  AttributeBase& operator=(AttributeBase&&)       = delete;  //!< Deleted move assignment
+  AttributeBase& operator=(const AttributeBase&)  = delete;  //!< Deleted copy assignment
 
   const int getType() const;
   virtual const std::string& getName() const = 0;

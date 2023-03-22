@@ -37,7 +37,9 @@ class AtlasData {
             const std::string meshType);
 
   AtlasData()                            = delete;  //!< Deleted default constructor
+  AtlasData(AtlasData&&)                 = delete;  //!< Deleted move constructor
   AtlasData(const AtlasData&)            = delete;  //!< Deleted copy constructor
+  AtlasData& operator=(AtlasData&&)      = delete;  //!< Deleted move assignment
   AtlasData& operator=(const AtlasData&) = delete;  //!< Deleted copy assignment
 
   void initialiseMemberFieldSet();
