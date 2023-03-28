@@ -5,43 +5,9 @@ project(monio LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-list(APPEND monio_sources
-AtlasData.cc
-AtlasData.h
-AtlasProcessor.cc
-AtlasProcessor.h
-AttributeBase.cc
-AttributeBase.h
-AttributeInt.cc
-AttributeInt.h
-AttributeString.cc
-AttributeString.h
-Constants.h
-Data.cc
-Data.h
-DataContainerBase.cc
-DataContainerBase.h
-DataContainerDouble.cc
-DataContainerDouble.h
-DataContainerFloat.cc
-DataContainerFloat.h
-DataContainerInt.cc
-DataContainerInt.h
-File.cc
-File.h
-FileData.cc
-FileData.h
-Metadata.cc
-Metadata.h
-Monio.cc
-Monio.h
-Reader.cc
-Reader.h
-Variable.cc
-Variable.h
-Writer.cc
-Writer.h
-)
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
+include(${CMAKE_SOURCE_DIR}/src/CMakeLists.txt)
 
 ecbuild_add_library( TARGET     ${PROJECT_NAME}
                      SOURCES    ${monio_sources}
