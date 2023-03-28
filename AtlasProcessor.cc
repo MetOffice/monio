@@ -62,31 +62,31 @@ void monio::AtlasProcessor::writeIncrementsToFile(const atlas::FieldSet fieldSet
                                                   monio::FileData& fileData,
                                                   const  std::string outputFilePath) {
   oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
-  if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
+  if (atlas::mpi::rank() == mpiRankOwner_) {
     if (outputFilePath.length() != 0) {
-        monio::Metadata& readMetadata = fileData.getMetadata();
-        monio::Data& readData = fileData.getData();
-        std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+      monio::Metadata& readMetadata = fileData.getMetadata();
+      monio::Data& readData = fileData.getData();
+      std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
 
-        readMetadata.clearGlobalAttributes();
+      readMetadata.clearGlobalAttributes();
 
-        readMetadata.deleteDimension(monio::constants::kTimeDimName);
-        readMetadata.deleteDimension(monio::constants::kTileDimName);
+      readMetadata.deleteDimension(monio::constants::kTimeDimName);
+      readMetadata.deleteDimension(monio::constants::kTileDimName);
 
-        readData.deleteContainer(monio::constants::kTimeVarName);
-        readData.deleteContainer(monio::constants::kTileVarName);
+      readData.deleteContainer(monio::constants::kTimeVarName);
+      readData.deleteContainer(monio::constants::kTileVarName);
 
-        reconcileMetadataWithData(readMetadata, readData);
+      reconcileMetadataWithData(readMetadata, readData);
 
-        // Add data and metadata for increments in fieldSet
-        populateMetadataAndDataWithLfricFieldSet(readMetadata,
-                                                 readData,
-                                                 fieldSet,
-                                                 lfricAtlasMap);
+      // Add data and metadata for increments in fieldSet
+      populateMetadataAndDataWithLfricFieldSet(readMetadata,
+                                               readData,
+                                               fieldSet,
+                                               lfricAtlasMap);
 
-        monio::Writer writer(atlas::mpi::comm(), monio::constants::kMPIRankOwner, outputFilePath);
-        writer.writeMetadata(readMetadata);
-        writer.writeVariablesData(readMetadata, readData);
+      monio::Writer writer(atlas::mpi::comm(), mpiRankOwner_, outputFilePath);
+      writer.writeMetadata(readMetadata);
+      writer.writeVariablesData(readMetadata, readData);
     } else {
       oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
@@ -94,54 +94,21 @@ void monio::AtlasProcessor::writeIncrementsToFile(const atlas::FieldSet fieldSet
   }
 }
 
-void monio::AtlasProcessor::createGlobalFieldSet(const atlas::FieldSet& localFieldSet,
-                                                       atlas::FieldSet& globalFieldSet) {
-  oops::Log::trace() << "AtlasProcessor::createGlobalFieldSet()" << std::endl;
-  for (const auto& localField : localFieldSet) {
-    std::string localFieldName = localField.name();
-    int levels = localField.levels();
-    atlas::util::Config atlasOptions = atlas::option::name(localFieldName) |
-          atlas::option::levels(levels) |
-          atlas::option::global(0);
-
-    const auto& functionSpace = localField.functionspace();
-    atlas::array::DataType atlasType = localField.datatype();
-    atlas::Field globalField;
-    switch (atlasType.kind()) {
-    case atlasType.KIND_INT32: {
-      globalField = functionSpace.createField<int>(atlasOptions);
-      break;
-    }
-    case atlasType.KIND_REAL32: {
-      globalField = functionSpace.createField<float>(atlasOptions);
-      break;
-    }
-    case atlasType.KIND_REAL64: {
-      globalField = functionSpace.createField<double>(atlasOptions);
-      break;
-    }
-    default:
-      throw std::runtime_error("AtlasProcessor::fromFieldSet()> Data type not coded for...");
-    }
-    localField.haloExchange();
-    functionSpace.gather(localField, globalField);
-    globalFieldSet.add(globalField);
-  }
-}
-
 std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(const atlas::Field field) {
   oops::Log::trace() << "AtlasProcessor::getAtlasCoords()" << std::endl;
   std::vector<atlas::PointLonLat> atlasCoords;
-  if (field.metadata().get<bool>("global") == false) {
-    auto lonLatField = field.functionspace().lonlat();
-    auto lonLatView = atlas::array::make_view<double, 2>(lonLatField);
-    for (int i = 0; i < getSizeOwned(field); ++i) {
-      atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, constants::eLongitude),
-                                               lonLatView(i, constants::eLatitude)));
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    if (field.metadata().get<bool>("global") == false) {
+      auto lonLatField = field.functionspace().lonlat();
+      auto lonLatView = atlas::array::make_view<double, 2>(lonLatField);
+      for (int i = 0; i < getSizeOwned(field); ++i) {
+        atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, constants::eLongitude),
+                                                 lonLatView(i, constants::eLatitude)));
+      }
+    } else {
+      auto grid = atlas::functionspace::NodeColumns(field.functionspace()).mesh().grid();
+      atlasCoords = getAtlasCoords(grid);
     }
-  } else {
-    auto grid = atlas::functionspace::NodeColumns(field.functionspace()).mesh().grid();
-    atlasCoords = getAtlasCoords(grid);
   }
   return atlasCoords;
 }
@@ -150,8 +117,10 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(
                                                             const atlas::Grid& grid) {
   oops::Log::trace() << "AtlasProcessor::getAtlasCoords()" << std::endl;
   std::vector<atlas::PointLonLat> atlasCoords;
-  atlasCoords.resize(grid.size());
-  std::copy(grid.lonlat().begin(), grid.lonlat().end(), atlasCoords.begin());
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    atlasCoords.resize(grid.size());
+    std::copy(grid.lonlat().begin(), grid.lonlat().end(), atlasCoords.begin());
+  }
   return atlasCoords;
 }
 
@@ -275,51 +244,84 @@ void monio::AtlasProcessor::populateFieldWithDataContainer(atlas::Field& field,
   }
 }
 
+void monio::AtlasProcessor::populateFieldWithDataContainer(atlas::Field& field,
+                                      const std::shared_ptr<DataContainerBase>& dataContainer) {
+  oops::Log::trace() << "AtlasProcessor::populateFieldWithDataContainer()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    int dataType = dataContainer.get()->getType();
+    switch (dataType) {
+    case constants::eDataTypes::eDouble: {
+      const std::shared_ptr<DataContainerDouble> dataContainerDouble =
+          std::static_pointer_cast<DataContainerDouble>(dataContainer);
+          populateField(field, dataContainerDouble->getData());
+      break;
+    }
+    case constants::eDataTypes::eFloat: {
+      const std::shared_ptr<DataContainerFloat> dataContainerFloat =
+          std::static_pointer_cast<DataContainerFloat>(dataContainer);
+          populateField(field, dataContainerFloat->getData());
+      break;
+    }
+    case constants::eDataTypes::eInt: {
+      const std::shared_ptr<DataContainerInt> dataContainerInt =
+          std::static_pointer_cast<DataContainerInt>(dataContainer);
+          populateField(field, dataContainerInt->getData());
+      break;
+    }
+    default:
+      throw std::runtime_error("AtlasProcessor::populateFieldWithDataContainer()> "
+                               "Data type not coded for...");
+    }
+  }
+}
+
 void monio::AtlasProcessor::populateDataContainerWithField(
                                      std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                const atlas::Field& field,
                                const std::vector<size_t>& lfricToAtlasMap,
                                const size_t fieldSize) {
   oops::Log::trace() << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
-  std::string fieldName = field.name();
-  atlas::array::DataType atlasType = field.datatype();
-  switch (atlasType.kind()) {
-  case atlasType.KIND_INT32: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerInt>(fieldName);
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    std::string fieldName = field.name();
+    atlas::array::DataType atlasType = field.datatype();
+    switch (atlasType.kind()) {
+    case atlasType.KIND_INT32: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerInt>(fieldName);
+      }
+      std::shared_ptr<DataContainerInt> dataContainerInt =
+                        std::static_pointer_cast<DataContainerInt>(dataContainer);
+      dataContainerInt->clear();
+      dataContainerInt->setSize(fieldSize);
+      populateDataVec(dataContainerInt->getData(), field, lfricToAtlasMap);
+      break;
     }
-    std::shared_ptr<DataContainerInt> dataContainerInt =
-                      std::static_pointer_cast<DataContainerInt>(dataContainer);
-    dataContainerInt->clear();
-    dataContainerInt->setSize(fieldSize);
-    populateDataVec(dataContainerInt->getData(), field, lfricToAtlasMap);
-    break;
-  }
-  case atlasType.KIND_REAL32: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+    case atlasType.KIND_REAL32: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+      }
+      std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                        std::static_pointer_cast<DataContainerFloat>(dataContainer);
+      dataContainerFloat->clear();
+      dataContainerFloat->setSize(fieldSize);
+      populateDataVec(dataContainerFloat->getData(), field, lfricToAtlasMap);
+      break;
     }
-    std::shared_ptr<DataContainerFloat> dataContainerFloat =
-                      std::static_pointer_cast<DataContainerFloat>(dataContainer);
-    dataContainerFloat->clear();
-    dataContainerFloat->setSize(fieldSize);
-    populateDataVec(dataContainerFloat->getData(), field, lfricToAtlasMap);
-    break;
-  }
-  case atlasType.KIND_REAL64: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+    case atlasType.KIND_REAL64: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+      }
+      std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                        std::static_pointer_cast<DataContainerDouble>(dataContainer);
+      dataContainerDouble->clear();
+      dataContainerDouble->setSize(fieldSize);
+      populateDataVec(dataContainerDouble->getData(), field, lfricToAtlasMap);
+      break;
     }
-    std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                      std::static_pointer_cast<DataContainerDouble>(dataContainer);
-    dataContainerDouble->clear();
-    dataContainerDouble->setSize(fieldSize);
-    populateDataVec(dataContainerDouble->getData(), field, lfricToAtlasMap);
-    break;
-  }
-  default:
-    throw std::runtime_error("AtlasProcessor::populateDataContainerWithField()> "
-                             "Data type not coded for...");
+    default:
+      throw std::runtime_error("AtlasProcessor::populateDataContainerWithField()> "
+                               "Data type not coded for...");
+    }
   }
 }
 
@@ -328,46 +330,70 @@ void monio::AtlasProcessor::populateDataContainerWithField(
                                const atlas::Field& field,
                                const std::vector<int>& dimensions) {
   oops::Log::trace() << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
-  std::string fieldName = field.name();
-  atlas::array::DataType atlasType = field.datatype();
-  int fieldSize = productOfVector(dimensions);
-  switch (atlasType.kind()) {
-  case atlasType.KIND_INT32: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerInt>(fieldName);
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    std::string fieldName = field.name();
+    atlas::array::DataType atlasType = field.datatype();
+    int fieldSize = productOfVector(dimensions);
+    switch (atlasType.kind()) {
+    case atlasType.KIND_INT32: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerInt>(fieldName);
+      }
+      std::shared_ptr<DataContainerInt> dataContainerInt =
+                        std::static_pointer_cast<DataContainerInt>(dataContainer);
+      dataContainerInt->clear();
+      dataContainerInt->setSize(fieldSize);
+      populateDataVec(dataContainerInt->getData(), field, dimensions);
+      break;
     }
-    std::shared_ptr<DataContainerInt> dataContainerInt =
-                      std::static_pointer_cast<DataContainerInt>(dataContainer);
-    dataContainerInt->clear();
-    dataContainerInt->setSize(fieldSize);
-    populateDataVec(dataContainerInt->getData(), field, dimensions);
-    break;
-  }
-  case atlasType.KIND_REAL32: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+    case atlasType.KIND_REAL32: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+      }
+      std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                        std::static_pointer_cast<DataContainerFloat>(dataContainer);
+      dataContainerFloat->clear();
+      dataContainerFloat->setSize(fieldSize);
+      populateDataVec(dataContainerFloat->getData(), field, dimensions);
+      break;
     }
-    std::shared_ptr<DataContainerFloat> dataContainerFloat =
-                      std::static_pointer_cast<DataContainerFloat>(dataContainer);
-    dataContainerFloat->clear();
-    dataContainerFloat->setSize(fieldSize);
-    populateDataVec(dataContainerFloat->getData(), field, dimensions);
-    break;
-  }
-  case atlasType.KIND_REAL64: {
-    if (dataContainer == nullptr) {
-      dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+    case atlasType.KIND_REAL64: {
+      if (dataContainer == nullptr) {
+        dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+      }
+      std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                        std::static_pointer_cast<DataContainerDouble>(dataContainer);
+      dataContainerDouble->clear();
+      dataContainerDouble->setSize(fieldSize);
+      populateDataVec(dataContainerDouble->getData(), field, dimensions);
+      break;
     }
-    std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                      std::static_pointer_cast<DataContainerDouble>(dataContainer);
-    dataContainerDouble->clear();
-    dataContainerDouble->setSize(fieldSize);
-    populateDataVec(dataContainerDouble->getData(), field, dimensions);
-    break;
+    default:
+      throw std::runtime_error("AtlasProcessor::populateDataContainerWithField()> "
+                               "Data type not coded for...");
+    }
   }
-  default:
-    throw std::runtime_error("AtlasProcessor::populateDataContainerWithField()> "
-                             "Data type not coded for...");
+}
+
+void monio::AtlasProcessor::populateFieldSetWithData(atlas::FieldSet& fieldSet, const Data& data) {
+  oops::Log::trace() << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    for (auto& field : fieldSet) {
+      populateFieldWithDataContainer(field, data.getContainer(field.name()));
+    }
+  }
+}
+
+void monio::AtlasProcessor::populateFieldSetWithData(atlas::FieldSet& fieldSet,
+                                               const Data& data,
+                                               const std::vector<std::string>& fieldNames) {
+  oops::Log::trace() << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
+  if (atlas::mpi::rank() == mpiRankOwner_) {
+    auto fieldNameIt = fieldNames.begin();
+    for (auto& field : fieldSet) {
+      populateFieldWithDataContainer(field, data.getContainer(*fieldNameIt));
+      ++fieldNameIt;
+    }
   }
 }
 
@@ -395,6 +421,31 @@ template void monio::AtlasProcessor::populateField<float>(atlas::Field& field,
 template void monio::AtlasProcessor::populateField<int>(atlas::Field& field,
                                                   const std::vector<int>& dataVec,
                                                   const std::vector<size_t>& lfricToAtlasMap);
+template<typename T>
+void monio::AtlasProcessor::populateField(atlas::Field& field,
+                                    const std::vector<T>& dataVec) {
+  oops::Log::trace() << "AtlasProcessor::populateField()" << std::endl;
+
+  std::vector<int> dimVec = field.shape();
+  if (field.metadata().get<bool>("global") == false) {
+    dimVec[constants::eHorizontal] = getSizeOwned(field);
+  }
+  auto fieldView = atlas::array::make_view<T, 2>(field);
+  size_t numLevels = field.levels();
+  for (size_t i = 0; i < dimVec[constants::eHorizontal]; ++i) {
+    for (size_t j = 0; j < numLevels; ++j) {
+      int index = i + (j * dimVec[constants::eHorizontal]);
+      fieldView(i, j) = dataVec[index];
+    }
+  }
+}
+
+template void monio::AtlasProcessor::populateField<double>(atlas::Field& field,
+                                                     const std::vector<double>& dataVec);
+template void monio::AtlasProcessor::populateField<float>(atlas::Field& field,
+                                                    const std::vector<float>& dataVec);
+template void monio::AtlasProcessor::populateField<int>(atlas::Field& field,
+                                                  const std::vector<int>& dataVec);
 
 template<typename T>
 void monio::AtlasProcessor::populateDataVec(std::vector<T>& dataVec,
@@ -448,51 +499,49 @@ void monio::AtlasProcessor::populateMetadataAndDataWithFieldSet(Metadata& metada
                                                                 Data& data,
                                                           const atlas::FieldSet& fieldSet) {
   oops::Log::trace() << "AtlasProcessor::populateMetadataAndDataWithFieldSet()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    int dimCount = 0;
-    bool createdLonLat = false;
-    for (const auto& field : fieldSet) {
-      std::vector<int> dimVec = field.shape();
-      if (field.metadata().get<bool>("global") == false) {
-        dimVec[0] = getSizeOwned(field);
-      }
-      for (auto& dimSize : dimVec) {
-        std::string dimName = metadata.getDimensionName(dimSize);
-        if (dimName == monio::constants::kNotFoundError) {
-          dimName = "dim" + std::to_string(dimCount);
-          metadata.addDimension(dimName, dimSize);
-          dimCount++;
-        }
-      }
-      populateMetadataWithField(metadata, field);
-      if (createdLonLat == false) {
-        std::vector<atlas::PointLonLat> atlasLonLat = getAtlasCoords(field);
-        std::vector<std::shared_ptr<DataContainerBase>> coordContainers =
-                  convertLatLonToContainers(atlasLonLat, constants::kCoordVarNames);
-        for (const auto& coordContainer : coordContainers) {
-          data.addContainer(coordContainer);
-        }
-        std::shared_ptr<monio::Variable> lonVar = std::make_shared<Variable>(
-                      constants::kCoordVarNames[constants::eLongitude], constants::eDouble);
-        std::shared_ptr<monio::Variable> latVar = std::make_shared<Variable>(
-                      constants::kCoordVarNames[constants::eLatitude], constants::eDouble);
-        std::string dimName = metadata.getDimensionName(atlasLonLat.size());
-        lonVar->addDimension(dimName, atlasLonLat.size());
-        latVar->addDimension(dimName, atlasLonLat.size());
-        metadata.addVariable(constants::kCoordVarNames[constants::eLongitude], lonVar);
-        metadata.addVariable(constants::kCoordVarNames[constants::eLatitude], latVar);
-        createdLonLat = true;
-      }
-      populateDataWithField(data, field, metadata.getVariable(field.name())->getDimensionsVec());
+  int dimCount = 0;
+  bool createdLonLat = false;
+  for (const auto& field : fieldSet) {
+    std::vector<int> dimVec = field.shape();
+    if (field.metadata().get<bool>("global") == false) {
+      dimVec[0] = getSizeOwned(field);
     }
-    // Global attrs
-    std::string producedByName = "Produced_by";
-    std::string producedByString = "MONIO: Met Office NetCDF I/O";
-
-    std::shared_ptr<monio::AttributeString> producedByAttr =
-            std::make_shared<AttributeString>(producedByName, producedByString);
-    metadata.addGlobalAttr(producedByName, producedByAttr);
+    for (auto& dimSize : dimVec) {
+      std::string dimName = metadata.getDimensionName(dimSize);
+      if (dimName == monio::constants::kNotFoundError) {
+        dimName = "dim" + std::to_string(dimCount);
+        metadata.addDimension(dimName, dimSize);
+        dimCount++;
+      }
+    }
+    populateMetadataWithField(metadata, field);
+    if (createdLonLat == false) {
+      std::vector<atlas::PointLonLat> atlasLonLat = getAtlasCoords(field);
+      std::vector<std::shared_ptr<DataContainerBase>> coordContainers =
+                convertLatLonToContainers(atlasLonLat, constants::kCoordVarNames);
+      for (const auto& coordContainer : coordContainers) {
+        data.addContainer(coordContainer);
+      }
+      std::shared_ptr<monio::Variable> lonVar = std::make_shared<Variable>(
+                    constants::kCoordVarNames[constants::eLongitude], constants::eDouble);
+      std::shared_ptr<monio::Variable> latVar = std::make_shared<Variable>(
+                    constants::kCoordVarNames[constants::eLatitude], constants::eDouble);
+      std::string dimName = metadata.getDimensionName(atlasLonLat.size());
+      lonVar->addDimension(dimName, atlasLonLat.size());
+      latVar->addDimension(dimName, atlasLonLat.size());
+      metadata.addVariable(constants::kCoordVarNames[constants::eLongitude], lonVar);
+      metadata.addVariable(constants::kCoordVarNames[constants::eLatitude], latVar);
+      createdLonLat = true;
+    }
+    populateDataWithField(data, field, metadata.getVariable(field.name())->getDimensionsVec());
   }
+  // Global attrs
+  std::string producedByName = "Produced_by";
+  std::string producedByString = "MONIO: Met Office NetCDF I/O";
+
+  std::shared_ptr<monio::AttributeString> producedByAttr =
+          std::make_shared<AttributeString>(producedByName, producedByString);
+  metadata.addGlobalAttr(producedByName, producedByAttr);
 }
 
 void monio::AtlasProcessor::populateMetadataAndDataWithLfricFieldSet(
