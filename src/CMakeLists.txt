@@ -35,3 +35,9 @@ Variable.h
 Writer.cc
 Writer.h
 )
+
+#ecbuild_add_library( TARGET     ${PROJECT_NAME}
+#                     SOURCES    ${monio_sources}
+#                     INSTALL_HEADERS LISTED
+#                     HEADER_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#                     LINKER_LANGUAGE CXX )

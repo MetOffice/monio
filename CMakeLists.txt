@@ -1,16 +1,17 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 project(monio LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+set(CMAKE_DIRECTORY_LABELS ${PROJECT_NAME})
 
-include(${CMAKE_SOURCE_DIR}/src/CMakeLists.txt)
+find_package(eckit REQUIRED)
+find_package(atlas REQUIRED)
+find_package(NetCDF REQUIRED COMPONENTS C)
 
-ecbuild_add_library( TARGET     ${PROJECT_NAME}
-                     SOURCES    ${monio_sources}
-                     INSTALL_HEADERS LISTED
-                     HEADER_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-                     LINKER_LANGUAGE CXX )
+add_subdirectory( src )
+
+ecbuild_install_project( NAME ${PROJECT_NAME} )
