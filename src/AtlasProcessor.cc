@@ -4,7 +4,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/AtlasProcessor.h"
+#include "AtlasProcessor.h"
 
 #include <algorithm>
 #include <numeric>
@@ -15,9 +15,8 @@
 #include "atlas/grid/Iterator.h"
 #include "atlas/meshgenerator/MeshGenerator.h"
 #include "atlas/util/KDTree.h"
-#include "lfriclitejedi/IO/Metadata.h"
-#include "lfriclitejedi/IO/Writer.h"
-#include "oops/util/Logger.h"
+#include "Metadata.h"
+#include "Writer.h"
 
 namespace {
   template<typename T>
@@ -34,12 +33,12 @@ monio::AtlasProcessor::AtlasProcessor(const eckit::mpi::Comm& mpiCommunicator,
                                       const atlas::idx_t mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
-  oops::Log::trace() << "AtlasProcessor::AtlasProcessor()" << std::endl;
+  std::cout << "AtlasProcessor::AtlasProcessor()" << std::endl;
 }
 
 void monio::AtlasProcessor::writeFieldSetToFile(const atlas::FieldSet fieldSet,
                                                 const std::string outputFilePath) {
-  oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
+  std::cout << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {
       monio::Metadata metadata;
@@ -51,7 +50,7 @@ void monio::AtlasProcessor::writeFieldSetToFile(const atlas::FieldSet fieldSet,
       writer.writeMetadata(metadata);
       writer.writeVariablesData(metadata, data);
     } else {
-      oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
+      std::cout << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
     }
   }
@@ -59,15 +58,13 @@ void monio::AtlasProcessor::writeFieldSetToFile(const atlas::FieldSet fieldSet,
 
 void monio::AtlasProcessor::writeIncrementsToFile(const atlas::FieldSet fieldSet,
                                                   const std::vector<std::string>& varNames,
-                                                  monio::FileData& fileData,
+                                                  Metadata& readMetadata,
+                                                  Data& readData,
+                                                  std::vector<size_t>& lfricAtlasMap,
                                                   const  std::string outputFilePath) {
-  oops::Log::trace() << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
+  std::cout << "AtlasProcessor::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     if (outputFilePath.length() != 0) {
-      monio::Metadata& readMetadata = fileData.getMetadata();
-      monio::Data& readData = fileData.getData();
-      std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-
       readMetadata.clearGlobalAttributes();
 
       readMetadata.deleteDimension(monio::constants::kTimeDimName);
@@ -88,14 +85,14 @@ void monio::AtlasProcessor::writeIncrementsToFile(const atlas::FieldSet fieldSet
       writer.writeMetadata(readMetadata);
       writer.writeVariablesData(readMetadata, readData);
     } else {
-      oops::Log::info() << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
+      std::cout << "AtlasProcessor::writeFieldSetToFile() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
     }
   }
 }
 
 std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(const atlas::Field field) {
-  oops::Log::trace() << "AtlasProcessor::getAtlasCoords()" << std::endl;
+  std::cout << "AtlasProcessor::getAtlasCoords()" << std::endl;
   std::vector<atlas::PointLonLat> atlasCoords;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     if (field.metadata().get<bool>("global") == false) {
@@ -115,7 +112,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(const atla
 
 std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(
                                                             const atlas::Grid& grid) {
-  oops::Log::trace() << "AtlasProcessor::getAtlasCoords()" << std::endl;
+  std::cout << "AtlasProcessor::getAtlasCoords()" << std::endl;
   std::vector<atlas::PointLonLat> atlasCoords;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     atlasCoords.resize(grid.size());
@@ -126,7 +123,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(
 
 std::vector<atlas::PointLonLat> monio::AtlasProcessor::getLfricCoords(
                      const std::vector<std::shared_ptr<monio::DataContainerBase>>& coordData) {
-  oops::Log::trace() << "AtlasProcessor::getLfricCoords()" << std::endl;
+  std::cout << "AtlasProcessor::getLfricCoords()" << std::endl;
 
   std::vector<atlas::PointLonLat> lfricCoords;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -163,7 +160,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getLfricCoords(
 std::vector<size_t> monio::AtlasProcessor::createLfricAtlasMap(
                                             const std::vector<atlas::PointLonLat>& atlasCoords,
                                             const std::vector<atlas::PointLonLat>& lfricCoords) {
-  oops::Log::trace() << "AtlasProcessor::createLfricAtlasMap()" << std::endl;
+  std::cout << "AtlasProcessor::createLfricAtlasMap()" << std::endl;
   std::vector<size_t> lfricAtlasMap;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     // Essential check to ensure grid is configured to accommodate the data
@@ -215,7 +212,7 @@ std::vector<std::shared_ptr<monio::DataContainerBase>>
 void monio::AtlasProcessor::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer,
                                       const std::vector<size_t>& lfricToAtlasMap) {
-  oops::Log::trace() << "AtlasProcessor::populateFieldWithDataContainer()" << std::endl;
+  std::cout << "AtlasProcessor::populateFieldWithDataContainer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
@@ -246,7 +243,7 @@ void monio::AtlasProcessor::populateFieldWithDataContainer(atlas::Field& field,
 
 void monio::AtlasProcessor::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer) {
-  oops::Log::trace() << "AtlasProcessor::populateFieldWithDataContainer()" << std::endl;
+  std::cout << "AtlasProcessor::populateFieldWithDataContainer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
@@ -280,7 +277,7 @@ void monio::AtlasProcessor::populateDataContainerWithField(
                                const atlas::Field& field,
                                const std::vector<size_t>& lfricToAtlasMap,
                                const size_t fieldSize) {
-  oops::Log::trace() << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
+  std::cout << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
@@ -329,7 +326,7 @@ void monio::AtlasProcessor::populateDataContainerWithField(
                                      std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                const atlas::Field& field,
                                const std::vector<int>& dimensions) {
-  oops::Log::trace() << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
+  std::cout << "AtlasProcessor::populateDataContainerWithField()" << std::endl;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
@@ -376,7 +373,7 @@ void monio::AtlasProcessor::populateDataContainerWithField(
 }
 
 void monio::AtlasProcessor::populateFieldSetWithData(atlas::FieldSet& fieldSet, const Data& data) {
-  oops::Log::trace() << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
+  std::cout << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     for (auto& field : fieldSet) {
       populateFieldWithDataContainer(field, data.getContainer(field.name()));
@@ -387,7 +384,7 @@ void monio::AtlasProcessor::populateFieldSetWithData(atlas::FieldSet& fieldSet, 
 void monio::AtlasProcessor::populateFieldSetWithData(atlas::FieldSet& fieldSet,
                                                const Data& data,
                                                const std::vector<std::string>& fieldNames) {
-  oops::Log::trace() << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
+  std::cout << "AtlasProcessor::populateFieldSetWithData()" << std::endl;
   if (atlas::mpi::rank() == mpiRankOwner_) {
     auto fieldNameIt = fieldNames.begin();
     for (auto& field : fieldSet) {
@@ -401,7 +398,7 @@ template<typename T>
 void monio::AtlasProcessor::populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec,
                                     const std::vector<size_t>& lfricToAtlasMap) {
-  oops::Log::trace() << "AtlasProcessor::populateField()" << std::endl;
+  std::cout << "AtlasProcessor::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   size_t numLevels = field.levels();
   for (size_t j = 0; j < numLevels; ++j) {
@@ -424,7 +421,7 @@ template void monio::AtlasProcessor::populateField<int>(atlas::Field& field,
 template<typename T>
 void monio::AtlasProcessor::populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec) {
-  oops::Log::trace() << "AtlasProcessor::populateField()" << std::endl;
+  std::cout << "AtlasProcessor::populateField()" << std::endl;
 
   std::vector<int> dimVec = field.shape();
   if (field.metadata().get<bool>("global") == false) {
@@ -451,7 +448,7 @@ template<typename T>
 void monio::AtlasProcessor::populateDataVec(std::vector<T>& dataVec,
                                       const atlas::Field& field,
                                       const std::vector<size_t>& lfricToAtlasMap) {
-  oops::Log::trace() << "AtlasProcessor::populateDataVec()" << std::endl;
+  std::cout << "AtlasProcessor::populateDataVec()" << std::endl;
   size_t numLevels = field.levels();
   auto fieldView = atlas::array::make_view<T, 2>(field);
   for (size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
@@ -498,7 +495,7 @@ template void monio::AtlasProcessor::populateDataVec<int>(std::vector<int>& data
 void monio::AtlasProcessor::populateMetadataAndDataWithFieldSet(Metadata& metadata,
                                                                 Data& data,
                                                           const atlas::FieldSet& fieldSet) {
-  oops::Log::trace() << "AtlasProcessor::populateMetadataAndDataWithFieldSet()" << std::endl;
+  std::cout << "AtlasProcessor::populateMetadataAndDataWithFieldSet()" << std::endl;
   int dimCount = 0;
   bool createdLonLat = false;
   for (const auto& field : fieldSet) {
@@ -549,7 +546,7 @@ void monio::AtlasProcessor::populateMetadataAndDataWithLfricFieldSet(
                                                             Data& data,
                                                       const atlas::FieldSet& fieldSet,
                                                       const std::vector<size_t>& lfricToAtlasMap) {
-  oops::Log::trace() << "AtlasProcessor::populateMetadataAndDataWithLfricFieldSet()" << std::endl;
+  std::cout << "AtlasProcessor::populateMetadataAndDataWithLfricFieldSet()" << std::endl;
   // Dimensions
   metadata.addDimension(constants::kHorizontalName, lfricToAtlasMap.size());
   metadata.addDimension(constants::kVerticalFullName, constants::kVerticalFullSize);
@@ -582,7 +579,7 @@ void monio::AtlasProcessor::populateMetadataAndDataWithLfricFieldSet(
 
 void monio::AtlasProcessor::populateMetadataWithField(Metadata& metadata,
                                                 const atlas::Field field) {
-  oops::Log::trace() << "AtlasProcessor::populateMetadataWithField()" << std::endl;
+  std::cout << "AtlasProcessor::populateMetadataWithField()" << std::endl;
   std::string varName = field.name();
   int type = atlasTypeToMonioEnum(field.datatype());
   std::shared_ptr<monio::Variable> var = std::make_shared<Variable>(varName, type);
@@ -604,7 +601,7 @@ void monio::AtlasProcessor::populateDataWithField(Data& data,
                                             const atlas::Field field,
                                             const std::vector<size_t>& lfricToAtlasMap,
                                             const size_t totalFieldSize) {
-  oops::Log::trace() << "AtlasProcessor::populateDataWithField()" << std::endl;
+  std::cout << "AtlasProcessor::populateDataWithField()" << std::endl;
   atlas::array::DataType dataType = field.datatype();
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
   populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, totalFieldSize);
@@ -614,7 +611,7 @@ void monio::AtlasProcessor::populateDataWithField(Data& data,
 void monio::AtlasProcessor::populateDataWithField(Data& data,
                                             const atlas::Field field,
                                             const std::vector<int> dimensions) {
-  oops::Log::trace() << "AtlasProcessor::populateDataWithField()" << std::endl;
+  std::cout << "AtlasProcessor::populateDataWithField()" << std::endl;
   atlas::array::DataType dataType = field.datatype();
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
   populateDataContainerWithField(dataContainer, field, dimensions);
@@ -622,7 +619,7 @@ void monio::AtlasProcessor::populateDataWithField(Data& data,
 }
 
 int monio::AtlasProcessor::getSizeOwned(const atlas::Field field) {
-  oops::Log::trace() << "AtlasProcessor::getSizeOwned()" << std::endl;
+  std::cout << "AtlasProcessor::getSizeOwned()" << std::endl;
   atlas::Field ghostField = field.functionspace().ghost();
   int sizeOwned = 0;
   auto ghostView = atlas::array::make_view<int, 1>(ghostField);
@@ -636,7 +633,7 @@ int monio::AtlasProcessor::getSizeOwned(const atlas::Field field) {
 }
 
 void monio::AtlasProcessor::reconcileMetadataWithData(Metadata& metdata, Data& data) {
-  oops::Log::trace() << "AtlasProcessor::reconcileMetadataWithData()" << std::endl;
+  std::cout << "AtlasProcessor::reconcileMetadataWithData()" << std::endl;
   std::vector<std::string> metadataVarNames = metdata.getVariableNames();
   std::vector<std::string> dataContainerNames = data.getDataContainerNames();
 

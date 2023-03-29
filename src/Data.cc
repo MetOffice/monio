@@ -4,7 +4,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/Data.h"
+#include "Data.h"
 
 #include <stdexcept>
 #include <vector>
@@ -13,8 +13,6 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
-
-#include "oops/util/Logger.h"
 
 namespace {
 template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rhsVec) {
@@ -104,7 +102,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
 }
 
 void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
-  oops::Log::debug() << "Data::addContainer()" << std::endl;
+  std::cout << "Data::addContainer()" << std::endl;
   const std::string& name = container->getName();
   auto it = dataContainers_.find(name);
   if (it == dataContainers_.end()) {
@@ -114,7 +112,7 @@ void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
 
 std::shared_ptr<monio::DataContainerBase>
                                       monio::Data::getContainer(const std::string& name) const {
-  oops::Log::debug() << "Data::getContainer()" << std::endl;
+  std::cout << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end())
     return it->second;
@@ -123,18 +121,18 @@ std::shared_ptr<monio::DataContainerBase>
 }
 
 std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() {
-  oops::Log::debug() << "Data::getContainers()" << std::endl;
+  std::cout << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
 
 const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
                                                             monio::Data::getContainers() const {
-  oops::Log::debug() << "Data::getContainers()" << std::endl;
+  std::cout << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
 
 void monio::Data::deleteContainer(const std::string& name) {
-  oops::Log::debug() << "Data::deleteContainer()" << std::endl;
+  std::cout << "Data::deleteContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end()) {
     dataContainers_.erase(name);
@@ -145,6 +143,6 @@ void monio::Data::deleteContainer(const std::string& name) {
 }
 
 std::vector<std::string> monio::Data::getDataContainerNames() {
-  oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
+  std::cout << "Data::getDataContainerNames()" << std::endl;
   return extractKeys(dataContainers_);
 }

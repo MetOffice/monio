@@ -4,7 +4,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/AtlasData.h"
+#include "AtlasData.h"
 
 #include <algorithm>
 #include <limits>
@@ -19,14 +19,13 @@
 #include "atlas/grid/Iterator.h"
 #include "atlas/meshgenerator/MeshGenerator.h"
 #include "atlas/util/KDTree.h"
-#include "oops/util/Logger.h"
 
 namespace  {
 atlas::Mesh createMesh(const atlas::CubedSphereGrid& grid,
                        const std::string& partitionerType,
                        const std::string& meshType)
 {
-  oops::Log::trace() << "createMesh()" << std::endl;
+  std::cout << "createMesh()" << std::endl;
   const auto meshConfig = atlas::util::Config("partitioner", partitionerType) |
                           atlas::util::Config("halo", 0);
   const auto meshGen = atlas::MeshGenerator(meshType, meshConfig);
@@ -35,7 +34,7 @@ atlas::Mesh createMesh(const atlas::CubedSphereGrid& grid,
 
 atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Mesh& csMesh)
 {
-  oops::Log::trace() << "createFunctionSpace()" << std::endl;
+  std::cout << "createFunctionSpace()" << std::endl;
   const auto functionSpace = atlas::functionspace::CubedSphereNodeColumns(csMesh);
   return functionSpace;
 }
@@ -44,7 +43,7 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
                                const std::vector<monio::constants::FieldMetadata>&
                                                                               fieldToMetadataVec,
                                const bool isGlobal) {
-  oops::Log::trace() << "createFieldSet()" << std::endl;
+  std::cout << "createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldToMetadataVec) {
     std::string atlasFieldName = fieldMetadata.atlasName;
@@ -88,7 +87,7 @@ monio::AtlasData::AtlasData(
     grid_(gridName),
     mesh_(createMesh(grid_, partitionerType, meshType)),
     functionSpace_(createFunctionSpace(mesh_)) {
-  oops::Log::trace() << "AtlasData::AtlasData()" << std::endl;
+  std::cout << "AtlasData::AtlasData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     atlasCoords_ = atlasProcessor_.getAtlasCoords(grid_);
     lfricCoords_ = atlasProcessor_.getLfricCoords(coordData);
@@ -97,14 +96,14 @@ monio::AtlasData::AtlasData(
 }
 
 void monio::AtlasData::initialiseMemberFieldSet() {
-  oops::Log::trace() << "AtlasData::initialiseMemberFieldSet()" << std::endl;
+  std::cout << "AtlasData::initialiseMemberFieldSet()" << std::endl;
   // This function needs to be called on all PEs - no MPI rank check!
   localFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataVec_, false);
   globalFieldSet_ = createFieldSet(functionSpace_, fieldToMetadataVec_, true);
 }
 
 void monio::AtlasData::toFieldSet(const Data& data) {
-  oops::Log::trace() << "AtlasData::populateFieldSet()" << std::endl;
+  std::cout << "AtlasData::populateFieldSet()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
                                                                      data.getContainers();
@@ -124,7 +123,7 @@ void monio::AtlasData::toFieldSet(const Data& data) {
 }
 
 void monio::AtlasData::fromFieldSet(Data& data) {
-  oops::Log::trace() << "AtlasData::fromFieldSet()" << std::endl;
+  std::cout << "AtlasData::fromFieldSet()" << std::endl;
   gatherAtlasFields();
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers
@@ -145,7 +144,7 @@ void monio::AtlasData::fromFieldSet(Data& data) {
 }
 
 void monio::AtlasData::scatterAtlasFields() {
-  oops::Log::trace() << "AtlasData::scatterAtlasFields()" << std::endl;
+  std::cout << "AtlasData::scatterAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataVec_) {
     std::string atlasFieldName = fieldMetadata.atlasName;
     functionSpace_.scatter(globalFieldSet_[atlasFieldName],
@@ -155,7 +154,7 @@ void monio::AtlasData::scatterAtlasFields() {
 }
 
 void monio::AtlasData::gatherAtlasFields() {
-  oops::Log::trace() << "AtlasData::gatherAtlasFields()" << std::endl;
+  std::cout << "AtlasData::gatherAtlasFields()" << std::endl;
   for (const auto& fieldMetadata : fieldToMetadataVec_) {
     std::string atlasFieldName = fieldMetadata.atlasName;
     localFieldSet_[atlasFieldName].haloExchange();
@@ -173,6 +172,6 @@ atlas::FieldSet& monio::AtlasData::getLocalFieldSet() {
 }
 
 void monio::AtlasData::addField(atlas::Field& field) {
-  oops::Log::trace() << "AtlasData::addField()" << std::endl;
+  std::cout << "AtlasData::addField()" << std::endl;
   globalFieldSet_.add(field);
 }

@@ -4,7 +4,7 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
-#include "lfriclitejedi/IO/Writer.h"
+#include "Writer.h"
 
 #include <netcdf>
 #include <map>
@@ -15,14 +15,12 @@
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
 
-#include "oops/util/Logger.h"
-
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
                       const std::string& filePath)
     : mpiCommunicator_(mpiCommunicator),
       mpiRankOwner_(mpiRankOwner) {
-  oops::Log::debug() << "Writer::Writer()" << std::endl;
+  std::cout << "Writer::Writer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
       file_ = std::make_shared<File>(filePath, netCDF::NcFile::replace);
@@ -41,14 +39,14 @@ void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
 }
 
 void monio::Writer::writeMetadata(const Metadata& metadata) {
-  oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
+  std::cout << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     getFile()->writeMetadata(metadata);
   }
 }
 
 void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& data) {
-  oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
+  std::cout << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap =
                                                                      data.getContainers();
@@ -85,7 +83,7 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
 }
 
 std::shared_ptr<monio::File> monio::Writer::getFile() {
-  oops::Log::debug() << "Writer::getFile()" << std::endl;
+  std::cout << "Writer::getFile()" << std::endl;
   if (file_ == nullptr)
     throw std::runtime_error("Writer::getFile()> File has not been initialised...");
 

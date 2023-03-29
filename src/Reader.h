@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "eckit/mpi/Comm.h"
-#include "oops/util/DateTime.h"
 
 #include "DataContainerBase.h"
+#include "Data.h"
 #include "File.h"
-#include "FileData.h"
+#include "Metadata.h"
 
 namespace monio {
 /// \brief Top-level class uses File, Metadata,
@@ -26,7 +26,7 @@ class Reader {
  public:
   Reader(const eckit::mpi::Comm& mpiCommunicator,
          const atlas::idx_t mpiRankOwner,
-         const FileData& fileData);
+         const std::string& filePath);
 
   Reader(const eckit::mpi::Comm& mpiCommunicator,
          const atlas::idx_t mpiRankOwner);
@@ -37,58 +37,39 @@ class Reader {
   Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
-  void openFile(const FileData& fileData);
+  void openFile(const std::string& filePath);
 
-  void readMetadata(FileData& fileData);
-  void readAllData(FileData& fileData);
+  void readMetadata(Metadata& metadata);
+  void readAllData(Metadata& metadata, Data& data);
 
-  void readSingleData(FileData& fileData, const std::vector<std::string>& varNames);
-  void readSingleDatum(FileData& fileData, const std::string& varName);
+  void readSingleData(Metadata& metadata, Data& data, const std::vector<std::string>& varNames);
+  void readSingleDatum(Metadata& metadata, Data& data, const std::string& varName);
 
-  void createDateTimes(FileData& fileData,
-                       const std::string& timeVarName,
-                       const std::string& timeOriginName);
-
-  void readFieldData(FileData& fileData,
-                     const std::vector<std::string>& variableNames,
-                     const std::string& dateString,
-                     const std::string& timeDimName);
-
-  void readFieldData(FileData& fileData,
-                     const std::vector<std::string>& variableNames,
-                     const util::DateTime& dateToRead,
-                     const std::string& timeDimName);
-
-  void readFieldDatum(FileData& fileData,
-                      const std::string& variableName,
-                      const util::DateTime& dateToRead,
-                      const std::string& timeDimName);
-
-  void readFieldDatum(FileData& fileData,
+  void readFieldDatum(Metadata& metadata,
+                      Data& data,
                       const std::string& variableName,
                       const size_t timeStep,
                       const std::string& timeDimName);
 
-  std::vector<std::string> getVarStrAttrs(const FileData& fileData,
+  std::vector<std::string> getVarStrAttrs(const Metadata& metadata,
                                           const std::vector<std::string>& varNames,
                                           const std::string& attrName);
 
-  std::vector<std::shared_ptr<DataContainerBase>> getCoordData(FileData& fileData,
+  std::vector<std::shared_ptr<DataContainerBase>> getCoordData(Data& data,
                                                   const std::vector<std::string>& coordNames);
   // The following function takes a levels 'search term' as some variables use full- or half-levels
   // This approach allows the correct number of levels for the variable to be determined
-  std::vector<monio::constants::FieldMetadata> getFieldMetadata(const FileData& fileData,
+  std::vector<monio::constants::FieldMetadata> getFieldMetadata(const Metadata& metadata,
                                            const std::vector<std::string>& lfricFieldNames,
                                            const std::vector<std::string>& atlasFieldNames,
                                            const std::string& levelsSearchTerm);
 
  private:
-  size_t getSizeOwned(const FileData& fileData, const std::string& varName);
-  size_t getVarNumLevels(const FileData& fileData,
+  size_t getSizeOwned(const Metadata& metadata, const std::string& varName);
+  size_t getVarNumLevels(const Metadata& metadata,
                          const std::string& varName,
                          const std::string& levelsSearchTerm);
-  int getVarDataType(const FileData& fileData, const std::string& varName);
-  size_t findTimeStep(const FileData& fileData, const util::DateTime& dateTime);
+  int getVarDataType(const Metadata& metadata, const std::string& varName);
 
   std::shared_ptr<File> getFile();
 

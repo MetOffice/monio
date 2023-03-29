@@ -33,12 +33,8 @@ DataContainerInt.cc
 DataContainerInt.h
 File.cc
 File.h
-FileData.cc
-FileData.h
 Metadata.cc
 Metadata.h
-Monio.cc
-Monio.h
 Reader.cc
 Reader.h
 Variable.cc

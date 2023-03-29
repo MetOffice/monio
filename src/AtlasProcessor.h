@@ -16,7 +16,6 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
-#include "FileData.h"
 #include "Metadata.h"
 
 #include "atlas/array/DataType.h"
@@ -43,7 +42,9 @@ class AtlasProcessor {
 
   void writeIncrementsToFile(const atlas::FieldSet fieldSet,
                              const std::vector<std::string>& varNames,
-                             monio::FileData& fileData,
+                             Metadata& metadata,
+                             Data& data,
+                             std::vector<size_t>& lfricAtlasMap,
                              const std::string outputFilePath);
 
   std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::Field field);
