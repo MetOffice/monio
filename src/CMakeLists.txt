@@ -1,3 +1,14 @@
+###############################################################################
+# MONIO - Met Office NetCDF Input Output                                      #
+#                                                                             #
+# (C) Crown Copyright 2023 Met Office                                         #
+#                                                                             #
+# This software is licensed under the terms of the Apache Licence Version 2.0 #
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
+###############################################################################
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
+
 list(APPEND monio_sources
 AtlasData.cc
 AtlasData.h
@@ -36,8 +47,12 @@ Writer.cc
 Writer.h
 )
 
-#ecbuild_add_library( TARGET     ${PROJECT_NAME}
-#                     SOURCES    ${monio_sources}
-#                     INSTALL_HEADERS LISTED
-#                     HEADER_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#                     LINKER_LANGUAGE CXX )
+set(MONIO_LIB_DEP atlas NetCDF::NetCDF_CXX MPI::MPI_CXX)
+set(MONIO_SRC_DEP ${lfriclite_src_files} )
+
+ecbuild_add_library( TARGET monio
+                     SOURCES  ${monio_sources}
+                     PUBLIC_LIBS  ${MONIO_LIB_DEP}
+                     INCLUDES ${MONIO_SRC_DEP}
+                     INSTALL_HEADERS LISTED
+                     LINKER_LANGUAGE ${OOPS_LINKER_LANGUAGE} )
