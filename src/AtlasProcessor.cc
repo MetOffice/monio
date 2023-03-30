@@ -623,9 +623,9 @@ int monio::AtlasProcessor::getSizeOwned(const atlas::Field field) {
   atlas::Field ghostField = field.functionspace().ghost();
   int sizeOwned = 0;
   auto ghostView = atlas::array::make_view<int, 1>(ghostField);
-  for (size_t i = 0; i < ghostField.size(); ++i) {
-    if (ghostView(i) == 1) {
-      sizeOwned = i;
+  for (size_t i = ghostField.size(); i >= 0; --i) {
+    if (ghostView(i) == 0) {
+      sizeOwned = i + 1;
       break;
     }
   }
