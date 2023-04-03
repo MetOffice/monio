@@ -66,7 +66,7 @@ void monio::Reader::openFile(const std::string& filePath) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (filePath.size() != 0) {
       try {
-        file_ = std::make_shared<File>(filePath, netCDF::NcFile::read);
+        file_ = std::make_unique<File>(filePath, netCDF::NcFile::read);
       } catch (netCDF::exceptions::NcException& exception) {
         std::string message =
             "Reader::openFile()> An exception occurred while creating File...";
@@ -80,7 +80,7 @@ void monio::Reader::openFile(const std::string& filePath) {
 void monio::Reader::readMetadata(Metadata& metadata) {
   std::cout << "Reader::readMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    getFile()->readMetadata(metadata);
+    getFile().readMetadata(metadata);
   }
 }
 
@@ -125,7 +125,7 @@ void monio::Reader::readFieldDatum(Metadata& metadata,
         case constants::eDataTypes::eDouble: {
           std::shared_ptr<DataContainerDouble> dataContainerDouble =
                                       std::make_shared<DataContainerDouble>(varName);
-          getFile()->readFieldDatum(varName, varSizeNoTime,
+          getFile().readFieldDatum(varName, varSizeNoTime,
                               startVec, countVec, dataContainerDouble->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
           break;
@@ -133,7 +133,7 @@ void monio::Reader::readFieldDatum(Metadata& metadata,
         case constants::eDataTypes::eFloat: {
           std::shared_ptr<DataContainerFloat> dataContainerFloat =
                                       std::make_shared<DataContainerFloat>(varName);
-          getFile()->readFieldDatum(varName, varSizeNoTime,
+          getFile().readFieldDatum(varName, varSizeNoTime,
                                startVec, countVec, dataContainerFloat->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
           break;
@@ -141,7 +141,7 @@ void monio::Reader::readFieldDatum(Metadata& metadata,
         case constants::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                                       std::make_shared<DataContainerInt>(varName);
-          getFile()->readFieldDatum(varName, varSizeNoTime,
+          getFile().readFieldDatum(varName, varSizeNoTime,
                                startVec, countVec, dataContainerInt->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
           break;
@@ -181,7 +181,7 @@ void monio::Reader::readSingleDatum(Metadata& metadata, Data& data, const std::s
       case constants::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
                             std::make_shared<DataContainerDouble>(varName);
-        getFile()->readSingleDatum(varName,
+        getFile().readSingleDatum(varName,
             variable->getTotalSize(), dataContainerDouble->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
@@ -189,7 +189,7 @@ void monio::Reader::readSingleDatum(Metadata& metadata, Data& data, const std::s
       case constants::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
                             std::make_shared<DataContainerFloat>(varName);
-        getFile()->readSingleDatum(varName,
+        getFile().readSingleDatum(varName,
             variable->getTotalSize(), dataContainerFloat->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
@@ -197,7 +197,7 @@ void monio::Reader::readSingleDatum(Metadata& metadata, Data& data, const std::s
       case constants::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                             std::make_shared<DataContainerInt>(varName);
-        getFile()->readSingleDatum(varName,
+        getFile().readSingleDatum(varName,
             variable->getTotalSize(), dataContainerInt->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
@@ -205,7 +205,6 @@ void monio::Reader::readSingleDatum(Metadata& metadata, Data& data, const std::s
       default:
         throw std::runtime_error("Reader::readVariable()> Data type not coded for...");
     }
-
     if (dataContainer != nullptr)
       data.addContainer(dataContainer);
     else
@@ -214,12 +213,12 @@ void monio::Reader::readSingleDatum(Metadata& metadata, Data& data, const std::s
   }
 }
 
-std::shared_ptr<monio::File> monio::Reader::getFile() {
+monio::File& monio::Reader::getFile() {
   std::cout << "Reader::getFile()" << std::endl;
   if (file_ == nullptr)
     throw std::runtime_error("Reader::getFile()> File has not been initialised...");
 
-  return file_;
+  return *file_;
 }
 
 std::vector<std::string> monio::Reader::getVarStrAttrs(const Metadata& metadata,

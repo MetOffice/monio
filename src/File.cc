@@ -19,7 +19,7 @@
 #include "Constants.h"
 #include "Variable.h"
 
-// Constructors ///////////////////////////////////////////////////////////////////////////////////
+// De/Constructors ////////////////////////////////////////////////////////////////////////////////
 
 monio::File::File(const std::string& filePath,
                   const netCDF::NcFile::FileMode fileMode):
@@ -28,7 +28,7 @@ monio::File::File(const std::string& filePath,
   try {
     std::cout << "File::File(): filePath_> " <<  filePath_  <<
                          ", fileMode_> " << fileMode_ << std::endl;
-    dataFile_ = std::make_shared<netCDF::NcFile>(filePath_, fileMode_);
+    dataFile_ = std::make_unique<netCDF::NcFile>(filePath_, fileMode_);
   } catch (netCDF::exceptions::NcException& exception) {
     std::string message = "An exception occurred in File> ";
     message.append(exception.what());
@@ -36,6 +36,9 @@ monio::File::File(const std::string& filePath,
   }
 }
 
+monio::File::~File() {
+  dataFile_->close();
+}
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 
 void monio::File::readMetadata(Metadata& metadata) {
@@ -68,7 +71,7 @@ void monio::File::readMetadata(Metadata& metadata,
 void monio::File::readDimensions(Metadata& metadata) {
   std::cout << "File::readDimensions()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    std::multimap<std::string, netCDF::NcDim> ncDimsMap = getFile()->getDims();
+    std::multimap<std::string, netCDF::NcDim> ncDimsMap = getFile().getDims();
     for (auto const& ncDimPair : ncDimsMap) {
       int value = (ncDimPair.second).getSize();
       metadata.addDimension(ncDimPair.first, value);
@@ -82,8 +85,8 @@ void monio::File::readDimensions(Metadata& metadata) {
 void monio::File::readVariables(Metadata& metadata) {
   std::cout << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    // Potentially process getFile()->getGroups() OR getFile()->getId() here?
-    std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile()->getVars();
+    // Potentially process getFile().getGroups() OR getFile().getId() here?
+    std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile().getVars();
     for (auto const& ncVarPair : nvVarsMap) {
       netCDF::NcVar ncVar = ncVarPair.second;
       readVariable(metadata, ncVar);
@@ -97,8 +100,8 @@ void monio::File::readVariables(Metadata& metadata,
                                 const std::vector<std::string>& variableNames) {
   std::cout << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    // Potentially process getFile()->getGroups() OR getFile()->getId() here?
-    std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile()->getVars();
+    // Potentially process getFile().getGroups() OR getFile().getId() here?
+    std::multimap<std::string, netCDF::NcVar> nvVarsMap = getFile().getVars();
     for (auto const& ncVarPair : nvVarsMap) {
       netCDF::NcVar ncVar = ncVarPair.second;
       if (std::find(variableNames.begin(), variableNames.end(),
@@ -168,7 +171,7 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
 void monio::File::readAttributes(Metadata& metadata) {
   std::cout << "File::readVariables()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    std::multimap<std::string, netCDF::NcGroupAtt> ncAttrMap = getFile()->getAtts();
+    std::multimap<std::string, netCDF::NcGroupAtt> ncAttrMap = getFile().getAtts();
     for (auto const& ncAttrPair : ncAttrMap) {
       netCDF::NcGroupAtt ncAttr = ncAttrPair.second;
 
@@ -201,7 +204,7 @@ void monio::File::readSingleDatum(const std::string& varName,
                                   std::vector<T>& dataVec) {
   std::cout << "File::readData()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    auto var = getFile()->getVar(varName);
+    auto var = getFile().getVar(varName);
     dataVec.resize(varSize, 0);
     var.getVar(dataVec.data());
   } else {
@@ -227,7 +230,7 @@ void monio::File::readFieldDatum(const std::string& fieldName,
                                  std::vector<T>& dataVec) {
   std::cout << "File::readFieldDatum()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
-    auto var = getFile()->getVar(fieldName);
+    auto var = getFile().getVar(fieldName);
     dataVec.resize(varSize, 0);
     var.getVar(startVec, countVec, dataVec.data());
   } else {
@@ -270,7 +273,7 @@ void monio::File::writeDimensions(const Metadata& metadata) {
   if (fileMode_ != netCDF::NcFile::read) {
     const std::map<std::string, int>& dimMap = metadata.getDimensionsMap();
     for (auto const& dimPair : dimMap) {
-      getFile()->addDim(dimPair.first, dimPair.second);
+      getFile().addDim(dimPair.first, dimPair.second);
     }
   } else {
     throw std::runtime_error("File::writeDimensions()> Read file accessed for writing...");
@@ -288,7 +291,7 @@ void monio::File::writeVariables(const Metadata& metadata) {
         int dimSize = var->getDimension(dimName);
       }
 
-      netCDF::NcVar ncVar = getFile()->addVar(var->getName(),
+      netCDF::NcVar ncVar = getFile().addVar(var->getName(),
                             constants::kDataTypeNames[var->getType()],
                             var->getDimensionNames());
 
@@ -327,11 +330,11 @@ void monio::File::writeAttributes(const Metadata& metadata) {
         std::shared_ptr<AttributeString> globAttrStr =
                                          std::static_pointer_cast<AttributeString>(globAttr);
         std::string globAttrName = globAttrStr->getName();
-        getFile()->putAtt(globAttrName, globAttrStr->getValue());
+        getFile().putAtt(globAttrName, globAttrStr->getValue());
       } else if (globAttr->getType() == constants::eInt) {
         std::shared_ptr<AttributeInt> globAttrInt =
                                       std::static_pointer_cast<AttributeInt>(globAttr);
-        getFile()->putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
+        getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
       } else {
         throw std::runtime_error("File::writeVariables()> "
             "Variable attribute data type not coded for...");
@@ -346,7 +349,7 @@ template<typename T>
 void monio::File::writeSingleDatum(const std::string &varName, const std::vector<T>& dataVec) {
   std::cout << "File::writeSingleDatum()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
-    auto var = getFile()->getVar(varName);
+    auto var = getFile().getVar(varName);
     var.putVar(dataVec.data());
   } else {
     throw std::runtime_error("File::writeSingleDatum()> Read file accessed for writing...");
@@ -386,9 +389,9 @@ const bool monio::File::isWrite() {
   return fileMode_ != netCDF::NcFile::read;
 }
 
-std::shared_ptr<netCDF::NcFile> monio::File::getFile() {
+netCDF::NcFile& monio::File::getFile() {
   if (dataFile_ == nullptr)
     throw std::runtime_error("File::getFile()> Data file has not been initialised...");
 
-  return dataFile_;
+  return *dataFile_;
 }

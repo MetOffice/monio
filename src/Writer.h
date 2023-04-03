@@ -38,11 +38,11 @@ class Writer {
   void writeVariablesData(const Metadata& metadata, const Data& data);
 
  private:
-  std::shared_ptr<File> getFile();
+  File& getFile();
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const atlas::idx_t mpiRankOwner_;
 
-  std::shared_ptr<File> file_;
+  std::unique_ptr<File> file_;
 };
 }  // namespace monio

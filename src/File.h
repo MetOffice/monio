@@ -21,6 +21,7 @@ namespace monio {
 class File {
  public:
   File(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
+  ~File();
 
   File()                       = delete;  //!< Deleted default constructor
   File(File&&)                 = delete;  //!< Deleted move constructor
@@ -56,7 +57,7 @@ class File {
   void setFileMode(const netCDF::NcFile::FileMode fileMode);
 
  private:
-  std::shared_ptr<netCDF::NcFile> getFile();
+  netCDF::NcFile& getFile();
 
   void readDimensions(Metadata& metadata);
   void readVariables(Metadata& metadata);
@@ -69,7 +70,7 @@ class File {
   void writeVariables(const Metadata& metadata);
   void writeAttributes(const Metadata& metadata);
 
-  std::shared_ptr<netCDF::NcFile> dataFile_;
+  std::unique_ptr<netCDF::NcFile> dataFile_;
 
   std::string filePath_;
   netCDF::NcFile::FileMode fileMode_;
