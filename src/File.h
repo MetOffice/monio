@@ -47,11 +47,11 @@ class File {
   template<typename T> void writeSingleDatum(const std::string& varName,
                                              const std::vector<T>& dataVec);
 
-  const std::string& getPath();
-  const netCDF::NcFile::FileMode& getFileMode();
+  std::string& getPath();
+  netCDF::NcFile::FileMode& getFileMode();
 
-  const bool isRead();
-  const bool isWrite();
+  bool isRead();
+  bool isWrite();
 
   void setPath(const std::string filePath);
   void setFileMode(const netCDF::NcFile::FileMode fileMode);

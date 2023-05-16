@@ -14,6 +14,8 @@
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
 
+#include "oops/util/Logger.h"
+
 namespace {
 template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rhsVec) {
   if (lhsVec.size() == rhsVec.size()) {
@@ -34,6 +36,16 @@ std::vector<std::string> extractKeys(std::map<keyValue, typeValue> const& inputM
     keyVector.push_back(elementPair.first);
   }
   return keyVector;
+}
+
+template<typename T>
+bool findInVector(std::vector<T> vector, T searchTerm) {
+  typename std::vector<T>::iterator it;
+  it = std::find(vector.begin(), vector.end(), searchTerm);
+  if (it != vector.end())
+    return true;
+  else
+    return false;
 }
 }  // anonymous namespace
 
@@ -102,7 +114,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
 }
 
 void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
-  std::cout << "Data::addContainer()" << std::endl;
+  oops::Log::debug() << "Data::addContainer()" << std::endl;
   const std::string& name = container->getName();
   auto it = dataContainers_.find(name);
   if (it == dataContainers_.end()) {
@@ -111,8 +123,8 @@ void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
 }
 
 std::shared_ptr<monio::DataContainerBase>
-                                      monio::Data::getContainer(const std::string& name) const {
-  std::cout << "Data::getContainer()" << std::endl;
+                monio::Data::getContainer(const std::string& name) const {
+  oops::Log::debug() << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end())
     return it->second;
@@ -120,29 +132,37 @@ std::shared_ptr<monio::DataContainerBase>
     return nullptr;  // Returning nullptr is now an expected use-case
 }
 
-std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& monio::Data::getContainers() {
-  std::cout << "Data::getContainers()" << std::endl;
+std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
+                                      monio::Data::getContainers() {
+  oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
 
 const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
-                                                            monio::Data::getContainers() const {
-  std::cout << "Data::getContainers()" << std::endl;
+                                            monio::Data::getContainers() const {
+  oops::Log::debug() << "Data::getContainers()" << std::endl;
   return dataContainers_;
 }
 
 void monio::Data::deleteContainer(const std::string& name) {
-  std::cout << "Data::deleteContainer()" << std::endl;
+  oops::Log::debug() << "Data::deleteContainer()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end()) {
     dataContainers_.erase(name);
-  } else {
-    throw std::runtime_error("Data::deleteContainer()> No "
-        "definitions of \"" + name + "\"...");
-  }
+  }  // Not finding a data container is now a valid use-case
 }
 
 std::vector<std::string> monio::Data::getDataContainerNames() {
-  std::cout << "Data::getDataContainerNames()" << std::endl;
+  oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
   return extractKeys(dataContainers_);
+}
+
+void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {
+  oops::Log::debug() << "Data::removeAllButTheseContainers()" << std::endl;
+  std::vector<std::string> containerKeys = extractKeys(dataContainers_);
+  for (const std::string& containerKey : containerKeys) {
+    if (findInVector(varNames, containerKey) == false) {
+      deleteContainer(containerKey);
+    }
+  }
 }

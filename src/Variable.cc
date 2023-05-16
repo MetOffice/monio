@@ -65,11 +65,13 @@ std::vector<std::string> monio::Variable::getDimensionNames() {
 }
 
 
-std::map<std::string, std::shared_ptr<monio::AttributeBase>>& monio::Variable::getAttributes() {
+std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
+                                      monio::Variable::getAttributes() {
   return attributes_;
 }
 
-std::shared_ptr<monio::AttributeBase> monio::Variable::getAttribute(const std::string& attrName) {
+std::shared_ptr<monio::AttributeBase>
+                monio::Variable::getAttribute(const std::string& attrName) {
   if (attributes_.find(attrName) != attributes_.end()) {
     return attributes_.at(attrName);
   } else {

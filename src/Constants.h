@@ -22,6 +22,14 @@ namespace constants {
     int dataType;
   };
 
+  struct IncrementMetadata {
+    std::string atlasName;
+    std::string lfricName;
+    std::string lfricIncName;
+    std::string units;
+    bool doCopySurfaceLevel;
+  };
+
   enum eAtlasLonLat {
     eLongitude,
     eLatitude
@@ -38,7 +46,8 @@ namespace constants {
     eUShort,
     eUInt,
     eUInt64,
-    eString
+    eString,
+    eNumberOfDataTypes
   };
 
   enum eDimensions {
@@ -46,7 +55,33 @@ namespace constants {
     eVertical
   };
 
-  const std::string kDataTypeNames[eString + 1] = {
+  enum eAttributeNames {
+    eStandardName,
+    eLongName,
+    eUnitsName,
+    eMeshName,
+    eLocationName,
+    eOnlineOperationName,
+    eIntervalOperationName,
+    eIntervalWriteName,
+    eCellMethodsName,
+    eCoordinatesName,
+    eNumberOfAttributeNames
+  };
+
+  enum eIncrementVariables {
+    eEastwardWind,
+    eNorthwardWind,
+    eExnerPressure,
+    eDryDensity,
+    ePotentialTemperature,
+    eSpecificHumidity,
+    eCloudWaterMass,
+    eCloudIceMass,
+    eNumberOfIncrementVariables
+  };
+
+  const std::string kDataTypeNames[eNumberOfDataTypes] = {
     "byte",
     "char",
     "short",
@@ -60,6 +95,18 @@ namespace constants {
     "std::string"
   };
 
+  // Used with MetadataLookup class - the following are Atlas names of increment variables
+  const std::string  kIncrementVariables[eNumberOfIncrementVariables] {
+    "eastward_wind",
+    "northward_wind",
+    "exner_levels_minus_one",
+    "dry_air_density_levels_minus_one",
+    "potential_temperature",
+    "specific_humidity",
+    "mass_content_of_cloud_liquid_water_in_atmosphere_layer",
+    "mass_content_of_cloud_ice_in_atmosphere_layer",
+  };
+
   const std::string kTimeDimName = "time_counter";
   const std::string kTimeVarName = "time_instant";
   const std::string kTimeOriginName = "time_origin";
@@ -71,6 +118,8 @@ namespace constants {
   const std::string kVerticalFullName = "full_levels";
   const std::string kVerticalHalfName = "half_levels";
 
+
+  const std::string kLfricMeshTerm = "Mesh2d";
   const std::string kLfricLonVarName = "Mesh2d_face_y";
   const std::string kLfricLatVarName = "Mesh2d_face_x";
 
@@ -80,6 +129,46 @@ namespace constants {
   const std::string kTabSpace = "    ";
   const std::string kLevelsSearchTerm = "levels";
   const std::string kNotFoundError = "NOT_FOUND";
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  /// Increment file metadata attributes
+  /// Attribute names
+
+  const std::string  kIncrementAttributeNames[eNumberOfAttributeNames] {
+    "standard_name",
+    "long_name",
+    "units",
+    "mesh",
+    "location",
+    "online_operation",
+    "interval_operation",
+    "interval_write",
+    "cell_methods",
+    "coordinates"
+  };
+
+  /// Attribute constant values
+  const std::string kMeshValue = "Mesh2d";
+  const std::string kLocationValue = "face";
+  const std::string kOnlineOperationValue = "instant";  // Not needed?
+  const std::string kIntervalOperationValue = "3600 s";  // Not needed?
+  const std::string kntervalWriteValue = "3600 s";  // Not needed?
+  const std::string kCellMethodsValue = "time: point";  // Not needed?
+  const std::string kCoordinatesValue = "Mesh2d_face_y Mesh2d_face_x";
+
+  const std::string  kIncrementVariableValues[eNumberOfAttributeNames] {
+    kNotFoundError,  // Use AttributeLookup
+    kNotFoundError,  // Use AttributeLookup
+    kNotFoundError,  // Use AttributeLookup
+    kMeshValue,
+    kLocationValue,
+    kOnlineOperationValue,
+    kIntervalOperationValue,
+    kntervalWriteValue,
+    kCellMethodsValue,
+    kCoordinatesValue
+  };
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   const atlas::idx_t kMPIRankOwner = 0;
 

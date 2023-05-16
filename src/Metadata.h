@@ -47,6 +47,8 @@ class Metadata {
   std::vector<std::string> getGlobalAttrNames();
   std::vector<std::string> getVariableNames();
 
+  std::vector<std::string> findVariableNames(const std::string& searchTerm);
+
   std::map<std::string, int>& getDimensionsMap();
   std::map<std::string, std::shared_ptr<AttributeBase>>& getGlobalAttrsMap();
   std::map<std::string, std::shared_ptr<Variable>>& getVariablesMap();

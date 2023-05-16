@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "AtlasProcessor.h"
+#include "AtlasReader.h"
+#include "AtlasWriter.h"
 #include "Data.h"
 #include "Metadata.h"
 
@@ -61,6 +63,8 @@ class AtlasData {
   const std::vector<monio::constants::FieldMetadata> fieldToMetadataVec_;
 
   monio::AtlasProcessor atlasProcessor_;
+  monio::AtlasReader atlasReader_;
+  monio::AtlasWriter atlasWriter_;
 
   atlas::CubedSphereGrid grid_;
   atlas::Mesh mesh_;

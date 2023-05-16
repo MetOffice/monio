@@ -31,6 +31,8 @@ class Data {
   void deleteContainer(const std::string& name);
   std::vector<std::string> getDataContainerNames();
 
+  void removeAllButTheseContainers(const std::vector<std::string>& varNames);
+
  private:
   std::map<std::string, std::shared_ptr<DataContainerBase>> dataContainers_;
 };

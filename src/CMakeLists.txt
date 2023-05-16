@@ -14,6 +14,10 @@ AtlasData.cc
 AtlasData.h
 AtlasProcessor.cc
 AtlasProcessor.h
+AtlasReader.cc
+AtlasReader.h
+AtlasWriter.cc
+AtlasWriter.h
 AttributeBase.cc
 AttributeBase.h
 AttributeInt.cc
@@ -33,8 +37,12 @@ DataContainerInt.cc
 DataContainerInt.h
 File.cc
 File.h
+FileData.cc
+FileData.h
 Metadata.cc
 Metadata.h
+Monio.cc
+Monio.h
 Reader.cc
 Reader.h
 Variable.cc
@@ -52,3 +60,4 @@ ecbuild_add_library( TARGET monio
                      INCLUDES ${MONIO_SRC_DEP}
                      INSTALL_HEADERS LISTED
                      LINKER_LANGUAGE ${OOPS_LINKER_LANGUAGE} )
+

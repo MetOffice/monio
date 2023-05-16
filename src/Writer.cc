@@ -15,12 +15,14 @@
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
 
+#include "oops/util/Logger.h"
+
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
                       const std::string& filePath)
     : mpiCommunicator_(mpiCommunicator),
       mpiRankOwner_(mpiRankOwner) {
-  std::cout << "Writer::Writer()" << std::endl;
+  oops::Log::debug() << "Writer::Writer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     try {
       file_ = std::make_unique<File>(filePath, netCDF::NcFile::replace);
@@ -39,14 +41,14 @@ void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
 }
 
 void monio::Writer::writeMetadata(const Metadata& metadata) {
-  std::cout << "Writer::writeMetadata()" << std::endl;
+  oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     getFile().writeMetadata(metadata);
   }
 }
 
 void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& data) {
-  std::cout << "Writer::writeVariablesData()" << std::endl;
+  oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap =
                                                                      data.getContainers();
@@ -83,7 +85,7 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
 }
 
 monio::File& monio::Writer::getFile() {
-  std::cout << "Writer::getFile()" << std::endl;
+  oops::Log::debug() << "Writer::getFile()" << std::endl;
   if (file_ == nullptr)
     throw std::runtime_error("Writer::getFile()> File has not been initialised...");
 
