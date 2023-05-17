@@ -7,15 +7,15 @@
 #include "FileData.h"
 
 monio::FileData::FileData(const std::string filePath, const util::DateTime date) :
-  filePath_(filePath),
-  date_(date),
   data_(),
-  metadata_() {}
+  metadata_(),
+  filePath_(filePath),
+  date_(date) {}
 
 monio::FileData::FileData(const std::string filePath) :
-  filePath_(filePath),
   data_(),
-  metadata_() {}
+  metadata_(),
+  filePath_(filePath) {}
 
 monio::Data& monio::FileData::getData() {
   return data_;

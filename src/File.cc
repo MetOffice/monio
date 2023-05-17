@@ -294,11 +294,6 @@ void monio::File::writeVariables(const Metadata& metadata) {
     const std::map<std::string, std::shared_ptr<Variable>>& varsMap = metadata.getVariablesMap();
     for (auto const& varPair : varsMap) {
       std::shared_ptr<Variable> var = varPair.second;
-      std::vector<std::string> dimNames = var->getDimensionNames();
-      for (const auto& dimName : dimNames) {
-        int dimSize = var->getDimension(dimName);
-      }
-
       netCDF::NcVar ncVar = getFile().addVar(var->getName(),
                             constants::kDataTypeNames[var->getType()],
                             var->getDimensionNames());
