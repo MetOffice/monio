@@ -107,7 +107,7 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
 
   // Check if Field is not global
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[0] = atlasProcessor_.getSizeOwned(field);  // If so, get the 'size owned' by the Field
+    dimVec[0] = atlasProcessor_.getSizeOwned(field);  // If so, get the 'size owned' by the Fieldsadasdas
   }
   if (reverseDims == true) {
     std::reverse(dimVec.begin(), dimVec.end());

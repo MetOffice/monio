@@ -16,7 +16,7 @@ set(CMAKE_DIRECTORY_LABELS ${PROJECT_NAME})
 
 ## Ecbuild integration
 set(ECBUILD_DEFAULT_BUILD_TYPE Release)
-find_package( ecbuild 3.3.2 REQUIRED )
+find_package(ecbuild 3.3.2 REQUIRED)
 include(ecbuild_system NO_POLICY_SCOPE)
 ecbuild_declare_project()
 
@@ -28,13 +28,26 @@ find_package(NetCDF COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
 find_package(eckit 1.16.1 REQUIRED COMPONENTS MPI)
 find_package(atlas 0.20.2 REQUIRED)
+find_package(oops 1.0.0 REQUIRED)
 
-set(MONIO_INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(MONIO_INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}/src
+                        ${oops_SOURCE_DIR}/src)
 set(MONIO_LIBRARIES monio)
+
+include_directories(${MONIO_INCLUDE_DIRS}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 ## Sources
 add_subdirectory(src)
+add_subdirectory(test)
 
 ## Export package
 ecbuild_install_project(NAME ${PROJECT_NAME})
 ecbuild_print_summary()
+
+ecbuild_add_test(TARGET monio_coding_norms
+                 TYPE SCRIPT
+                 COMMAND ${CMAKE_BINARY_DIR}/bin/monio_cpplint.py
+                 ARGS --quiet --recursive
+                       ${CMAKE_CURRENT_SOURCE_DIR}/src
+                       ${CMAKE_CURRENT_SOURCE_DIR}/test)
