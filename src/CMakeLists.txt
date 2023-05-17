@@ -10,8 +10,6 @@
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 list(APPEND monio_sources
-AtlasData.cc
-AtlasData.h
 AtlasProcessor.cc
 AtlasProcessor.h
 AtlasReader.cc

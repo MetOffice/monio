@@ -60,7 +60,7 @@ class AtlasReader {
                                     const std::vector<T>& dataVec);
 
   const eckit::mpi::Comm& mpiCommunicator_;
-  const atlas::idx_t mpiRankOwner_;
+  const std::size_t mpiRankOwner_;
 
   AtlasProcessor atlasProcessor_;
 };

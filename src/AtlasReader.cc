@@ -111,7 +111,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   auto fieldView = atlas::array::make_view<T, 2>(field);
   atlas::idx_t numLevels = field.levels();
   for (atlas::idx_t j = 0; j < numLevels; ++j) {
-    for (atlas::idx_t i = 0; i < lfricToAtlasMap.size(); ++i) {
+    for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
       fieldView(i, j) = dataVec[index];
     }

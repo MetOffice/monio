@@ -111,6 +111,6 @@ class AtlasWriter {
   AtlasProcessor atlasProcessor_;
 
   const eckit::mpi::Comm& mpiCommunicator_;
-  const atlas::idx_t mpiRankOwner_;
+  const std::size_t mpiRankOwner_;
 };
 }  // namespace monio

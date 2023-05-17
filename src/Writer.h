@@ -41,7 +41,7 @@ class Writer {
   File& getFile();
 
   const eckit::mpi::Comm& mpiCommunicator_;
-  const atlas::idx_t mpiRankOwner_;
+  const std::size_t mpiRankOwner_;
 
   std::unique_ptr<File> file_;
 };
