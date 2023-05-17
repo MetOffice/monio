@@ -54,8 +54,7 @@ monio::Data::Data() {}
 bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
   if (lhs.dataContainers_.size() == rhs.dataContainers_.size()) {
     for (auto lhsIt = lhs.dataContainers_.begin(), rhsIt = rhs.dataContainers_.begin();
-         lhsIt != lhs.dataContainers_.end(); ++lhsIt , ++rhsIt)
-    {
+         lhsIt != lhs.dataContainers_.end(); ++lhsIt , ++rhsIt) {
       std::shared_ptr<DataContainerBase> lhsDataContainer = lhsIt->second;
       std::shared_ptr<DataContainerBase> rhsDataContainer = rhsIt->second;
 

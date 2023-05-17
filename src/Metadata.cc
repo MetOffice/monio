@@ -48,8 +48,7 @@ bool monio::operator==(const monio::Metadata& lhs,
   // Compare dimensions
   if (lhs.dimensions_.size() == rhs.dimensions_.size()) {
     for (auto lhsIt = lhs.dimensions_.begin(), rhsIt = rhs.dimensions_.begin();
-         lhsIt != lhs.dimensions_.end(); ++lhsIt , ++rhsIt)
-    {
+         lhsIt != lhs.dimensions_.end(); ++lhsIt , ++rhsIt) {
       if (lhsIt->second != rhsIt->second)
         return false;
     }
@@ -84,8 +83,7 @@ bool monio::operator==(const monio::Metadata& lhs,
         if (lhsVariable->getAttributes().size() == rhsVariable->getAttributes().size()) {
           for (auto lhsIt = lhsVariable->getAttributes().begin(),
                rhsIt = rhsVariable->getAttributes().begin();
-               lhsIt != lhsVariable->getAttributes().end(); ++lhsIt , ++rhsIt)
-          {
+               lhsIt != lhsVariable->getAttributes().end(); ++lhsIt , ++rhsIt) {
             std::shared_ptr<AttributeBase> lhsVarAttr = lhsIt->second;
             std::shared_ptr<AttributeBase> rhsVarAttr = rhsIt->second;
 
@@ -161,7 +159,7 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
       return it->first;
     }
   }
-  return monio::constants::kNotFoundError;
+  return std::string(monio::constants::kNotFoundError);
 }
 
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
@@ -372,8 +370,7 @@ void monio::Metadata::printVariables() {
 
     std::vector<std::string> varDims = netCDFVar->getDimensionNames();
 
-    if (varDims.size() > 0)
-    {
+    if (varDims.size() > 0) {
       oops::Log::debug() << "(";
       for (auto it = varDims.begin(); it != varDims.end() - 1; ++it) {
         oops::Log::debug() << *it << ", ";

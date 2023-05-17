@@ -10,7 +10,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 project(monio VERSION 0.0.1 LANGUAGES CXX)
-
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH})
 set(CMAKE_DIRECTORY_LABELS ${PROJECT_NAME})
 
@@ -44,10 +44,3 @@ add_subdirectory(test)
 ## Export package
 ecbuild_install_project(NAME ${PROJECT_NAME})
 ecbuild_print_summary()
-
-ecbuild_add_test(TARGET monio_coding_norms
-                 TYPE SCRIPT
-                 COMMAND ${CMAKE_BINARY_DIR}/bin/monio_cpplint.py
-                 ARGS --quiet --recursive
-                       ${CMAKE_CURRENT_SOURCE_DIR}/src
-                       ${CMAKE_CURRENT_SOURCE_DIR}/test)

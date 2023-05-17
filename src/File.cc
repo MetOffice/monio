@@ -113,8 +113,7 @@ void monio::File::readVariables(Metadata& metadata,
     for (auto const& ncVarPair : nvVarsMap) {
       netCDF::NcVar ncVar = ncVarPair.second;
       if (std::find(variableNames.begin(), variableNames.end(),
-          ncVar.getName()) != variableNames.end())
-      {
+          ncVar.getName()) != variableNames.end()) {
         readVariable(metadata, ncVar);
       }
     }
@@ -295,7 +294,7 @@ void monio::File::writeVariables(const Metadata& metadata) {
     for (auto const& varPair : varsMap) {
       std::shared_ptr<Variable> var = varPair.second;
       netCDF::NcVar ncVar = getFile().addVar(var->getName(),
-                            constants::kDataTypeNames[var->getType()],
+                            std::string(constants::kDataTypeNames[var->getType()]),
                             var->getDimensionNames());
 
       std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = var->getAttributes();

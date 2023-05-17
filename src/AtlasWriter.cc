@@ -26,9 +26,9 @@ namespace {
 
 monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
                                     const atlas::idx_t mpiRankOwner):
+    atlasProcessor_(mpiCommunicator, mpiRankOwner),
     mpiCommunicator_(mpiCommunicator),
-    mpiRankOwner_(mpiRankOwner),
-    atlasProcessor_(mpiCommunicator, mpiRankOwner) {
+    mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
 }
 
@@ -71,11 +71,11 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
 
         readMetadata.clearGlobalAttributes();
 
-        readMetadata.deleteDimension(monio::constants::kTimeDimName);
-        readMetadata.deleteDimension(monio::constants::kTileDimName);
+        readMetadata.deleteDimension(std::string(monio::constants::kTimeDimName));
+        readMetadata.deleteDimension(std::string(monio::constants::kTileDimName));
 
-        readData.deleteContainer(monio::constants::kTimeVarName);
-        readData.deleteContainer(monio::constants::kTileVarName);
+        readData.deleteContainer(std::string(monio::constants::kTimeVarName));
+        readData.deleteContainer(std::string(monio::constants::kTileVarName));
 
         reconcileMetadataWithData(readMetadata, readData);
 
@@ -84,8 +84,8 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
                                                  incMetadataMap, fieldSet, lfricAtlasMap);
 
         monio::Writer writer(atlas::mpi::comm(),
-                                 monio::constants::kMPIRankOwner,
-                                 outputFilePath);
+                             monio::constants::kMPIRankOwner,
+                             outputFilePath);
         writer.writeMetadata(readMetadata);
         writer.writeVariablesData(readMetadata, readData);
     } else {
@@ -107,7 +107,7 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
 
   // Check if Field is not global
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[0] = atlasProcessor_.getSizeOwned(field);  // If so, get the 'size owned' by the Fieldsadasdas
+    dimVec[0] = atlasProcessor_.getSizeOwned(field);  // If so, get the 'size owned' by the Fields
   }
   if (reverseDims == true) {
     std::reverse(dimVec.begin(), dimVec.end());
@@ -115,9 +115,9 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
     // Reversal of dims applies to LFRic files. Using that flag here for increment attributes.
     if (incMetadata != nullptr) {
       for (int i = 0; i < constants::eNumberOfAttributeNames; ++i) {
-        std::string attributeName = constants::kIncrementAttributeNames[i];
+        std::string attributeName = std::string(constants::kIncrementAttributeNames[i]);
         std::string attributeValue;
-        switch(i) {
+        switch (i) {
           case constants::eStandardName:
             attributeValue = incMetadata->atlasName;
             break;
@@ -360,9 +360,9 @@ void monio::AtlasWriter::populateMetadataAndDataWithLfricFieldSet(
                                     const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithLfricFieldSet()" << std::endl;
   // Dimensions
-  metadata.addDimension(constants::kHorizontalName, lfricToAtlasMap.size());
-  metadata.addDimension(constants::kVerticalFullName, constants::kVerticalFullSize);
-  metadata.addDimension(constants::kVerticalHalfName, constants::kVerticalHalfSize);
+  metadata.addDimension(std::string(constants::kHorizontalName), lfricToAtlasMap.size());
+  metadata.addDimension(std::string(constants::kVerticalFullName), constants::kVerticalFullSize);
+  metadata.addDimension(std::string(constants::kVerticalHalfName), constants::kVerticalHalfSize);
   // Variables
   for (auto& field : fieldSet) {
     std::string fieldName = field.name();
@@ -408,7 +408,6 @@ void monio::AtlasWriter::populateDataWithField(Data& data,
                                              const atlas::Field& field,
                                              const std::vector<int> dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
-  atlas::array::DataType dataType = field.datatype();
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
   populateDataContainerWithField(dataContainer, field, dimensions);
   data.addContainer(dataContainer);

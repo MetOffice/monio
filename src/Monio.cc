@@ -56,15 +56,15 @@ void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
     reader_.readMetadata(fileData);
 
     std::vector<std::string> variablesToRead =
-        fileData.getMetadata().findVariableNames(monio::constants::kLfricMeshTerm);
+        fileData.getMetadata().findVariableNames(std::string(monio::constants::kLfricMeshTerm));
 
     reader_.readSingleData(fileData, variablesToRead);
     createLfricAtlasMap(fileData, grid);
 
-    reader_.readSingleDatum(fileData, monio::constants::kTimeVarName);
+    reader_.readSingleDatum(fileData, std::string(monio::constants::kTimeVarName));
     createDateTimes(fileData,
-                    monio::constants::kTimeVarName,
-                    monio::constants::kTimeOriginName);
+                    std::string(monio::constants::kTimeVarName),
+                    std::string(monio::constants::kTimeOriginName));
   }
 }
 
@@ -76,7 +76,7 @@ void monio::Monio::readVarAndPopulateField(const std::string& gridName,
   oops::Log::debug() << "Monio::readVarAndPopulateField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData fileData = getFileData(gridName);
-    reader_.readFieldDatum(fileData, varName, date, monio::constants::kTimeDimName);
+    reader_.readFieldDatum(fileData, varName, date, std::string(monio::constants::kTimeDimName));
     globalField.set_levels(levels);
     atlasReader_.populateFieldWithDataContainer(globalField,
                                                 fileData.getData().getContainer(varName),

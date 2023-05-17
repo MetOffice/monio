@@ -13,3 +13,10 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy
 ecbuild_add_resources(TARGET       monio_test_scripts
                       SOURCES_PACK ${monio_test_input}
                                    ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py)
+
+ecbuild_add_test(TARGET monio_coding_norms
+                 TYPE SCRIPT
+                 COMMAND ${CMAKE_BINARY_DIR}/bin/monio_cpplint.py
+                 ARGS --quiet --recursive
+                       ${PROJECT_SOURCE_DIR}/src
+                       ${PROJECT_SOURCE_DIR}/test)
