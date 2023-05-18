@@ -35,7 +35,7 @@ set(MONIO_INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}/src
 set(MONIO_LIBRARIES monio)
 
 include_directories(${MONIO_INCLUDE_DIRS}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/test)
+                    ${CMAKE_CURRENT_SOURCE_DIR}/test/monio)
 
 ## Sources
 add_subdirectory(src)

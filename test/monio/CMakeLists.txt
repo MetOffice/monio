@@ -7,4 +7,12 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
 ###############################################################################
 
-add_subdirectory(monio)
+set (test_files
+     IncrementWrite.h
+     NetCDFWrite.h)
+
+list (PREPEND _test_files  "test"  ${test_files} )
+
+set (test_files
+     ${_test_files}
+     PARENT_SCOPE)

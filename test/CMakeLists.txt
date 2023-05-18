@@ -1,10 +1,27 @@
+###############################################################################
+# MONIO - Met Office NetCDF Input Output                                      #
+#                                                                             #
+# (C) Crown Copyright 2023 Met Office                                         #
+#                                                                             #
+# This software is licensed under the terms of the Apache Licence Version 2.0 #
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
+###############################################################################
+
+add_subdirectory(monio)
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 
-list(APPEND lfriclite_testinput
+list(APPEND monio_testinput
   testinput/fieldset_write.yaml
   testinput/netcdf_write.yaml
   testinput/increment_write.yaml
 )
+
+foreach(FILENAME ${monio_testinput})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                           ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
+                           ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
+endforeach(FILENAME)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                         ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py
@@ -20,3 +37,15 @@ ecbuild_add_test(TARGET monio_coding_norms
                  ARGS --quiet --recursive
                        ${PROJECT_SOURCE_DIR}/src
                        ${PROJECT_SOURCE_DIR}/test)
+
+ecbuild_add_test(TARGET  test_monio_increment_write
+                 SOURCES mains/TestIncrementWrite.cc
+                 ARGS    "testinput/increment_write.yaml"
+                 LIBS    lfriclite
+                 MPI     4)
+
+ecbuild_add_test(TARGET  test_monio_netcdf_write
+                 SOURCES mains/TestNetCDFWrite.cc
+                 ARGS    "testinput/netcdf_write.yaml"
+                 LIBS    lfriclite
+                 MPI     4)
