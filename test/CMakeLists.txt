@@ -12,8 +12,15 @@ message(STATUS "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
+file( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/DataOut )
 
+# Currently repurpose data environment variable from LFRic-Lite
+set(LFRICLITE_DATA_REP_DIR "$ENV{LFRICLITE_DATA_REP_DIR}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                        ${LFRICLITE_DATA_REP_DIR}
+                        ${CMAKE_CURRENT_BINARY_DIR}/Data)
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 list(APPEND monio_testinput
   testinput/netcdf_write.yaml
 )
