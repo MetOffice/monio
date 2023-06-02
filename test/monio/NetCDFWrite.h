@@ -24,6 +24,7 @@
 #include "eckit/testing/Test.h"
 
 #include "monio/Constants.h"
+#include "monio/FileData.h"
 #include "monio/Metadata.h"
 #include "monio/Reader.h"
 #include "monio/Writer.h"

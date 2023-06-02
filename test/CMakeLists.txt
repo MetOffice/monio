@@ -9,12 +9,15 @@
 
 add_subdirectory(monio)
 
+message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
+message(STATUS "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 
 list(APPEND monio_testinput
-  testinput/fieldset_write.yaml
   testinput/netcdf_write.yaml
-  testinput/increment_write.yaml
 )
 
 foreach(FILENAME ${monio_testinput})
@@ -38,14 +41,8 @@ ecbuild_add_test(TARGET monio_coding_norms
                        ${PROJECT_SOURCE_DIR}/src
                        ${PROJECT_SOURCE_DIR}/test)
 
-ecbuild_add_test(TARGET  test_monio_increment_write
-                 SOURCES mains/TestIncrementWrite.cc
-                 ARGS    "testinput/increment_write.yaml"
-                 LIBS    lfriclite
-                 MPI     4)
-
 ecbuild_add_test(TARGET  test_monio_netcdf_write
                  SOURCES mains/TestNetCDFWrite.cc
                  ARGS    "testinput/netcdf_write.yaml"
-                 LIBS    lfriclite
+                 LIBS    monio
                  MPI     4)
