@@ -7,8 +7,6 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
 ###############################################################################
 
-add_subdirectory(monio)
-
 message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 message(STATUS "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
