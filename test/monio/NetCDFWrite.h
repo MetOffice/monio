@@ -54,8 +54,8 @@ void basicWriteTest() {
     reader.readAllData(firstFileData);
 
     monio::Writer writer(atlas::mpi::comm(),
-                             monio::constants::kMPIRankOwner,
-                             outputFilePath);
+                         monio::constants::kMPIRankOwner,
+                         outputFilePath);
     writer.writeData(firstFileData.getMetadata(), firstFileData.getData());
 
     monio::FileData secondFileData(outputFilePath);
