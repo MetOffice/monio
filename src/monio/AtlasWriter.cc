@@ -257,7 +257,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                              "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (atlas::idx_t i = 0; i < lfricToAtlasMap.size(); ++i) {
+  for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
     for (atlas::idx_t j = 0; j < numLevels; ++j) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
       dataVec[index] = fieldView(i, j);
@@ -489,7 +489,7 @@ atlas::Field monio::AtlasWriter::copySurfaceLevel(const atlas::Field& inputField
     }
   }
   // Copy surface level of input field
-  for (size_t i = 0; i < dimVec[constants::eHorizontal]; ++i) {
+  for (int i = 0; i < dimVec[constants::eHorizontal]; ++i) {
       copiedFieldView(i, 0) = inputFieldView(i, 0);
   }
   return copiedField;
