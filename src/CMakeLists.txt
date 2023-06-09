@@ -51,15 +51,6 @@ monio/Writer.h
 )
 
 set(MONIO_LIB_DEP oops atlas NetCDF::NetCDF_CXX MPI::MPI_CXX)
-#set(MONIO_SRC_DEP ${monio_src} )
-
-#ecbuild_add_library(TARGET monio
-#                    SOURCES ${monio_src_files}
-#                    PUBLIC_LIBS ${MONIO_LIB_DEP}
-#                    INCLUDES ${MONIO_INCLUDE_DIRS}
-#                    #INCLUDES ${MONIO_INCLUDES}
-#                    INSTALL_HEADERS LISTED
-#                    LINKER_LANGUAGE ${OOPS_LINKER_LANGUAGE})
 
 ecbuild_add_library( TARGET ${PROJECT_NAME}
                      SOURCES ${monio_src_files}
@@ -68,15 +59,6 @@ ecbuild_add_library( TARGET ${PROJECT_NAME}
                      HEADER_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
                      LINKER_LANGUAGE CXX )
 
-target_link_libraries( ${PROJECT_NAME} PUBLIC ${oops_LIBRARIES} ) #TODO: Change to "oops::oops" once oops adds namespace support
-
-#Configure include directory layout for build-tree to match install-tree
-set(BUILD_DIR_INCLUDE_PATH ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/include)
-add_custom_target(${PROJECT_NAME}_headers ALL
-                    COMMAND ${CMAKE_COMMAND} -E make_directory ${BUILD_DIR_INCLUDE_PATH}
-                    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR} ${BUILD_DIR_INCLUDE_PATH}/${PROJECT_NAME})
-add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_headers)
-
 ## Include paths
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-                                                         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+                                                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
