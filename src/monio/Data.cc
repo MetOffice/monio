@@ -49,7 +49,9 @@ bool findInVector(std::vector<T> vector, T searchTerm) {
 }
 }  // anonymous namespace
 
-monio::Data::Data() {}
+monio::Data::Data() {
+  oops::Log::debug() << "Data::Data()" << std::endl;
+}
 
 bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
   if (lhs.dataContainers_.size() == rhs.dataContainers_.size()) {

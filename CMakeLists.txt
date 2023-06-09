@@ -35,7 +35,7 @@ find_package(atlas 0.20.2 REQUIRED)
 find_package(oops 1.0.0 REQUIRED)
 
 ## Export package info
-list(APPEND MPI oops atlas)
+#list(APPEND MPI HDF5 NetCDF atlas oops)
 
 set(MONIO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
                        ${CMAKE_CURRENT_BINARY_DIR}/src
