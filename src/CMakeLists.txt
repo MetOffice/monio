@@ -7,7 +7,7 @@
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
 ###############################################################################
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 ecbuild_generate_config_headers( DESTINATION ${INSTALL_INCLUDE_DIR}/monio )
 
 list(APPEND monio_src_files
