@@ -1,0 +1,10 @@
+parameters:
+  varMetadata:
+  - { varName: exner,                    doCopyFirstLevel: true }
+  - { varName: grid_surface_temperature, doCopyFirstLevel: false }
+  - { varName: theta,                    doCopyFirstLevel: false }
+  - { varName: u_in_w3,                  doCopyFirstLevel: true }
+  - { varName: v_in_w3,                  doCopyFirstLevel: true }
+  dateTime: 2021-06-01T23:00:00
+  inputFilePath: Data/lfricdiag/lfric_bg_for_hofx_C224.nc
+  outputFilePath: DataOut/test_monio_read_write_output.nc
