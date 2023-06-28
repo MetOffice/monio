@@ -60,6 +60,7 @@ class MonioReadWrite : public oops::Test{
  public:
   MonioReadWrite() {}
   virtual ~MonioReadWrite() {}
+
  private:
   std::string testid() const override {
     return "monio::test::MonioReadWrite";
