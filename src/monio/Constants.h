@@ -18,14 +18,14 @@ namespace monio {
 namespace constants {
 struct FieldMetadata {
   std::string lfricName;
-  std::string atlasName;
+  std::string jediName;
   size_t numLevels;
   size_t fieldSize;
   int dataType;
 };
 
 struct IncrementMetadata {
-  std::string atlasName;
+  std::string jediName;
   std::string lfricName;
   std::string lfricIncName;
   std::string units;

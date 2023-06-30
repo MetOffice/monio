@@ -16,25 +16,14 @@
 #include "oops/util/Logger.h"
 
 #include "Constants.h"
+#include "Utils.h"
 
-namespace {
-std::vector<std::string> stringToWords(const std::string& inputStr,
-                                       const char separatorChar) {
-    std::stringstream stringStream(inputStr);
-    std::string word = "";
-    std::vector<std::string> wordList;
-    while (std::getline(stringStream, word, separatorChar)) {
-        wordList.push_back(word);
-    }
-    return wordList;
+namespace  {
+  std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
+    std::vector<std::string> dateTimeSplit = monio::utils::strToWords(lfricDateTimeStr, ' ');
+    return dateTimeSplit[0] + "T" + dateTimeSplit[1] + "Z";
+  }
 }
-
-std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
-  std::vector<std::string> dateTimeSplit = stringToWords(lfricDateTimeStr, ' ');
-
-  return dateTimeSplit[0] + "T" + dateTimeSplit[1] + "Z";
-}
-}  // anonymous namespace
 
 monio::Monio* monio::Monio::this_ = nullptr;
 
@@ -44,11 +33,11 @@ monio::Monio::~Monio() {
 }
 
 void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
-                                const std::string& filePath,
-                                const util::DateTime& date) {
+                            const std::string& filePath,
+                            const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::readFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath, date);
+    FileData& fileData = createFileData(grid.name(), filePath, dateTime);
     // Storage of read data isn't hugely important at this stage. However, keying and storing
     // against the grid name allows for data of different resolutions to be read and available
     // at the point of writing.
@@ -71,13 +60,14 @@ void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
 
 void monio::Monio::readVarAndPopulateField(const std::string& gridName,
                                            const std::string& varName,
-                                           const util::DateTime& date,
+                                           const util::DateTime& dateTime,
                                            const atlas::idx_t& levels,
                                            atlas::Field& globalField) {
   oops::Log::debug() << "Monio::readVarAndPopulateField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData fileData = getFileData(gridName);
-    reader_.readFieldDatum(fileData, varName, date, std::string(monio::constants::kTimeDimName));
+    reader_.readFieldDatum(fileData, varName, dateTime,
+                           std::string(monio::constants::kTimeDimName));
     globalField.set_levels(levels);
     atlasReader_.populateFieldWithDataContainer(globalField,
                                                 fileData.getData().getContainer(varName),
@@ -86,11 +76,11 @@ void monio::Monio::readVarAndPopulateField(const std::string& gridName,
 }
 
 void monio::Monio::writeIncrementsFile(const std::string& gridName,
-                                   const atlas::FieldSet fieldSet,
-                                   const std::vector<std::string>& varNames,
-                                   const std::map<std::string, constants::IncrementMetadata>&
+                                       const atlas::FieldSet fieldSet,
+                                       const std::vector<std::string>& varNames,
+                                       const std::map<std::string, constants::IncrementMetadata>&
                                                                                      incMetadataMap,
-                                   const std::string& filePath) {
+                                       const std::string& filePath) {
   oops::Log::debug() << "Monio::writeIncrementsFile()" << std::endl;
   atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(fieldSet);
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -164,7 +154,7 @@ void monio::Monio::createDateTimes(FileData& fileData,
 
 monio::FileData& monio::Monio::createFileData(const std::string& gridName,
                                                       const std::string& filePath,
-                                                      const util::DateTime& date) {
+                                                      const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::createFileData()" << std::endl;
   auto it = filesData_.find(gridName);
 
@@ -172,7 +162,7 @@ monio::FileData& monio::Monio::createFileData(const std::string& gridName,
     filesData_.erase(gridName);
   }
   // Overwrite existing data
-  filesData_.insert({gridName, FileData(filePath, date)});
+  filesData_.insert({gridName, FileData(filePath, dateTime)});
   return filesData_.at(gridName);
 }
 

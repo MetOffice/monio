@@ -73,18 +73,9 @@ class Reader {
 
   std::vector<std::shared_ptr<DataContainerBase>> getCoordData(FileData& fileData,
                                                   const std::vector<std::string>& coordNames);
-  // The following function takes a levels 'search term' as some variables use full- or half-levels
-  // This approach allows the correct number of levels for the variable to be determined
-  std::vector<monio::constants::FieldMetadata> getFieldMetadata(const FileData& fileData,
-                                           const std::vector<std::string>& lfricFieldNames,
-                                           const std::vector<std::string>& atlasFieldNames,
-                                           const std::string& levelsSearchTerm);
 
  private:
   size_t getSizeOwned(const FileData& fileData, const std::string& varName);
-  size_t getVarNumLevels(const FileData& fileData,
-                         const std::string& varName,
-                         const std::string& levelsSearchTerm);
   int getVarDataType(const FileData& fileData, const std::string& varName);
   size_t findTimeStep(const FileData& fileData, const util::DateTime& dateTime);
 

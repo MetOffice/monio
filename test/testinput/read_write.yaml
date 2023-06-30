@@ -1,10 +1,13 @@
 parameters:
   varMetadata:
-  - { varName: exner,                    doCopyFirstLevel: true }
-  - { varName: grid_surface_temperature, doCopyFirstLevel: false }
-  - { varName: theta,                    doCopyFirstLevel: false }
-  - { varName: u_in_w3,                  doCopyFirstLevel: true }
-  - { varName: v_in_w3,                  doCopyFirstLevel: true }
-  dateTime: 2021-06-01T23:00:00
+    exner:                    exner_levels_minus_one, true
+    grid_surface_temperature: skin_temperature,       false
+    theta:                    potential_temperature,  false
+    u_in_w3:                  eastward_wind,          true
+    v_in_w3:                  northward_wind,         true
+  gridName: CS-LFR-224
+  partitionerType: cubedsphere
+  meshType: cubedsphere_dual
+  dateTime: 2021-06-01T23:00:00Z
   inputFilePath: Data/lfricdiag/lfric_bg_for_hofx_C224.nc
   outputFilePath: DataOut/test_monio_read_write_output.nc

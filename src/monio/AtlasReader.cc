@@ -107,8 +107,8 @@ void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
 
 template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
-                                    const std::vector<T>& dataVec,
-                                    const std::vector<size_t>& lfricToAtlasMap) {
+                                       const std::vector<T>& dataVec,
+                                       const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   atlas::idx_t numLevels = field.levels();
@@ -121,14 +121,14 @@ void monio::AtlasReader::populateField(atlas::Field& field,
 }
 
 template void monio::AtlasReader::populateField<double>(atlas::Field& field,
-                                                      const std::vector<double>& dataVec,
-                                                      const std::vector<size_t>& lfricToAtlasMap);
+                                                        const std::vector<double>& dataVec,
+                                                        const std::vector<size_t>& lfricToAtlasMap);
 template void monio::AtlasReader::populateField<float>(atlas::Field& field,
-                                                     const std::vector<float>& dataVec,
-                                                     const std::vector<size_t>& lfricToAtlasMap);
+                                                       const std::vector<float>& dataVec,
+                                                       const std::vector<size_t>& lfricToAtlasMap);
 template void monio::AtlasReader::populateField<int>(atlas::Field& field,
-                                                   const std::vector<int>& dataVec,
-                                                   const std::vector<size_t>& lfricToAtlasMap);
+                                                     const std::vector<int>& dataVec,
+                                                     const std::vector<size_t>& lfricToAtlasMap);
 
 template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
@@ -150,8 +150,8 @@ void monio::AtlasReader::populateField(atlas::Field& field,
 }
 
 template void monio::AtlasReader::populateField<double>(atlas::Field& field,
-                                                      const std::vector<double>& dataVec);
+                                                        const std::vector<double>& dataVec);
 template void monio::AtlasReader::populateField<float>(atlas::Field& field,
-                                                     const std::vector<float>& dataVec);
+                                                       const std::vector<float>& dataVec);
 template void monio::AtlasReader::populateField<int>(atlas::Field& field,
-                                                   const std::vector<int>& dataVec);
+                                                     const std::vector<int>& dataVec);

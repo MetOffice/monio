@@ -44,6 +44,8 @@ monio/Monio.cc
 monio/Monio.h
 monio/Reader.cc
 monio/Reader.h
+monio/Utils.cc
+monio/Utils.h
 monio/Variable.cc
 monio/Variable.h
 monio/Writer.cc

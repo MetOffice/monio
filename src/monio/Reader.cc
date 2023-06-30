@@ -276,27 +276,6 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
   }
 }
 
-std::vector<monio::constants::FieldMetadata> monio::Reader::getFieldMetadata(
-                                           const FileData& fileData,
-                                           const std::vector<std::string>& lfricFieldNames,
-                                           const std::vector<std::string>& atlasFieldNames,
-                                           const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "Reader::getFieldMetadata()" << std::endl;
-  // No MPI rank check - used to call private functions that broadcast data to all PEs
-  std::vector<constants::FieldMetadata> fieldMetadataVec;
-  for (auto lfricIt = lfricFieldNames.begin(), atlasIt = atlasFieldNames.begin();
-                            lfricIt != lfricFieldNames.end(); ++lfricIt , ++atlasIt) {
-    struct constants::FieldMetadata fieldMetadata;
-    fieldMetadata.lfricName = *lfricIt;
-    fieldMetadata.atlasName = *atlasIt;
-    fieldMetadata.numLevels = getVarNumLevels(fileData, fieldMetadata.lfricName, levelsSearchTerm);
-    fieldMetadata.dataType = getVarDataType(fileData, fieldMetadata.lfricName);
-    fieldMetadata.fieldSize = getSizeOwned(fileData, fieldMetadata.lfricName);
-    fieldMetadataVec.push_back(fieldMetadata);
-  }
-  return fieldMetadataVec;
-}
-
 size_t monio::Reader::getSizeOwned(const FileData& fileData, const std::string& varName) {
   oops::Log::debug() << "Reader::getSizeOwned()" << std::endl;
   size_t totalSize;
@@ -306,19 +285,6 @@ size_t monio::Reader::getSizeOwned(const FileData& fileData, const std::string& 
   }
   mpiCommunicator_.broadcast(totalSize, mpiRankOwner_);
   return totalSize;
-}
-
-size_t monio::Reader::getVarNumLevels(const FileData& fileData,
-                                      const std::string& varName,
-                                      const std::string& levelsSearchTerm) {
-  oops::Log::debug() << "Reader::getVarNumLevels()" << std::endl;
-  size_t numLevels;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
-    numLevels = variable->findDimensionSize(levelsSearchTerm);
-  }
-  mpiCommunicator_.broadcast(numLevels, mpiRankOwner_);
-  return numLevels;
 }
 
 int monio::Reader::getVarDataType(const FileData& fileData, const std::string& varName) {

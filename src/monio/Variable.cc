@@ -15,17 +15,7 @@
 #include "AttributeInt.h"
 #include "AttributeString.h"
 #include "Constants.h"
-
-namespace {
-template <typename key, typename value>
-std::vector<key> getVectorOfKeys(std::map<key, value>& map) {
-  std::vector<key> keys;
-  for (auto const& entry : map) {
-    keys.push_back(entry.first);
-  }
-  return keys;
-}
-}  // anonymous namespace
+#include "Utils.h"
 
 monio::Variable::Variable(const std::string name, const int type):
   name_(name), type_(type) {}

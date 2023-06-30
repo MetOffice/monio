@@ -33,13 +33,20 @@ class Monio {
   Monio& operator=(Monio&&)      = delete;  //!< Deleted move assignment
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
+  // For LFRic-JEDI
+
+  void read(const atlas::FieldSet fieldSet,
+            const util::DateTime& dateTime);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // From LFRic-Lite-JEDI
   void readFile(const atlas::CubedSphereGrid& grid,
                 const std::string& filePath,
                 const util::DateTime& date);
 
   void readVarAndPopulateField(const std::string& gridName,
                                const std::string& varName,
-                               const util::DateTime& date,
+                               const util::DateTime& dateTime,
                                const atlas::idx_t& levels,
                                atlas::Field& globalField);
 
@@ -62,7 +69,7 @@ class Monio {
 
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath,
-                           const util::DateTime& date);
+                           const util::DateTime& dateTime);
 
   // This function returns copies of FileData by design
   FileData getFileData(const std::string& gridName);

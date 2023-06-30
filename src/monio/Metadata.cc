@@ -19,27 +19,7 @@
 
 #include "AttributeInt.h"
 #include "AttributeString.h"
-
-namespace  {
-template<typename keyValue, typename typeValue>
-std::vector<std::string> extractKeys(std::map<keyValue, typeValue> const& inputMap) {
-  std::vector<keyValue> keyVector;
-  for (auto const& elementPair : inputMap) {
-    keyVector.push_back(elementPair.first);
-  }
-  return keyVector;
-}
-
-template<typename T>
-bool findInVector(std::vector<T> vector, T searchTerm) {
-  typename std::vector<T>::iterator it;
-  it = std::find(vector.begin(), vector.end(), searchTerm);
-  if (it != vector.end())
-    return true;
-  else
-    return false;
-}
-}  // anonymous namespace
+#include "Utils.h"
 
 monio::Metadata::Metadata() {
   oops::Log::debug() << "Metadata::Metadata()" << std::endl;
@@ -258,16 +238,16 @@ void monio::Metadata::addVariable(const std::string& varName,
 
 std::vector<std::string> monio::Metadata::getDimensionNames() {
   oops::Log::debug() << "Metadata::getDimensionNames()" << std::endl;
-  return extractKeys(dimensions_);
+  return utils::extractKeys(dimensions_);
 }
 
 std::vector<std::string> monio::Metadata::getVariableNames() {
   oops::Log::debug() << "Metadata::getVariableNames()" << std::endl;
-  return extractKeys(variables_);
+  return utils::extractKeys(variables_);
 }
 
 std::vector<std::string> monio::Metadata::findVariableNames(const std::string& searchTerm) {
-  std::vector<std::string> variableKeys = extractKeys(variables_);
+  std::vector<std::string> variableKeys = utils::extractKeys(variables_);
   std::vector<std::string> variableNames;
   for (const auto& variableKey : variableKeys) {
     std::size_t pos = variableKey.find(searchTerm);
@@ -280,7 +260,7 @@ std::vector<std::string> monio::Metadata::findVariableNames(const std::string& s
 
 std::vector<std::string> monio::Metadata::getGlobalAttrNames() {
   oops::Log::debug() << "Metadata::getGlobalAttrNames()" << std::endl;
-  return extractKeys(globalAttrs_);
+  return utils::extractKeys(globalAttrs_);
 }
 
 std::map<std::string, int>& monio::Metadata::getDimensionsMap() {
@@ -320,9 +300,9 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
 void monio::Metadata::removeAllButTheseVariables(
     const std::vector<std::string>& varNames) {
   oops::Log::debug() << "Metadata::removeAllButTheseVariables()" << std::endl;
-  std::vector<std::string> variableKeys = extractKeys(variables_);
+  std::vector<std::string> variableKeys = utils::extractKeys(variables_);
   for (const std::string& variableKey : variableKeys) {
-    if (findInVector(varNames, variableKey) == false) {
+    if (utils::findInVector(varNames, variableKey) == false) {
       deleteVariable(variableKey);
     }
   }
@@ -446,8 +426,6 @@ void monio::Metadata::printMap(const std::map<std::string, T>& map) {
   }
 }
 
-template void monio::Metadata::printMap<int>(
-    const std::map<std::string, int>& map);
-template void monio::Metadata::printMap<std::string>(
-    const std::map<std::string, std::string>& map);
+template void monio::Metadata::printMap<int>(const std::map<std::string, int>& map);
+template void monio::Metadata::printMap<std::string>(const std::map<std::string, std::string>& map);
 

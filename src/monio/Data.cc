@@ -11,12 +11,13 @@
 #include <stdexcept>
 #include <vector>
 
+#include "oops/util/Logger.h"
+
 #include "Constants.h"
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
-
-#include "oops/util/Logger.h"
+#include "Utils.h"
 
 namespace {
 template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rhsVec) {
@@ -29,25 +30,6 @@ template<typename T> bool compareData(std::vector<T>& lhsVec, std::vector<T>& rh
     return true;
   }
   return false;
-}
-
-template<typename keyValue, typename typeValue>
-std::vector<std::string> extractKeys(std::map<keyValue, typeValue> const& inputMap) {
-  std::vector<keyValue> keyVector;
-  for (auto const& elementPair : inputMap) {
-    keyVector.push_back(elementPair.first);
-  }
-  return keyVector;
-}
-
-template<typename T>
-bool findInVector(std::vector<T> vector, T searchTerm) {
-  typename std::vector<T>::iterator it;
-  it = std::find(vector.begin(), vector.end(), searchTerm);
-  if (it != vector.end())
-    return true;
-  else
-    return false;
 }
 }  // anonymous namespace
 
@@ -157,14 +139,14 @@ void monio::Data::deleteContainer(const std::string& name) {
 
 std::vector<std::string> monio::Data::getDataContainerNames() {
   oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
-  return extractKeys(dataContainers_);
+  return utils::extractKeys(dataContainers_);
 }
 
 void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {
   oops::Log::debug() << "Data::removeAllButTheseContainers()" << std::endl;
-  std::vector<std::string> containerKeys = extractKeys(dataContainers_);
+  std::vector<std::string> containerKeys = utils::extractKeys(dataContainers_);
   for (const std::string& containerKey : containerKeys) {
-    if (findInVector(varNames, containerKey) == false) {
+    if (utils::findInVector(varNames, containerKey) == false) {
       deleteContainer(containerKey);
     }
   }
