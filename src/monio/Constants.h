@@ -32,6 +32,15 @@ struct IncrementMetadata {
   bool doCopySurfaceLevel;
 };
 
+struct VariableMetadata {
+  std::string jediName;
+  std::string lfricReadName;
+  std::string lfricWriteName;
+  std::string units;
+  int numberOfLevels;
+  bool copyFirstLevel;
+};
+
 enum eAtlasLonLat {
   eLongitude,
   eLatitude
@@ -81,6 +90,15 @@ enum eIncrementVariables {
   eCloudWaterMass,
   eCloudIceMass,
   eNumberOfIncrementVariables
+};
+
+enum eVariableMetadata {
+  eJediName,
+  eLfricReadName,
+  eLfricWriteName,
+  eUnits,
+  eNumberOfLevels,
+  eCopyFirstLevel
 };
 
 const std::string_view kDataTypeNames[eNumberOfDataTypes] = {

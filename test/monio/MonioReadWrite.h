@@ -34,17 +34,6 @@
 namespace monio {
 namespace test {
 
-enum eVariableMetadata {
-  eJediName,
-  eCopyFirstLevel
-};
-
-struct VariableMetadata {
-  std::string lfricName;
-  std::string jediName;
-  bool copyFirstLevel;
-};
-
 atlas::Mesh createMesh(const atlas::CubedSphereGrid& grid,
                        const std::string& partitionerType,
                        const std::string& meshType) {
@@ -62,7 +51,7 @@ atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Me
 }
 
 atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               const std::map<std::string, VariableMetadata>& varMetadataMap) {
+                               const std::map<std::string, constants::VariableMetadata>& varMetadataMap) {
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& varMetadata : varMetadataMap) {
@@ -76,7 +65,7 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
 }
 
 void readInput(atlas::FieldSet& fieldSetFromInput,
-               std::map<std::string, VariableMetadata>& varMetadataMap,
+               std::map<std::string, constants::VariableMetadata>& varMetadataMap,
                const util::DateTime& dateTime,
                const std::string& inputFilePath) {
   oops::Log::info() << "monio::test::readInput()" << std::endl;
@@ -104,14 +93,17 @@ void init() {
   const eckit::LocalConfiguration paramConfig(::test::TestEnvironment::config(), "parameters");
   const eckit::LocalConfiguration varMetadata = paramConfig.getSubConfiguration("varMetadata");
 
-  std::map<std::string, VariableMetadata> varMetadataMap;
+  std::map<std::string, constants::VariableMetadata> varMetadataMap;
   for (const auto& key : varMetadata.keys()) {
     std::vector<std::string> stringVec = utils::strToWords(varMetadata.getString(key), ',');
 
-    VariableMetadata varMetadata;
-    varMetadata.lfricName = key;
-    varMetadata.jediName = stringVec[eJediName];
-    varMetadata.copyFirstLevel = utils::strToBool(stringVec[eCopyFirstLevel]);
+    constants::VariableMetadata varMetadata;
+    varMetadata.jediName = stringVec[constants::eJediName];
+    varMetadata.lfricReadName = stringVec[constants::eLfricReadName];
+    varMetadata.lfricWriteName = stringVec[constants::eLfricWriteName];
+    varMetadata.units = stringVec[constants::eUnits];
+    varMetadata.numberOfLevels = std::stoi(utils::strNoWhiteSpace(stringVec[constants::eNumberOfLevels]));
+    varMetadata.copyFirstLevel = utils::strToBool(stringVec[constants::eCopyFirstLevel]);
 
     varMetadataMap.insert({key, varMetadata});
   }
