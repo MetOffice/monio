@@ -32,6 +32,17 @@ monio::Monio::~Monio() {
   delete this_;
 }
 
+void monio::Monio::read(const std::string& gridName,
+                        const atlas::FieldSet fieldSet,
+                        const std::string &filePath,
+                        const util::DateTime &dateTime) {
+  oops::Log::debug() << "Monio::read()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    FileData& fileData = createFileData(gridName, filePath, dateTime);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
                             const std::string& filePath,
                             const util::DateTime& dateTime) {

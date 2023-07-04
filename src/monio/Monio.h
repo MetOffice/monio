@@ -34,8 +34,9 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
   // For LFRic-JEDI
-
-  void read(const atlas::FieldSet fieldSet,
+  void read(const std::string& gridName,
+            const atlas::FieldSet fieldSet,
+            const std::string& filePath,
             const util::DateTime& dateTime);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
