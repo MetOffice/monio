@@ -51,7 +51,8 @@ atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Me
 }
 
 atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               const std::map<std::string, constants::VariableMetadata>& varMetadataMap) {
+                               const std::map<std::string, constants::VariableMetadata>&
+                                                                                   varMetadataMap) {
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& varMetadata : varMetadataMap) {
@@ -102,7 +103,8 @@ void init() {
     varMetadata.lfricReadName = stringVec[constants::eLfricReadName];
     varMetadata.lfricWriteName = stringVec[constants::eLfricWriteName];
     varMetadata.units = stringVec[constants::eUnits];
-    varMetadata.numberOfLevels = std::stoi(utils::strNoWhiteSpace(stringVec[constants::eNumberOfLevels]));
+    varMetadata.numberOfLevels =
+                std::stoi(utils::strNoWhiteSpace(stringVec[constants::eNumberOfLevels]));
     varMetadata.copyFirstLevel = utils::strToBool(stringVec[constants::eCopyFirstLevel]);
 
     varMetadataMap.insert({key, varMetadata});
