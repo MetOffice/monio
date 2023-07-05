@@ -57,7 +57,7 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
                     std::string(monio::consts::kTimeVarName),
                     std::string(monio::consts::kTimeOriginName));
     // Read fields into memory
-    for(const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
+    for (const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
       atlas::Field& globalField = globalFieldSet.field(fieldMetadata.jediName);
       reader_.readDatumAtTime(fileData, fieldMetadata.lfricReadName,
                               dateTime, std::string(monio::consts::kTimeDimName));
@@ -67,7 +67,7 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
                                        fileData.getLfricAtlasMap());
     }
   }
-  for(const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
+  for (const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
     atlas::Field& globalField = globalFieldSet.field(fieldMetadata.jediName);
     atlas::Field& localField = localFieldSet.field(fieldMetadata.jediName);
     auto& functionSpace = globalField.functionspace();

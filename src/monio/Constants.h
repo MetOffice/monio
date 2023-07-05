@@ -183,5 +183,5 @@ const std::vector<std::string> kLfricCoordVarNames = {std::string(kLfricLonVarNa
                                                       std::string(kLfricLatVarName)};
 const std::vector<std::string> kCoordVarNames = {std::string(kLongitudeVarName),
                                                  std::string(kLatitudeVarName)};
-}  // namespace constants
+}  // namespace consts
 }  // namespace monio
