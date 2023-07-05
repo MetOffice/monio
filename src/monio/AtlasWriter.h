@@ -46,13 +46,13 @@ class AtlasWriter {
 
   void writeIncrementsToFile(atlas::FieldSet& fieldSet,
                        const std::vector<std::string>& varNames,
-                       const std::map<std::string, constants::IncrementMetadata>& incMetadataMap,
+                       const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
                              monio::FileData& fileData,
                        const std::string& outputFilePath);
 
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
-                           const constants::IncrementMetadata* incMetadata = nullptr,
+                           const consts::FieldMetadata* fieldMetadata = nullptr,
                                  bool reverseDims = false);
 
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
@@ -77,13 +77,13 @@ class AtlasWriter {
                                            Data& data,
                                      const atlas::FieldSet& fieldSet);
 
-  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
-                                                Data& data,
-                                    const std::vector<std::string>& varNames,
-                                    const std::map<std::string, constants::IncrementMetadata>&
-                                                                                     incMetadataMap,
-                                          atlas::FieldSet& fieldSet,
-                                    const std::vector<size_t>& lfricToAtlasMap);
+  void populateMetadataAndDataWithLfricFieldSet(
+                                  Metadata& metadata,
+                                  Data& data,
+                            const std::vector<std::string>& varNames,
+                            const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
+                                  atlas::FieldSet& fieldSet,
+                            const std::vector<size_t>& lfricToAtlasMap);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
@@ -101,7 +101,7 @@ class AtlasWriter {
                                         const std::vector<std::string>& coordNames);
 
   atlas::Field processField(atlas::Field& inputField,
-                      const constants::IncrementMetadata& incMetadata);
+                      const consts::FieldMetadata& fieldMetadata);
 
   template<typename T>
   atlas::Field copySurfaceLevel(const atlas::Field& inputField,

@@ -39,7 +39,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getLfricCoords(
       int coordCount = 0;
       for (auto& coordContainer : coordData) {
         // LFRic coordinate data are currently stored as floats
-        if (coordContainer->getType() == constants::eFloat) {
+        if (coordContainer->getType() == consts::eFloat) {
           std::shared_ptr<DataContainerFloat> cooordContainerFloat =
                     std::static_pointer_cast<DataContainerFloat>(coordContainer);
           std::vector<float> coordData = cooordContainerFloat->getData();
@@ -73,8 +73,8 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getAtlasCoords(
       auto lonLatField = field.functionspace().lonlat();
       auto lonLatView = atlas::array::make_view<double, 2>(lonLatField);
       for (int i = 0; i < getSizeOwned(field); ++i) {
-        atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, constants::eLongitude),
-                                                 lonLatView(i, constants::eLatitude)));
+        atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, consts::eLongitude),
+                                                 lonLatView(i, consts::eLatitude)));
       }
     } else {
       auto grid = atlas::functionspace::NodeColumns(field.functionspace()).mesh().grid();

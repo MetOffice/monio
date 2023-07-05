@@ -15,27 +15,11 @@
 #include "atlas/mesh/Mesh.h"
 
 namespace monio {
-namespace constants {
+namespace consts {
 struct FieldMetadata {
-  std::string lfricName;
-  std::string jediName;
-  size_t numLevels;
-  size_t fieldSize;
-  int dataType;
-};
-
-struct IncrementMetadata {
-  std::string jediName;
-  std::string lfricName;
-  std::string lfricIncName;
-  std::string units;
-  bool doCopySurfaceLevel;
-};
-
-struct VariableMetadata {
-  std::string jediName;
   std::string lfricReadName;
   std::string lfricWriteName;
+  std::string jediName;
   std::string units;
   int numberOfLevels;
   bool copyFirstLevel;
@@ -93,9 +77,9 @@ enum eIncrementVariables {
 };
 
 enum eVariableMetadata {
-  eJediName,
   eLfricReadName,
   eLfricWriteName,
+  eJediName,
   eUnits,
   eNumberOfLevels,
   eCopyFirstLevel

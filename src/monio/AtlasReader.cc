@@ -25,19 +25,19 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
-    case constants::eDataTypes::eDouble: {
+    case consts::eDataTypes::eDouble: {
       const std::shared_ptr<DataContainerDouble> dataContainerDouble =
           std::static_pointer_cast<DataContainerDouble>(dataContainer);
           populateField(field, dataContainerDouble->getData(), lfricToAtlasMap);
       break;
     }
-    case constants::eDataTypes::eFloat: {
+    case consts::eDataTypes::eFloat: {
       const std::shared_ptr<DataContainerFloat> dataContainerFloat =
           std::static_pointer_cast<DataContainerFloat>(dataContainer);
           populateField(field, dataContainerFloat->getData(), lfricToAtlasMap);
       break;
     }
-    case constants::eDataTypes::eInt: {
+    case consts::eDataTypes::eInt: {
       const std::shared_ptr<DataContainerInt> dataContainerInt =
           std::static_pointer_cast<DataContainerInt>(dataContainer);
           populateField(field, dataContainerInt->getData(), lfricToAtlasMap);
@@ -56,19 +56,19 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
-    case constants::eDataTypes::eDouble: {
+    case consts::eDataTypes::eDouble: {
       const std::shared_ptr<DataContainerDouble> dataContainerDouble =
           std::static_pointer_cast<DataContainerDouble>(dataContainer);
           populateField(field, dataContainerDouble->getData());
       break;
     }
-    case constants::eDataTypes::eFloat: {
+    case consts::eDataTypes::eFloat: {
       const std::shared_ptr<DataContainerFloat> dataContainerFloat =
           std::static_pointer_cast<DataContainerFloat>(dataContainer);
           populateField(field, dataContainerFloat->getData());
       break;
     }
-    case constants::eDataTypes::eInt: {
+    case consts::eDataTypes::eInt: {
       const std::shared_ptr<DataContainerInt> dataContainerInt =
           std::static_pointer_cast<DataContainerInt>(dataContainer);
           populateField(field, dataContainerInt->getData());
@@ -137,13 +137,13 @@ void monio::AtlasReader::populateField(atlas::Field& field,
 
   std::vector<atlas::idx_t> dimVec = field.shape();
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[constants::eHorizontal] = atlasProcessor_.getSizeOwned(field);
+    dimVec[consts::eHorizontal] = atlasProcessor_.getSizeOwned(field);
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
   atlas::idx_t numLevels = field.levels();
-  for (atlas::idx_t i = 0; i < dimVec[constants::eHorizontal]; ++i) {
+  for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
     for (atlas::idx_t j = 0; j < numLevels; ++j) {
-      int index = i + (j * dimVec[constants::eHorizontal]);
+      int index = i + (j * dimVec[consts::eHorizontal]);
       fieldView(i, j) = dataVec[index];
     }
   }

@@ -52,12 +52,12 @@ atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Me
 }
 
 atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               std::map<std::string, constants::VariableMetadata>& varMetadataMap) {
+                               std::vector<consts::FieldMetadata>& varMetadataVec) {
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
-  for (const auto& varMetadata : varMetadataMap) {
-    std::string jediName = varMetadata.second.jediName;
-    size_t numLevels = constants::kVerticalFullSize;
+  for (const auto& varMetadata : varMetadataVec) {
+    std::string jediName = varMetadata.jediName;
+    size_t numLevels = consts::kVerticalFullSize;
     atlas::util::Config atlasOptions = atlas::option::name(jediName) |
                                        atlas::option::levels(numLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
@@ -82,30 +82,27 @@ void write(const std::string& outputFilePath) {
 }
 
 /// Reads data from file and populates the FieldSet
-void readInput(std::string& gridName,
-               atlas::FieldSet& fieldSet,
-               std::map<std::string, constants::VariableMetadata>& varMetadataMap,
+void readInput(atlas::FieldSet& fieldSet,
+               const std::vector<consts::FieldMetadata>& varMetadataVec,
                const util::DateTime& dateTime,
                const std::string& inputFilePath) {
   oops::Log::info() << "monio::test::readInput()" << std::endl;
   oops::Log::info() << "inputFilePath> " << inputFilePath << std::endl;
   oops::Log::info() << "dateTime> " << dateTime << std::endl;
 
-  Monio::get().read(gridName, fieldSet, inputFilePath, dateTime);
+  Monio::get().readBackground(fieldSet, varMetadataVec, inputFilePath, dateTime);
 }
 
 /// Sets up the objects required to mimic an operational call to Monio::Read via readInput
-void initParams(std::string& gridName,
-                atlas::FieldSet& fieldSet,
-                std::map<std::string, constants::VariableMetadata>& varMetadataMap,
+void initParams(atlas::FieldSet& fieldSet,
+                std::vector<consts::FieldMetadata>& varMetadataVec,
                 util::DateTime& dateTime,
                 std::string& inputFilePath,
                 std::string& outputFilePath) {
   oops::Log::info() << "monio::test::init()" << std::endl;
   // FieldSet
   const eckit::LocalConfiguration paramConfig(::test::TestEnvironment::config(), "parameters");
-  gridName = paramConfig.getString("gridName");
-
+  const std::string gridName(paramConfig.getString("gridName"));
   const std::string partitionerType(paramConfig.getString("partitionerType"));
   const std::string meshType(paramConfig.getString("meshType"));
 
@@ -114,23 +111,23 @@ void initParams(std::string& gridName,
   atlas::Mesh mesh(createMesh(grid, partitionerType, meshType));
   atlas::functionspace::CubedSphereNodeColumns functionSpace(createFunctionSpace(mesh));
 
-  fieldSet = createFieldSet(functionSpace, varMetadataMap);
   // VarMetadata
   const eckit::LocalConfiguration varMetadata = paramConfig.getSubConfiguration("varMetadata");
   for (const auto& key : varMetadata.keys()) {
     std::vector<std::string> stringVec = utils::strToWords(varMetadata.getString(key), ',');
 
-    constants::VariableMetadata varMetadata;
-    varMetadata.jediName = stringVec[constants::eJediName];
-    varMetadata.lfricReadName = stringVec[constants::eLfricReadName];
-    varMetadata.lfricWriteName = stringVec[constants::eLfricWriteName];
-    varMetadata.units = stringVec[constants::eUnits];
+    consts::FieldMetadata varMetadata;
+    varMetadata.jediName = utils::strNoWhiteSpace(stringVec[consts::eJediName]);
+    varMetadata.lfricReadName = utils::strNoWhiteSpace(stringVec[consts::eLfricReadName]);
+    varMetadata.lfricWriteName = utils::strNoWhiteSpace(stringVec[consts::eLfricWriteName]);
+    varMetadata.units = utils::strNoWhiteSpace(stringVec[consts::eUnits]);
     varMetadata.numberOfLevels =
-                std::stoi(utils::strNoWhiteSpace(stringVec[constants::eNumberOfLevels]));
-    varMetadata.copyFirstLevel = utils::strToBool(stringVec[constants::eCopyFirstLevel]);
+                std::stoi(utils::strNoWhiteSpace(stringVec[consts::eNumberOfLevels]));
+    varMetadata.copyFirstLevel = utils::strToBool(stringVec[consts::eCopyFirstLevel]);
 
-    varMetadataMap.insert({key, varMetadata});
+    varMetadataVec.push_back(varMetadata);
   }
+  fieldSet = createFieldSet(functionSpace, varMetadataVec);
   // Others
   dateTime = util::DateTime(paramConfig.getString("dateTime"));
   inputFilePath = paramConfig.getString("inputFilePath");
@@ -138,15 +135,14 @@ void initParams(std::string& gridName,
 }
 
 void main() {
-  std::string gridName;
   atlas::FieldSet fieldSet;
-  std::map<std::string, constants::VariableMetadata> varMetadataMap;
+  std::vector<consts::FieldMetadata> varMetadataVec;
   util::DateTime dateTime;
   std::string inputFilePath;
   std::string outputFilePath;
-  initParams(gridName, fieldSet, varMetadataMap, dateTime, inputFilePath, outputFilePath);
+  initParams(fieldSet, varMetadataVec, dateTime, inputFilePath, outputFilePath);
 
-  readInput(gridName, fieldSet, varMetadataMap, dateTime, inputFilePath);
+  readInput(fieldSet, varMetadataVec, dateTime, inputFilePath);
   write(outputFilePath);
   readOutput(outputFilePath);
 }

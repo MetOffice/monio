@@ -129,11 +129,11 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
   std::string varName = ncVar.getName();
   std::shared_ptr<monio::Variable> var = nullptr;
   if (varType == netCDF::NcType::nc_INT)
-    var = std::make_shared<Variable>(varName, constants::eInt);
+    var = std::make_shared<Variable>(varName, consts::eInt);
   else if (varType == netCDF::NcType::nc_FLOAT)
-    var = std::make_shared<Variable>(varName, constants::eFloat);
+    var = std::make_shared<Variable>(varName, consts::eFloat);
   else if (varType == netCDF::NcType::nc_DOUBLE)
-    var = std::make_shared<Variable>(varName, constants::eDouble);
+    var = std::make_shared<Variable>(varName, consts::eDouble);
   else
     throw std::runtime_error("File::readVariable()> Variable data type " +
                                 varType.getName() + " not coded for.");
@@ -296,18 +296,18 @@ void monio::File::writeVariables(const Metadata& metadata) {
     for (auto const& varPair : varsMap) {
       std::shared_ptr<Variable> var = varPair.second;
       netCDF::NcVar ncVar = getFile().addVar(var->getName(),
-                            std::string(constants::kDataTypeNames[var->getType()]),
+                            std::string(consts::kDataTypeNames[var->getType()]),
                             var->getDimensionNames());
 
       std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = var->getAttributes();
       for (const auto& varAttrPair : varAttrsMap) {
         std::shared_ptr<AttributeBase> varAttr = varAttrPair.second;
         int varAttrType = varAttr->getType();
-        if (varAttrType == constants::eString) {
+        if (varAttrType == consts::eString) {
           std::shared_ptr<AttributeString> varAttrStr =
                         std::dynamic_pointer_cast<AttributeString>(varAttr);
           ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
-        } else if (varAttrType == constants::eInt) {
+        } else if (varAttrType == consts::eInt) {
           std::shared_ptr<AttributeInt> varAttrInt =
                         std::dynamic_pointer_cast<AttributeInt>(varAttr);
           ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT, varAttrInt->getValue());
@@ -330,12 +330,12 @@ void monio::File::writeAttributes(const Metadata& metadata) {
     for (auto const& globalAttrPair : globalAttrMap) {
       std::shared_ptr<AttributeBase> globAttr = globalAttrPair.second;
 
-      if (globAttr->getType() == constants::eString) {
+      if (globAttr->getType() == consts::eString) {
         std::shared_ptr<AttributeString> globAttrStr =
                                          std::static_pointer_cast<AttributeString>(globAttr);
         std::string globAttrName = globAttrStr->getName();
         getFile().putAtt(globAttrName, globAttrStr->getValue());
-      } else if (globAttr->getType() == constants::eInt) {
+      } else if (globAttr->getType() == consts::eInt) {
         std::shared_ptr<AttributeInt> globAttrInt =
                                       std::static_pointer_cast<AttributeInt>(globAttr);
         getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());

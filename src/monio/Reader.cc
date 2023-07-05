@@ -76,20 +76,20 @@ void monio::Reader::readAllData(FileData& fileData) {
   oops::Log::debug() << "Reader::readAllData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::vector<std::string> varNames = fileData.getMetadata().getVariableNames();
-    readSingleData(fileData, varNames);
+    readFullData(fileData, varNames);
   }
 }
 
-void monio::Reader::readFieldData(FileData& fileData,
+void monio::Reader::readDataAtTime(FileData& fileData,
                                   const std::vector<std::string>& varNames,
                                   const std::string& dateString,
                                   const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldData()" << std::endl;
   util::DateTime dateToRead(dateString);
-  readFieldData(fileData, varNames, dateToRead, timeDimName);
+  readDataAtTime(fileData, varNames, dateToRead, timeDimName);
 }
 
-void monio::Reader::readFieldData(FileData& fileData,
+void monio::Reader::readDataAtTime(FileData& fileData,
                                   const std::vector<std::string>& varNames,
                                   const util::DateTime& dateToRead,
                                   const std::string& timeDimName) {
@@ -97,30 +97,29 @@ void monio::Reader::readFieldData(FileData& fileData,
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     size_t timeStep = findTimeStep(fileData, dateToRead);
     for (auto& varName : varNames) {
-      readFieldDatum(fileData, varName, timeStep, timeDimName);
+      readDatumAtTime(fileData, varName, timeStep, timeDimName);
     }
   }
 }
 
-void monio::Reader::readFieldDatum(FileData& fileData,
+void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,
                                    const util::DateTime& dateToRead,
                                    const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     size_t timeStep = findTimeStep(fileData, dateToRead);
-    readFieldDatum(fileData, varName, timeStep, timeDimName);
+    readDatumAtTime(fileData, varName, timeStep, timeDimName);
   }
 }
 
-void monio::Reader::readFieldDatum(FileData& fileData,
+void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,
                                    const size_t timeStep,
                                    const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<DataContainerBase> dataContainer = fileData.getData().getContainer(varName);
-    if (dataContainer == nullptr) {
+    if (fileData.getData().isPresent(varName) == false) {
       std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
       int dataType = variable->getType();
 
@@ -141,8 +140,9 @@ void monio::Reader::readFieldDatum(FileData& fileData,
                               ", dimPair.second> " << dimPair.second << std::endl;
         }
       }
+      std::shared_ptr<DataContainerBase> dataContainer = nullptr;
       switch (dataType) {
-        case constants::eDataTypes::eDouble: {
+        case consts::eDataTypes::eDouble: {
           std::shared_ptr<DataContainerDouble> dataContainerDouble =
                                       std::make_shared<DataContainerDouble>(varName);
           getFile().readFieldDatum(varName, varSizeNoTime,
@@ -150,7 +150,7 @@ void monio::Reader::readFieldDatum(FileData& fileData,
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
           break;
         }
-        case constants::eDataTypes::eFloat: {
+        case consts::eDataTypes::eFloat: {
           std::shared_ptr<DataContainerFloat> dataContainerFloat =
                                       std::make_shared<DataContainerFloat>(varName);
           getFile().readFieldDatum(varName, varSizeNoTime,
@@ -158,7 +158,7 @@ void monio::Reader::readFieldDatum(FileData& fileData,
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
           break;
         }
-        case constants::eDataTypes::eInt: {
+        case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                                       std::make_shared<DataContainerInt>(varName);
           getFile().readFieldDatum(varName, varSizeNoTime,
@@ -181,17 +181,17 @@ void monio::Reader::readFieldDatum(FileData& fileData,
   }
 }
 
-void monio::Reader::readSingleData(FileData& fileData,
+void monio::Reader::readFullData(FileData& fileData,
                                  const std::vector<std::string>& varNames) {
   oops::Log::debug() << "Reader::readSingleData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     for (const auto& varName : varNames) {
-      readSingleDatum(fileData, varName);
+      readFullDatum(fileData, varName);
     }
   }
 }
 
-void monio::Reader::readSingleDatum(FileData& fileData,
+void monio::Reader::readFullDatum(FileData& fileData,
                                   const std::string& varName) {
   oops::Log::debug() << "Reader::readSingleDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -199,7 +199,7 @@ void monio::Reader::readSingleDatum(FileData& fileData,
     std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
     int dataType = variable->getType();
     switch (dataType) {
-      case constants::eDataTypes::eDouble: {
+      case consts::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
                             std::make_shared<DataContainerDouble>(varName);
         getFile().readSingleDatum(varName,
@@ -207,7 +207,7 @@ void monio::Reader::readSingleDatum(FileData& fileData,
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
       }
-      case constants::eDataTypes::eFloat: {
+      case consts::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
                             std::make_shared<DataContainerFloat>(varName);
         getFile().readSingleDatum(varName,
@@ -215,7 +215,7 @@ void monio::Reader::readSingleDatum(FileData& fileData,
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
       }
-      case constants::eDataTypes::eInt: {
+      case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                             std::make_shared<DataContainerInt>(varName);
         getFile().readSingleDatum(varName,

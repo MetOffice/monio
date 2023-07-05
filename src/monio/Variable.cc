@@ -77,7 +77,7 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
     std::shared_ptr<monio::AttributeBase> attr = attributes_.at(attrName);
 
     std::string value;
-    if (attr->getType() == constants::eString) {
+    if (attr->getType() == consts::eString) {
       std::shared_ptr<monio::AttributeString> attrStr =
                         std::dynamic_pointer_cast<monio::AttributeString>(attr);
       value = attrStr->getValue();

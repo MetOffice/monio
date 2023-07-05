@@ -13,7 +13,7 @@
 #include "Constants.h"
 
 monio::DataContainerFloat::DataContainerFloat(const std::string& name) :
-  DataContainerBase(name, monio::constants::eFloat) {}
+  DataContainerBase(name, monio::consts::eFloat) {}
 
 const std::string& monio::DataContainerFloat::getName() const {
   return name_;

@@ -38,16 +38,16 @@ monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
 void monio::AtlasWriter::writeFieldSetToFile(const atlas::FieldSet& fieldSet,
                                                  const std::string outputFilePath) {
   oops::Log::debug() << "AtlasWriter::writeFieldSetToFile()" << std::endl;
-  if (atlas::mpi::rank() == monio::constants::kMPIRankOwner) {
+  if (atlas::mpi::rank() == monio::consts::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {
       monio::Metadata metadata;
       monio::Data data;
       monio::AtlasWriter atlasWriter(atlas::mpi::comm(),
-                                         monio::constants::kMPIRankOwner);
+                                         monio::consts::kMPIRankOwner);
       atlasWriter.populateMetadataAndDataWithFieldSet(metadata, data, fieldSet);
 
       monio::Writer writer(atlas::mpi::comm(),
-                               monio::constants::kMPIRankOwner,
+                               monio::consts::kMPIRankOwner,
                                outputFilePath);
       writer.writeMetadata(metadata);
       writer.writeVariablesData(metadata, data);
@@ -58,12 +58,12 @@ void monio::AtlasWriter::writeFieldSetToFile(const atlas::FieldSet& fieldSet,
   }
 }
 
-void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
-                                    const std::vector<std::string>& varNames,
-                                    const std::map<std::string, constants::IncrementMetadata>&
-                                                                                     incMetadataMap,
-                                          monio::FileData& fileData,
-                                   const  std::string& outputFilePath) {
+void monio::AtlasWriter::writeIncrementsToFile(
+                                  atlas::FieldSet& fieldSet,
+                            const std::vector<std::string>& varNames,
+                            const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
+                                  monio::FileData& fileData,
+                            const std::string& outputFilePath) {
   oops::Log::debug() << "AtlasWriter::writeFieldSetToFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (outputFilePath.length() != 0) {
@@ -73,20 +73,20 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
 
         readMetadata.clearGlobalAttributes();
 
-        readMetadata.deleteDimension(std::string(monio::constants::kTimeDimName));
-        readMetadata.deleteDimension(std::string(monio::constants::kTileDimName));
+        readMetadata.deleteDimension(std::string(monio::consts::kTimeDimName));
+        readMetadata.deleteDimension(std::string(monio::consts::kTileDimName));
 
-        readData.deleteContainer(std::string(monio::constants::kTimeVarName));
-        readData.deleteContainer(std::string(monio::constants::kTileVarName));
+        readData.deleteContainer(std::string(monio::consts::kTimeVarName));
+        readData.deleteContainer(std::string(monio::consts::kTileVarName));
 
         reconcileMetadataWithData(readMetadata, readData);
 
         // Add data and metadata for increments in fieldSet
         populateMetadataAndDataWithLfricFieldSet(readMetadata, readData, varNames,
-                                                 incMetadataMap, fieldSet, lfricAtlasMap);
+                                                 fieldMetadataMap, fieldSet, lfricAtlasMap);
 
         monio::Writer writer(atlas::mpi::comm(),
-                             monio::constants::kMPIRankOwner,
+                             monio::consts::kMPIRankOwner,
                              outputFilePath);
         writer.writeMetadata(readMetadata);
         writer.writeVariablesData(readMetadata, readData);
@@ -99,7 +99,7 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
 
 void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
                                              const atlas::Field& field,
-                                             const constants::IncrementMetadata* incMetadata,
+                                             const consts::FieldMetadata* fieldMetadata,
                                                    bool reverseDims) {
   oops::Log::debug() << "AtlasWriter::populateMetadataWithField()" << std::endl;
   std::string varName = field.name();
@@ -115,22 +115,22 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
     std::reverse(dimVec.begin(), dimVec.end());
 
     // Reversal of dims applies to LFRic files. Using that flag here for increment attributes.
-    if (incMetadata != nullptr) {
-      for (int i = 0; i < constants::eNumberOfAttributeNames; ++i) {
-        std::string attributeName = std::string(constants::kIncrementAttributeNames[i]);
+    if (fieldMetadata != nullptr) {
+      for (int i = 0; i < consts::eNumberOfAttributeNames; ++i) {
+        std::string attributeName = std::string(consts::kIncrementAttributeNames[i]);
         std::string attributeValue;
         switch (i) {
-          case constants::eStandardName:
-            attributeValue = incMetadata->jediName;
+          case consts::eStandardName:
+            attributeValue = fieldMetadata->jediName;
             break;
-          case constants::eLongName:
-            attributeValue = incMetadata->jediName + "_inc";
+          case consts::eLongName:
+            attributeValue = fieldMetadata->jediName + "_inc";
             break;
-          case constants::eUnitsName:
-            attributeValue = incMetadata->units;
+          case consts::eUnitsName:
+            attributeValue = fieldMetadata->units;
             break;
           default:
-            attributeValue = constants::kIncrementVariableValues[i];
+            attributeValue = consts::kIncrementVariableValues[i];
         }
         std::shared_ptr<AttributeBase> incAttr = std::make_shared<AttributeString>(attributeName,
                                                                                    attributeValue);
@@ -140,7 +140,7 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
   }
   for (auto& dimSize : dimVec) {
     std::string dimName = metadata.getDimensionName(dimSize);
-    if (dimName != constants::kNotFoundError) {  // Not used for 1-D fields.
+    if (dimName != consts::kNotFoundError) {  // Not used for 1-D fields.
       var->addDimension(dimName, dimSize);
     }
   }
@@ -283,9 +283,9 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (atlas::idx_t i = 0; i < dimensions[constants::eHorizontal]; ++i) {  // Horizontal dimension
-    for (atlas::idx_t j = 0; j < dimensions[constants::eVertical]; ++j) {  // Levels dimension
-      int index = j + (i * dimensions[constants::eVertical]);
+  for (atlas::idx_t i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
+    for (atlas::idx_t j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
+      int index = j + (i * dimensions[consts::eVertical]);
       dataVec[index] = fieldView(i, j);
     }
   }
@@ -315,7 +315,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
       }
       for (auto& dimSize : dimVec) {
         std::string dimName = metadata.getDimensionName(dimSize);
-        if (dimName == monio::constants::kNotFoundError) {
+        if (dimName == monio::consts::kNotFoundError) {
           dimName = "dim" + std::to_string(dimCount);
           metadata.addDimension(dimName, dimSize);
           dimCount++;
@@ -325,19 +325,19 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
       if (createdLonLat == false) {
         std::vector<atlas::PointLonLat> atlasLonLat = atlasProcessor_.getAtlasCoords(field);
         std::vector<std::shared_ptr<DataContainerBase>> coordContainers =
-                  convertLatLonToContainers(atlasLonLat, constants::kCoordVarNames);
+                  convertLatLonToContainers(atlasLonLat, consts::kCoordVarNames);
         for (const auto& coordContainer : coordContainers) {
           data.addContainer(coordContainer);
         }
         std::shared_ptr<monio::Variable> lonVar = std::make_shared<Variable>(
-                      constants::kCoordVarNames[constants::eLongitude], constants::eDouble);
+                      consts::kCoordVarNames[consts::eLongitude], consts::eDouble);
         std::shared_ptr<monio::Variable> latVar = std::make_shared<Variable>(
-                      constants::kCoordVarNames[constants::eLatitude], constants::eDouble);
+                      consts::kCoordVarNames[consts::eLatitude], consts::eDouble);
         std::string dimName = metadata.getDimensionName(atlasLonLat.size());
         lonVar->addDimension(dimName, atlasLonLat.size());
         latVar->addDimension(dimName, atlasLonLat.size());
-        metadata.addVariable(constants::kCoordVarNames[constants::eLongitude], lonVar);
-        metadata.addVariable(constants::kCoordVarNames[constants::eLatitude], latVar);
+        metadata.addVariable(consts::kCoordVarNames[consts::eLongitude], lonVar);
+        metadata.addVariable(consts::kCoordVarNames[consts::eLatitude], latVar);
         createdLonLat = true;
       }
       populateDataWithField(data, field, metadata.getVariable(field.name())->getDimensionsVec());
@@ -353,25 +353,24 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
 }
 
 void monio::AtlasWriter::populateMetadataAndDataWithLfricFieldSet(
-                                    Metadata& metadata,
-                                    Data& data,
-                                    const std::vector<std::string>& varNames,
-                                    const std::map<std::string, constants::IncrementMetadata>&
-                                                                                     incMetadataMap,
-                                    atlas::FieldSet& fieldSet,
-                                    const std::vector<size_t>& lfricToAtlasMap) {
+                                  Metadata& metadata,
+                                  Data& data,
+                            const std::vector<std::string>& varNames,
+                            const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
+                                  atlas::FieldSet& fieldSet,
+                            const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithLfricFieldSet()" << std::endl;
   // Dimensions
-  metadata.addDimension(std::string(constants::kHorizontalName), lfricToAtlasMap.size());
-  metadata.addDimension(std::string(constants::kVerticalFullName), constants::kVerticalFullSize);
-  metadata.addDimension(std::string(constants::kVerticalHalfName), constants::kVerticalHalfSize);
+  metadata.addDimension(std::string(consts::kHorizontalName), lfricToAtlasMap.size());
+  metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
+  metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
   // Variables
   for (auto& field : fieldSet) {
     std::string fieldName = field.name();
     if (std::find(varNames.begin(), varNames.end(), fieldName) != varNames.end()) {
-      constants::IncrementMetadata incMetadata = incMetadataMap.at(fieldName);
-      atlas::Field processedField = processField(field, incMetadata);
-      populateMetadataWithField(metadata, processedField, &incMetadata, true);
+      consts::FieldMetadata fieldMetadata = fieldMetadataMap.at(fieldName);
+      atlas::Field processedField = processField(field, fieldMetadata);
+      populateMetadataWithField(metadata, processedField, &fieldMetadata, true);
       size_t totalFieldSize = metadata.getVariable(processedField.name())->getTotalSize();
       populateDataWithField(data, processedField, lfricToAtlasMap, totalFieldSize);
     }
@@ -434,9 +433,9 @@ std::vector<std::shared_ptr<monio::DataContainerBase>>
                         const std::vector<std::string>& coordNames) {
   std::vector<std::shared_ptr<monio::DataContainerBase>> coordContainers;
   std::shared_ptr<DataContainerDouble> lonContainer =
-            std::make_shared<DataContainerDouble>(coordNames[constants::eLongitude]);
+            std::make_shared<DataContainerDouble>(coordNames[consts::eLongitude]);
   std::shared_ptr<DataContainerDouble> latContainer =
-            std::make_shared<DataContainerDouble>(coordNames[constants::eLatitude]);
+            std::make_shared<DataContainerDouble>(coordNames[consts::eLatitude]);
   for (const auto& atlasCoord : atlasCoords) {
     lonContainer->setDatum(atlasCoord.lon());
     latContainer->setDatum(atlasCoord.lat());
@@ -447,15 +446,15 @@ std::vector<std::shared_ptr<monio::DataContainerBase>>
 }
 
 atlas::Field monio::AtlasWriter::processField(atlas::Field& inputField,
-                                        const constants::IncrementMetadata& incMetadata) {
+                                        const consts::FieldMetadata& fieldMetadata) {
   oops::Log::debug() << "AtlasWriter::processField()" << std::endl;
   atlas::FunctionSpace functionSpace = inputField.functionspace();
   atlas::array::DataType atlasType = inputField.datatype();
 
-  if (incMetadata.lfricIncName != "TO BE DERIVED" &&
-      incMetadata.lfricIncName != "TO BE IMPLEMENTED") {
-    if (incMetadata.doCopySurfaceLevel == true) {
-      atlas::util::Config atlasOptions = atlas::option::name(incMetadata.lfricIncName) |
+  if (fieldMetadata.lfricWriteName != "TO BE DERIVED" &&
+      fieldMetadata.lfricWriteName != "TO BE IMPLEMENTED") {
+    if (fieldMetadata.copyFirstLevel == true) {
+      atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.lfricWriteName) |
                                          atlas::option::global(0) |
                                          atlas::option::levels(inputField.levels() + 1);
       switch (atlasType.kind()) {
@@ -470,7 +469,7 @@ atlas::Field monio::AtlasWriter::processField(atlas::Field& inputField,
         }
       }
     } else {
-      inputField.metadata().set("name", incMetadata.lfricIncName);
+      inputField.metadata().set("name", fieldMetadata.lfricWriteName);
     }
   }
   return inputField;
@@ -485,13 +484,13 @@ atlas::Field monio::AtlasWriter::copySurfaceLevel(const atlas::Field& inputField
   auto copiedFieldView = atlas::array::make_view<T, 2>(copiedField);
   auto inputFieldView = atlas::array::make_view<T, 2>(inputField);
   std::vector<int> dimVec = inputField.shape();
-  for (atlas::idx_t j = 0; j < dimVec[constants::eVertical]; ++j) {
-    for (atlas::idx_t i = 0; i < dimVec[constants::eHorizontal]; ++i) {
+  for (atlas::idx_t j = 0; j < dimVec[consts::eVertical]; ++j) {
+    for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
       copiedFieldView(i, j + 1) = inputFieldView(i, j);
     }
   }
   // Copy surface level of input field
-  for (int i = 0; i < dimVec[constants::eHorizontal]; ++i) {
+  for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
       copiedFieldView(i, 0) = inputFieldView(i, 0);
   }
   return copiedField;
@@ -514,13 +513,13 @@ int monio::AtlasWriter::atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
   oops::Log::debug() << "AtlasWriter::atlasTypeToMonioEnum()" << std::endl;
   switch (atlasType.kind()) {
   case atlasType.KIND_INT32: {
-    return constants::eInt;
+    return consts::eInt;
   }
   case atlasType.KIND_REAL32: {
-    return constants::eFloat;
+    return consts::eFloat;
   }
   case atlasType.KIND_REAL64: {
-    return constants::eDouble;
+    return consts::eDouble;
   }
   default:
     throw std::runtime_error("AtlasWriter::fromFieldSet()> Data type not coded for...");

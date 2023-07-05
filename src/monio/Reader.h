@@ -44,25 +44,25 @@ class Reader {
   void readMetadata(FileData& fileData);
   void readAllData(FileData& fileData);
 
-  void readSingleData(FileData& fileData, const std::vector<std::string>& varNames);
-  void readSingleDatum(FileData& fileData, const std::string& varName);
+  void readFullData(FileData& fileData, const std::vector<std::string>& varNames);
+  void readFullDatum(FileData& fileData, const std::string& varName);
 
-  void readFieldData(FileData& fileData,
+  void readDataAtTime(FileData& fileData,
                      const std::vector<std::string>& variableNames,
                      const std::string& dateString,
                      const std::string& timeDimName);
 
-  void readFieldData(FileData& fileData,
+  void readDataAtTime(FileData& fileData,
                      const std::vector<std::string>& variableNames,
                      const util::DateTime& dateToRead,
                      const std::string& timeDimName);
 
-  void readFieldDatum(FileData& fileData,
+  void readDatumAtTime(FileData& fileData,
                       const std::string& variableName,
                       const util::DateTime& dateToRead,
                       const std::string& timeDimName);
 
-  void readFieldDatum(FileData& fileData,
+  void readDatumAtTime(FileData& fileData,
                       const std::string& variableName,
                       const size_t timeStep,
                       const std::string& timeDimName);

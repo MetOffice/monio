@@ -21,19 +21,20 @@ class Data {
  public:
   Data();
 
-  friend bool operator==(const Data& lhs,
-                         const Data& rhs);
+  friend bool operator==(const Data& lhs, const Data& rhs);
 
   void addContainer(std::shared_ptr<DataContainerBase> container);
+  void deleteContainer(const std::string& name);
+  void removeAllButTheseContainers(const std::vector<std::string>& varNames);
+
+  bool isPresent(const std::string& name) const;
+
   std::shared_ptr<monio::DataContainerBase> getContainer(const std::string& name) const;
 
   std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& getContainers();
   const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>& getContainers() const;
 
-  void deleteContainer(const std::string& name);
-  std::vector<std::string> getDataContainerNames();
-
-  void removeAllButTheseContainers(const std::vector<std::string>& varNames);
+  std::vector<std::string> getDataContainerNames() const;
 
  private:
   std::map<std::string, std::shared_ptr<DataContainerBase>> dataContainers_;

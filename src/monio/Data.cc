@@ -52,7 +52,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
 
       if (lhsDataType == rhsDataType && lhsName == rhsName) {
         switch (lhsDataType) {
-          case monio::constants::eDataTypes::eDouble: {
+          case monio::consts::eDataTypes::eDouble: {
             std::shared_ptr<DataContainerDouble> lhsDataContainerDouble =
               std::static_pointer_cast<DataContainerDouble>(lhsDataContainer);
             std::shared_ptr<DataContainerDouble> rhsDataContainerDouble =
@@ -63,7 +63,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::constants::eDataTypes::eFloat: {
+          case monio::consts::eDataTypes::eFloat: {
             std::shared_ptr<DataContainerFloat> lhsDataContainerFloat =
               std::static_pointer_cast<DataContainerFloat>(lhsDataContainer);
             std::shared_ptr<DataContainerFloat> rhsDataContainerFloat =
@@ -74,7 +74,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::constants::eDataTypes::eInt: {
+          case monio::consts::eDataTypes::eInt: {
             std::shared_ptr<DataContainerInt> lhsDataContainerInt =
               std::static_pointer_cast<DataContainerInt>(lhsDataContainer);
             std::shared_ptr<DataContainerInt> rhsDataContainerInt =
@@ -107,14 +107,45 @@ void monio::Data::addContainer(std::shared_ptr<DataContainerBase> container) {
   }
 }
 
+void monio::Data::deleteContainer(const std::string& name) {
+  oops::Log::debug() << "Data::deleteContainer()" << std::endl;
+  auto it = dataContainers_.find(name);
+  if (it != dataContainers_.end()) {
+    dataContainers_.erase(name);
+  } else {
+    throw std::runtime_error("DataContainer named \"" + name + "\" was not found.");
+  }
+}
+
+void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {
+  oops::Log::debug() << "Data::removeAllButTheseContainers()" << std::endl;
+  std::vector<std::string> containerKeys = utils::extractKeys(dataContainers_);
+  for (const std::string& containerKey : containerKeys) {
+    if (utils::findInVector(varNames, containerKey) == false) {
+      deleteContainer(containerKey);
+    }
+  }
+}
+
+bool monio::Data::isPresent(const std::string& name) const {
+  oops::Log::debug() << "Data::isPresent()" << std::endl;
+  auto it = dataContainers_.find(name);
+  if (it != dataContainers_.end()) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 std::shared_ptr<monio::DataContainerBase>
                 monio::Data::getContainer(const std::string& name) const {
   oops::Log::debug() << "Data::getContainer()" << std::endl;
   auto it = dataContainers_.find(name);
-  if (it != dataContainers_.end())
+  if (it != dataContainers_.end()) {
     return it->second;
-  else
-    return nullptr;  // Returning nullptr is now an expected use-case
+  } else {
+    throw std::runtime_error("DataContainer named \"" + name + "\" was not found.");
+  }
 }
 
 std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
@@ -129,25 +160,7 @@ const std::map<std::string, std::shared_ptr<monio::DataContainerBase>>&
   return dataContainers_;
 }
 
-void monio::Data::deleteContainer(const std::string& name) {
-  oops::Log::debug() << "Data::deleteContainer()" << std::endl;
-  auto it = dataContainers_.find(name);
-  if (it != dataContainers_.end()) {
-    dataContainers_.erase(name);
-  }  // Not finding a data container is now a valid use-case
-}
-
-std::vector<std::string> monio::Data::getDataContainerNames() {
+std::vector<std::string> monio::Data::getDataContainerNames() const {
   oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
   return utils::extractKeys(dataContainers_);
-}
-
-void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {
-  oops::Log::debug() << "Data::removeAllButTheseContainers()" << std::endl;
-  std::vector<std::string> containerKeys = utils::extractKeys(dataContainers_);
-  for (const std::string& containerKey : containerKeys) {
-    if (utils::findInVector(varNames, containerKey) == false) {
-      deleteContainer(containerKey);
-    }
-  }
 }

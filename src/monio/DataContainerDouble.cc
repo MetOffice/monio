@@ -13,7 +13,7 @@
 #include "Constants.h"
 
 monio::DataContainerDouble::DataContainerDouble(const std::string& name) :
-  DataContainerBase(name, constants::eDouble) {}
+  DataContainerBase(name, consts::eDouble) {}
 
 const std::string& monio::DataContainerDouble::getName() const {
   return name_;

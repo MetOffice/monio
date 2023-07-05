@@ -77,7 +77,7 @@ bool monio::operator==(const monio::Metadata& lhs,
 
             if (lhsVarAttrType == rhsVarAttrType && lhsVarAttrName == rhsVarAttrName) {
               switch (lhsVarAttrType) {
-                case monio::constants::eDataTypes::eInt: {
+                case monio::consts::eDataTypes::eInt: {
                  std::shared_ptr<monio::AttributeInt> lhsVarAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(lhsVarAttr);
                   std::shared_ptr<monio::AttributeInt> rhsVarAttrInt =
@@ -86,7 +86,7 @@ bool monio::operator==(const monio::Metadata& lhs,
                     return false;
                   break;
                 }
-                case monio::constants::eDataTypes::eString: {
+                case monio::consts::eDataTypes::eString: {
                   std::shared_ptr<monio::AttributeString> lhsVarAttrStr =
                         std::dynamic_pointer_cast<monio::AttributeString>(lhsVarAttr);
                   std::shared_ptr<monio::AttributeString> rhsVarAttrStr =
@@ -141,7 +141,7 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
       return it->first;
     }
   }
-  return std::string(monio::constants::kNotFoundError);
+  return std::string(monio::consts::kNotFoundError);
 }
 
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
@@ -346,8 +346,8 @@ void monio::Metadata::print() {
 void monio::Metadata::printVariables() {
   for (auto const& var : variables_) {
     std::shared_ptr<Variable> netCDFVar = var.second;
-    oops::Log::debug() << monio::constants::kTabSpace <<
-                          monio::constants::kDataTypeNames[netCDFVar->getType()] <<
+    oops::Log::debug() << monio::consts::kTabSpace <<
+                          monio::consts::kDataTypeNames[netCDFVar->getType()] <<
                            " " << netCDFVar->getName();
 
     std::vector<std::string> varDims = netCDFVar->getDimensionNames();
@@ -367,20 +367,20 @@ void monio::Metadata::printVariables() {
     for (auto const& varAttrPair : varAttrsMap) {
       std::shared_ptr<AttributeBase> netCDFAttr = varAttrPair.second;
 
-      oops::Log::debug() << monio::constants::kTabSpace <<
-                            monio::constants::kTabSpace <<
+      oops::Log::debug() << monio::consts::kTabSpace <<
+                            monio::consts::kTabSpace <<
                             netCDFVar->getName() << ":" <<
                             netCDFAttr->getName() << " = ";
       int dataType = netCDFAttr->getType();
 
       switch (dataType) {
-        case monio::constants::eDataTypes::eInt: {
+        case monio::consts::eDataTypes::eInt: {
           std::shared_ptr<monio::AttributeInt> netCDFAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(netCDFAttr);
           oops::Log::debug() << netCDFAttrInt->getValue() << " ;" << std::endl;
           break;
         }
-        case monio::constants::eDataTypes::eString: {
+        case monio::consts::eDataTypes::eString: {
             std::shared_ptr<monio::AttributeString> netCDFAttrStr =
                         std::dynamic_pointer_cast<monio::AttributeString>(netCDFAttr);
           oops::Log::debug() << std::quoted(netCDFAttrStr->getValue()) << std::endl;
@@ -396,17 +396,17 @@ void monio::Metadata::printVariables() {
 
 void monio::Metadata::printGlobalAttrs() {
   for (const auto& globAttrPair : globalAttrs_) {
-    oops::Log::debug() << monio::constants::kTabSpace << globAttrPair.first;
+    oops::Log::debug() << monio::consts::kTabSpace << globAttrPair.first;
     std::shared_ptr<AttributeBase> globalAttr = globAttrPair.second;
     int type = globalAttr->getType();
     switch (type) {
-      case monio::constants::eDataTypes::eInt: {
+      case monio::consts::eDataTypes::eInt: {
         std::shared_ptr<monio::AttributeInt> globalAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(globalAttr);
         oops::Log::debug() << globalAttrInt->getValue() << " ;" << std::endl;
         break;
       }
-      case monio::constants::eDataTypes::eString: {
+      case monio::consts::eDataTypes::eString: {
         std::shared_ptr<monio::AttributeString> globAttrStr =
                         std::dynamic_pointer_cast<monio::AttributeString>(globalAttr);
         oops::Log::debug() << " = " << std::quoted(globAttrStr->getValue()) << " ;"  << std::endl;
@@ -421,7 +421,7 @@ void monio::Metadata::printGlobalAttrs() {
 template<typename T>
 void monio::Metadata::printMap(const std::map<std::string, T>& map) {
   for (const auto& entry : map) {
-    oops::Log::debug() << monio::constants::kTabSpace << entry.first <<
+    oops::Log::debug() << monio::consts::kTabSpace << entry.first <<
                            " = " << entry.second << " ;" << std::endl;
   }
 }

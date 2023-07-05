@@ -61,19 +61,19 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
       std::shared_ptr<DataContainerBase> dataContainer = dataContainerPair.second;
       int dataType = dataContainerPair.second->getType();
       switch (dataType) {
-      case constants::eDataTypes::eDouble: {
+      case consts::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
             std::static_pointer_cast<DataContainerDouble>(dataContainer);
         getFile().writeSingleDatum(varName, dataContainerDouble->getData());
         break;
       }
-      case constants::eDataTypes::eFloat: {
+      case consts::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
             std::static_pointer_cast<DataContainerFloat>(dataContainer);
         getFile().writeSingleDatum(varName, dataContainerFloat->getData());
         break;
       }
-      case constants::eDataTypes::eInt: {
+      case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
             std::static_pointer_cast<DataContainerInt>(dataContainer);
         getFile().writeSingleDatum(varName, dataContainerInt->getData());

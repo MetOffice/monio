@@ -34,10 +34,10 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
   // For LFRic-JEDI
-  void read(const std::string& gridName,
-            const atlas::FieldSet fieldSet,
-            const std::string& filePath,
-            const util::DateTime& dateTime);
+  void readBackground(atlas::FieldSet& fieldSet,
+                const std::vector<consts::FieldMetadata>& varMetadataVec,
+                const std::string& filePath,
+                const util::DateTime& dateTime);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // From LFRic-Lite-JEDI
@@ -52,10 +52,9 @@ class Monio {
                                atlas::Field& globalField);
 
   void writeIncrementsFile(const std::string& gridName,
-                           const atlas::FieldSet fieldSet,
+                           const atlas::FieldSet& fieldSet,
                            const std::vector<std::string>& varNames,
-                           const std::map<std::string, constants::IncrementMetadata>&
-                                                                                     incMetadataMap,
+                           const std::map<std::string, consts::FieldMetadata>& incMetadataMap,
                            const std::string& filePath);
 
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);

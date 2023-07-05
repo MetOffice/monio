@@ -12,7 +12,7 @@
 
 monio::AttributeString::AttributeString(const std::string& name,
                                                         const std::string& value) :
-    AttributeBase(name, monio::constants::eString), value_(value) {}
+    AttributeBase(name, monio::consts::eString), value_(value) {}
 
 const std::string& monio::AttributeString::getName() const {
   return name_;

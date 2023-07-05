@@ -48,14 +48,14 @@ void basicWriteTest() {
     monio::FileData firstFileData(inputFilePath);
 
     monio::Reader reader(atlas::mpi::comm(),
-                         monio::constants::kMPIRankOwner,
+                         monio::consts::kMPIRankOwner,
                          firstFileData);
 
     reader.readMetadata(firstFileData);
     reader.readAllData(firstFileData);
 
     monio::Writer writer(atlas::mpi::comm(),
-                         monio::constants::kMPIRankOwner,
+                         monio::consts::kMPIRankOwner,
                          outputFilePath);
     writer.writeData(firstFileData.getMetadata(), firstFileData.getData());
 
