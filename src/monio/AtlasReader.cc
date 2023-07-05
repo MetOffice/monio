@@ -115,6 +115,9 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   for (atlas::idx_t j = 0; j < numLevels; ++j) {
     for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
+      if (std::size_t(index) > dataVec.size()) {
+        throw std::runtime_error("Calculated index exceeds size of data.");
+      }
       fieldView(i, j) = dataVec[index];
     }
   }
@@ -144,6 +147,9 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
     for (atlas::idx_t j = 0; j < numLevels; ++j) {
       int index = i + (j * dimVec[consts::eHorizontal]);
+      if (std::size_t(index) > dataVec.size()) {
+        throw std::runtime_error("Calculated index exceeds size of data.");
+      }
       fieldView(i, j) = dataVec[index];
     }
   }

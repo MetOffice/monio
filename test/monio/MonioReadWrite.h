@@ -57,7 +57,7 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   atlas::FieldSet fieldSet;
   for (const auto& varMetadata : varMetadataVec) {
     std::string jediName = varMetadata.jediName;
-    size_t numLevels = consts::kVerticalFullSize;
+    size_t numLevels = varMetadata.numberOfLevels;
     atlas::util::Config atlasOptions = atlas::option::name(jediName) |
                                        atlas::option::levels(numLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
