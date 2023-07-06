@@ -33,7 +33,7 @@ monio::Monio::~Monio() {
 }
 
 void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
-                            const std::vector<consts::FieldMetadata>& varMetadataVec,
+                            const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                             const std::string &filePath,
                             const util::DateTime &dateTime) {
   oops::Log::debug() << "Monio::read()" << std::endl;
@@ -57,17 +57,20 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
                     std::string(monio::consts::kTimeVarName),
                     std::string(monio::consts::kTimeOriginName));
     // Read fields into memory
-    for (const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
+    for (const consts::FieldMetadata& fieldMetadata : fieldMetadataVec) {
       atlas::Field& globalField = globalFieldSet.field(fieldMetadata.jediName);
-      reader_.readDatumAtTime(fileData, fieldMetadata.lfricReadName,
-                              dateTime, std::string(monio::consts::kTimeDimName));
+      reader_.readDatumAtTime(fileData,
+                              fieldMetadata.lfricReadName,
+                              dateTime,
+                              std::string(monio::consts::kTimeDimName));
       atlasReader_.populateFieldWithDataContainer(
                                        globalField,
                                        fileData.getData().getContainer(fieldMetadata.lfricReadName),
-                                       fileData.getLfricAtlasMap());
+                                       fileData.getLfricAtlasMap(),
+                                       fieldMetadata.copyFirstLevel);
     }
   }
-  for (const consts::FieldMetadata& fieldMetadata : varMetadataVec) {
+  for (const consts::FieldMetadata& fieldMetadata : fieldMetadataVec) {
     atlas::Field& globalField = globalFieldSet.field(fieldMetadata.jediName);
     atlas::Field& localField = localFieldSet.field(fieldMetadata.jediName);
     auto& functionSpace = globalField.functionspace();
@@ -198,8 +201,8 @@ void monio::Monio::createDateTimes(FileData& fileData,
 }
 
 monio::FileData& monio::Monio::createFileData(const std::string& gridName,
-                                                      const std::string& filePath,
-                                                      const util::DateTime& dateTime) {
+                                              const std::string& filePath,
+                                              const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::createFileData()" << std::endl;
   auto it = filesData_.find(gridName);
 

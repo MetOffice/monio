@@ -80,27 +80,27 @@ void monio::Reader::readAllData(FileData& fileData) {
   }
 }
 
-void monio::Reader::readDataAtTime(FileData& fileData,
-                                  const std::vector<std::string>& varNames,
-                                  const std::string& dateString,
-                                  const std::string& timeDimName) {
-  oops::Log::debug() << "Reader::readFieldData()" << std::endl;
-  util::DateTime dateToRead(dateString);
-  readDataAtTime(fileData, varNames, dateToRead, timeDimName);
-}
+//  void monio::Reader::readDataAtTime(FileData& fileData,
+//                                    const std::vector<std::string>& varNames,
+//                                    const std::string& dateString,
+//                                    const std::string& timeDimName) {
+//    oops::Log::debug() << "Reader::readFieldData()" << std::endl;
+//    util::DateTime dateToRead(dateString);
+//    readDataAtTime(fileData, varNames, dateToRead, timeDimName);
+//  }
 
-void monio::Reader::readDataAtTime(FileData& fileData,
-                                  const std::vector<std::string>& varNames,
-                                  const util::DateTime& dateToRead,
-                                  const std::string& timeDimName) {
-  oops::Log::debug() << "Reader::readFieldData()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    size_t timeStep = findTimeStep(fileData, dateToRead);
-    for (auto& varName : varNames) {
-      readDatumAtTime(fileData, varName, timeStep, timeDimName);
-    }
-  }
-}
+//  void monio::Reader::readDataAtTime(FileData& fileData,
+//                                    const std::vector<std::string>& varNames,
+//                                    const util::DateTime& dateToRead,
+//                                    const std::string& timeDimName) {
+//    oops::Log::debug() << "Reader::readFieldData()" << std::endl;
+//    if (mpiCommunicator_.rank() == mpiRankOwner_) {
+//      size_t timeStep = findTimeStep(fileData, dateToRead);
+//      for (auto& varName : varNames) {
+//        readDatumAtTime(fileData, varName, timeStep, timeDimName);
+//      }
+//    }
+//  }
 
 void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,

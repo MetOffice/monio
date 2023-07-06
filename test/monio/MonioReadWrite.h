@@ -52,14 +52,16 @@ atlas::functionspace::CubedSphereNodeColumns createFunctionSpace(const atlas::Me
 }
 
 atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumns& functionSpace,
-                               std::vector<consts::FieldMetadata>& varMetadataVec) {
+                               std::vector<consts::FieldMetadata>& fieldMetadataVec) {
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
-  for (const auto& varMetadata : varMetadataVec) {
-    std::string jediName = varMetadata.jediName;
-    size_t numLevels = varMetadata.numberOfLevels;
-    atlas::util::Config atlasOptions = atlas::option::name(jediName) |
-                                       atlas::option::levels(numLevels);
+  for (const auto& fieldMetadata : fieldMetadataVec) {
+    atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName);
+    if (fieldMetadata.copyFirstLevel == true) {
+      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels + 1);
+    } else {
+      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels);
+    }
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
   }
   return fieldSet;
@@ -83,19 +85,19 @@ void write(const std::string& outputFilePath) {
 
 /// Reads data from file and populates the FieldSet
 void readInput(atlas::FieldSet& fieldSet,
-               const std::vector<consts::FieldMetadata>& varMetadataVec,
+               const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                const util::DateTime& dateTime,
                const std::string& inputFilePath) {
   oops::Log::info() << "monio::test::readInput()" << std::endl;
   oops::Log::info() << "inputFilePath> " << inputFilePath << std::endl;
   oops::Log::info() << "dateTime> " << dateTime << std::endl;
 
-  Monio::get().readBackground(fieldSet, varMetadataVec, inputFilePath, dateTime);
+  Monio::get().readBackground(fieldSet, fieldMetadataVec, inputFilePath, dateTime);
 }
 
 /// Sets up the objects required to mimic an operational call to Monio::Read via readInput
 void initParams(atlas::FieldSet& fieldSet,
-                std::vector<consts::FieldMetadata>& varMetadataVec,
+                std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 util::DateTime& dateTime,
                 std::string& inputFilePath,
                 std::string& outputFilePath) {
@@ -111,23 +113,23 @@ void initParams(atlas::FieldSet& fieldSet,
   atlas::Mesh mesh(createMesh(grid, partitionerType, meshType));
   atlas::functionspace::CubedSphereNodeColumns functionSpace(createFunctionSpace(mesh));
 
-  // VarMetadata
-  const eckit::LocalConfiguration varMetadata = paramConfig.getSubConfiguration("varMetadata");
-  for (const auto& key : varMetadata.keys()) {
-    std::vector<std::string> stringVec = utils::strToWords(varMetadata.getString(key), ',');
+  // fieldMetadata
+  const eckit::LocalConfiguration fieldMetadata = paramConfig.getSubConfiguration("fieldMetadata");
+  for (const auto& key : fieldMetadata.keys()) {
+    std::vector<std::string> stringVec = utils::strToWords(fieldMetadata.getString(key), ',');
 
-    consts::FieldMetadata varMetadata;
-    varMetadata.jediName = utils::strNoWhiteSpace(stringVec[consts::eJediName]);
-    varMetadata.lfricReadName = utils::strNoWhiteSpace(stringVec[consts::eLfricReadName]);
-    varMetadata.lfricWriteName = utils::strNoWhiteSpace(stringVec[consts::eLfricWriteName]);
-    varMetadata.units = utils::strNoWhiteSpace(stringVec[consts::eUnits]);
-    varMetadata.numberOfLevels =
-                std::stoi(utils::strNoWhiteSpace(stringVec[consts::eNumberOfLevels]));
-    varMetadata.copyFirstLevel = utils::strToBool(stringVec[consts::eCopyFirstLevel]);
+    consts::FieldMetadata fieldMetadata;
+    fieldMetadata.jediName = utils::strNoWhiteSpace(stringVec[consts::eJediName]);
+    fieldMetadata.lfricReadName = utils::strNoWhiteSpace(stringVec[consts::eLfricReadName]);
+    fieldMetadata.lfricWriteName = utils::strNoWhiteSpace(stringVec[consts::eLfricWriteName]);
+    fieldMetadata.units = utils::strNoWhiteSpace(stringVec[consts::eUnits]);
+    fieldMetadata.numberOfLevels =
+                    std::stoi(utils::strNoWhiteSpace(stringVec[consts::eNumberOfLevels]));
+    fieldMetadata.copyFirstLevel = utils::strToBool(stringVec[consts::eCopyFirstLevel]);
 
-    varMetadataVec.push_back(varMetadata);
+    fieldMetadataVec.push_back(fieldMetadata);
   }
-  fieldSet = createFieldSet(functionSpace, varMetadataVec);
+  fieldSet = createFieldSet(functionSpace, fieldMetadataVec);
   // Others
   dateTime = util::DateTime(paramConfig.getString("dateTime"));
   inputFilePath = paramConfig.getString("inputFilePath");
@@ -136,13 +138,13 @@ void initParams(atlas::FieldSet& fieldSet,
 
 void main() {
   atlas::FieldSet fieldSet;
-  std::vector<consts::FieldMetadata> varMetadataVec;
+  std::vector<consts::FieldMetadata> fieldMetadataVec;
   util::DateTime dateTime;
   std::string inputFilePath;
   std::string outputFilePath;
-  initParams(fieldSet, varMetadataVec, dateTime, inputFilePath, outputFilePath);
+  initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
 
-  readInput(fieldSet, varMetadataVec, dateTime, inputFilePath);
+  readInput(fieldSet, fieldMetadataVec, dateTime, inputFilePath);
   write(outputFilePath);
   readOutput(outputFilePath);
 }

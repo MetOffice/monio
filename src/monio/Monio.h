@@ -35,7 +35,7 @@ class Monio {
 
   // For LFRic-JEDI
   void readBackground(atlas::FieldSet& fieldSet,
-                const std::vector<consts::FieldMetadata>& varMetadataVec,
+                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
 

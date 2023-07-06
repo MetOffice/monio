@@ -20,7 +20,8 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
 
 void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer,
-                                      const std::vector<size_t>& lfricToAtlasMap) {
+                                      const std::vector<size_t>& lfricToAtlasMap,
+                                      const bool copyFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateFieldWithDataContainer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
@@ -28,19 +29,19 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
     case consts::eDataTypes::eDouble: {
       const std::shared_ptr<DataContainerDouble> dataContainerDouble =
           std::static_pointer_cast<DataContainerDouble>(dataContainer);
-          populateField(field, dataContainerDouble->getData(), lfricToAtlasMap);
+          populateField(field, dataContainerDouble->getData(), lfricToAtlasMap, copyFirstLevel);
       break;
     }
     case consts::eDataTypes::eFloat: {
       const std::shared_ptr<DataContainerFloat> dataContainerFloat =
           std::static_pointer_cast<DataContainerFloat>(dataContainer);
-          populateField(field, dataContainerFloat->getData(), lfricToAtlasMap);
+          populateField(field, dataContainerFloat->getData(), lfricToAtlasMap, copyFirstLevel);
       break;
     }
     case consts::eDataTypes::eInt: {
       const std::shared_ptr<DataContainerInt> dataContainerInt =
           std::static_pointer_cast<DataContainerInt>(dataContainer);
-          populateField(field, dataContainerInt->getData(), lfricToAtlasMap);
+          populateField(field, dataContainerInt->getData(), lfricToAtlasMap, copyFirstLevel);
       break;
     }
     default:
@@ -82,7 +83,7 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
 }
 
 void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                                                const Data& data) {
+                                                  const Data& data) {
   oops::Log::debug() << "AtlasReader::populateFieldSetWithData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     for (auto& field : fieldSet) {
@@ -92,8 +93,8 @@ void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
 }
 
 void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                                                const Data& data,
-                                                const std::vector<std::string>& fieldNames) {
+                                                  const Data& data,
+                                                  const std::vector<std::string>& fieldNames) {
   oops::Log::debug() << "AtlasReader::populateFieldSetWithData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     auto fieldNameIt = fieldNames.begin();
@@ -108,34 +109,43 @@ void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
 template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
                                        const std::vector<T>& dataVec,
-                                       const std::vector<size_t>& lfricToAtlasMap) {
+                                       const std::vector<size_t>& lfricToAtlasMap,
+                                       const bool copyFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   atlas::idx_t numLevels = field.levels();
+  if (copyFirstLevel == true) {
+    numLevels -= 1;
+  }
   for (atlas::idx_t j = 0; j < numLevels; ++j) {
     for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
-      if (std::size_t(index) > dataVec.size()) {
-        throw std::runtime_error("Calculated index exceeds size of data.");
+      if (std::size_t(index) <= dataVec.size()) {
+        fieldView(i, j) = dataVec[index];
+      } else {
+        throw std::runtime_error("Calculated index exceeds size of data for field \""
+                                 + field.name() + "\".");
       }
-      fieldView(i, j) = dataVec[index];
     }
   }
 }
 
 template void monio::AtlasReader::populateField<double>(atlas::Field& field,
                                                         const std::vector<double>& dataVec,
-                                                        const std::vector<size_t>& lfricToAtlasMap);
+                                                        const std::vector<size_t>& lfricToAtlasMap,
+                                                        const bool copyFirstLevel);
 template void monio::AtlasReader::populateField<float>(atlas::Field& field,
                                                        const std::vector<float>& dataVec,
-                                                       const std::vector<size_t>& lfricToAtlasMap);
+                                                       const std::vector<size_t>& lfricToAtlasMap,
+                                                        const bool copyFirstLevel);
 template void monio::AtlasReader::populateField<int>(atlas::Field& field,
                                                      const std::vector<int>& dataVec,
-                                                     const std::vector<size_t>& lfricToAtlasMap);
+                                                     const std::vector<size_t>& lfricToAtlasMap,
+                                                     const bool copyFirstLevel);
 
 template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
-                                     const std::vector<T>& dataVec) {
+                                       const std::vector<T>& dataVec) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
 
   std::vector<atlas::idx_t> dimVec = field.shape();
@@ -147,10 +157,11 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
     for (atlas::idx_t j = 0; j < numLevels; ++j) {
       int index = i + (j * dimVec[consts::eHorizontal]);
-      if (std::size_t(index) > dataVec.size()) {
+      if (std::size_t(index) <= dataVec.size()) {
+        fieldView(i, j) = dataVec[index];
+      } else {
         throw std::runtime_error("Calculated index exceeds size of data.");
       }
-      fieldView(i, j) = dataVec[index];
     }
   }
 }

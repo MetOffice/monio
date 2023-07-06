@@ -39,13 +39,24 @@ class Reader {
   Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
-  void openFile(const FileData& fileData);
+  void openFile(const FileData& fileData);  // Monio::readBackground
+  void readMetadata(FileData& fileData);    // Monio::readBackground
+  void readFullData(FileData& fileData,
+                    const std::vector<std::string>& varNames);  // Monio::readBackground
+  void readFullDatum(FileData& fileData, const std::string& varName);  // Monio::readBackground
 
-  void readMetadata(FileData& fileData);
+  void readDatumAtTime(FileData& fileData,
+                      const std::string& variableName,
+                      const util::DateTime& dateToRead,
+                      const std::string& timeDimName);  // Monio::readBackground
+
+  void readDatumAtTime(FileData& fileData,
+                      const std::string& variableName,
+                      const size_t timeStep,
+                      const std::string& timeDimName);  // Reader::readDatumAtTime -- private?
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
   void readAllData(FileData& fileData);
-
-  void readFullData(FileData& fileData, const std::vector<std::string>& varNames);
-  void readFullDatum(FileData& fileData, const std::string& varName);
 
   void readDataAtTime(FileData& fileData,
                      const std::vector<std::string>& variableNames,
@@ -56,16 +67,6 @@ class Reader {
                      const std::vector<std::string>& variableNames,
                      const util::DateTime& dateToRead,
                      const std::string& timeDimName);
-
-  void readDatumAtTime(FileData& fileData,
-                      const std::string& variableName,
-                      const util::DateTime& dateToRead,
-                      const std::string& timeDimName);
-
-  void readDatumAtTime(FileData& fileData,
-                      const std::string& variableName,
-                      const size_t timeStep,
-                      const std::string& timeDimName);
 
   std::vector<std::string> getVarStrAttrs(const FileData& fileData,
                                           const std::vector<std::string>& varNames,

@@ -1,5 +1,5 @@
 parameters:
-  varMetadata:
+  fieldMetadata:
     exner:                    exner,                    exner_levels_minus_one, exner_levels_minus_one, 1,    70, true
     grid_surface_temperature: grid_surface_temperature, skin_temperature,       skin_temperature,       K,    1,  false
     theta:                    theta,                    potential_temperature,  potential_temperature,  K,    71, false
