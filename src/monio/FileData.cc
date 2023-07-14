@@ -8,6 +8,10 @@
 #############################################################################*/
 #include "FileData.h"
 
+monio::FileData::FileData() :
+  data_(),
+  metadata_() {}
+
 monio::FileData::FileData(const std::string filePath, const util::DateTime date) :
   data_(),
   metadata_(),
@@ -18,6 +22,10 @@ monio::FileData::FileData(const std::string filePath) :
   data_(),
   metadata_(),
   filePath_(filePath) {}
+
+bool monio::FileData::isInitialised() const {
+  return lfricAtlasMap_.size() > 0;
+}
 
 monio::Data& monio::FileData::getData() {
   return data_;

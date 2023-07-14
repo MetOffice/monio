@@ -49,6 +49,7 @@ class AtlasProcessor {
   std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& atlasCoords,
                                           const std::vector<atlas::PointLonLat>& lfricCoords);
 
+  atlas::Field getGlobalField(const atlas::Field& fieldSet);
   atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet);
 
   atlas::idx_t getSizeOwned(const atlas::Field& field);

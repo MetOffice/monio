@@ -128,45 +128,50 @@ std::vector<size_t> monio::AtlasProcessor::createLfricAtlasMap(
   return lfricAtlasMap;
 }
 
+atlas::Field monio::AtlasProcessor::getGlobalField(const atlas::Field& field) {
+  if (field.metadata().get<bool>("global") == false) {
+    atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
+                                       atlas::option::levels(field.levels()) |
+                                       atlas::option::global(0);
+
+    atlas::array::DataType atlasType = field.datatype();
+    const auto& functionSpace = field.functionspace();
+    atlas::Field globalField;
+    switch (atlasType.kind()) {
+      case atlasType.KIND_REAL64:
+        globalField = functionSpace.createField<double>(atlasOptions);
+        break;
+      case atlasType.KIND_REAL32:
+        globalField = functionSpace.createField<float>(atlasOptions);
+        break;
+      case atlasType.KIND_INT32:
+        globalField = functionSpace.createField<int>(atlasOptions);
+        break;
+      default:
+        throw std::runtime_error("AtlasProcessor::getGlobalFieldSet())> "
+                                 "Data type not coded for...");
+    }
+    field.haloExchange();
+    functionSpace.gather(field, globalField);
+    return globalField;
+  } else {
+    return field;
+  }
+}
+
 atlas::FieldSet monio::AtlasProcessor::getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
   oops::Log::debug() << "AtlasProcessor::getGlobalFieldSet()" << std::endl;
   if (fieldSet.size() != 0) {
     atlas::FieldSet globalFieldSet;
     for (const auto& field : fieldSet) {
-      if (field.metadata().get<bool>("global") == false) {
-        atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
-                                           atlas::option::levels(field.levels()) |
-                                           atlas::option::global(0);
-
-        atlas::array::DataType atlasType = field.datatype();
-        const auto& functionSpace = field.functionspace();
-        atlas::Field globalField;
-        switch (atlasType.kind()) {
-          case atlasType.KIND_REAL64:
-            globalField = functionSpace.createField<double>(atlasOptions);
-            break;
-          case atlasType.KIND_REAL32:
-            globalField = functionSpace.createField<float>(atlasOptions);
-            break;
-          case atlasType.KIND_INT32:
-            globalField = functionSpace.createField<int>(atlasOptions);
-            break;
-          default:
-            throw std::runtime_error("AtlasProcessor::getGlobalFieldSet())> "
-                                     "Data type not coded for...");
-        }
-        field.haloExchange();
-        functionSpace.gather(field, globalField);
-        globalFieldSet.add(globalField);
-      } else {
-        globalFieldSet.add(field);
-      }
+      globalFieldSet.add(getGlobalField(field));
     }
     return globalFieldSet;
   } else {
     throw std::runtime_error("AtlasProcessor::getGlobalFieldSet()> FieldSet has zero fields...");
   }
 }
+
 
 atlas::idx_t monio::AtlasProcessor::getSizeOwned(const atlas::Field& field) {
   oops::Log::debug() << "AtlasProcessor::getSizeOwned()" << std::endl;

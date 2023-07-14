@@ -34,8 +34,8 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
   // For LFRic-JEDI
-  void readBackground(atlas::FieldSet& fieldSet,
-                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+  void readBackground(atlas::Field& localField,
+                const consts::FieldMetadata& fieldMetadata,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
 
@@ -73,6 +73,8 @@ class Monio {
 
   // This function returns copies of FileData by design
   FileData getFileData(const std::string& gridName);
+
+  bool fileDataExists(const std::string& gridName) const;
 
   static Monio* this_;
 

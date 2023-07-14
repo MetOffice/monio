@@ -19,8 +19,11 @@
 namespace monio {
 class FileData {
  public:
+  FileData();
   explicit FileData(const std::string filePath);
   FileData(const std::string filePath, const util::DateTime date);
+
+  bool isInitialised() const;
 
   Data& getData();
   const Data& getData() const;
