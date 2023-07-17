@@ -32,47 +32,54 @@ monio::Monio::~Monio() {
   delete this_;
 }
 
-void monio::Monio::readBackground(atlas::Field& localField,
-                            const consts::FieldMetadata& fieldMetadata,
+void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
+                            const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                             const std::string& filePath,
                             const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::read()" << std::endl;
-  // Check on the number of Fields happens inside AtlasProcessor::getGlobalFieldSet
-  atlas::Field globalField = atlasProcessor_.getGlobalField(localField);
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    auto& functionSpace = globalField.functionspace();
-    auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
-
-    // Initialise background file
-    if (fileDataExists(grid.name()) == false) {
-      FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-      reader_.openFile(fileData);
-      reader_.readMetadata(fileData);
-      std::vector<std::string> meshVars =
-          fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
-      reader_.readFullData(fileData, meshVars);
-      createLfricAtlasMap(fileData, grid);
-
-      reader_.readFullDatum(fileData, std::string(monio::consts::kTimeVarName));
-      createDateTimes(fileData,
-                      std::string(monio::consts::kTimeVarName),
-                      std::string(monio::consts::kTimeOriginName));
-    }
-    FileData fileData = getFileData(grid.name());
-    // Read fields into memory
-    reader_.readDatumAtTime(fileData,
-                            fieldMetadata.lfricReadName,
-                            dateTime,
-                            std::string(monio::consts::kTimeDimName));
-    atlasReader_.populateFieldWithDataContainer(
-                                     globalField,
-                                     fileData.getData().getContainer(fieldMetadata.lfricReadName),
-                                     fileData.getLfricAtlasMap(),
-                                     fieldMetadata.copyFirstLevel);
+  oops::Log::debug() << "Monio::readBackground()" << std::endl;
+  if (localFieldSet.size() == 0) {
+    throw std::runtime_error("Monio::readBackground()> localFieldSet has zero fields...");
   }
-  auto& functionSpace = globalField.functionspace();
-  functionSpace.scatter(globalField, localField);
-  localField.haloExchange();
+  for (const auto& fieldMetadata : fieldMetadataVec) {
+    auto& localField = localFieldSet[fieldMetadata.jediName];
+    atlas::Field globalField = atlasProcessor_.getGlobalField(localField);
+    if (mpiCommunicator_.rank() == mpiRankOwner_) {
+      oops::Log::debug() << "Monio::readBackground() processing data for> \"" <<
+                            fieldMetadata.jediName << "\"..." << std::endl;
+      auto& functionSpace = globalField.functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+
+      // Initialise background file
+      if (fileDataExists(grid.name()) == false) {
+        FileData& fileData = createFileData(grid.name(), filePath, dateTime);
+        reader_.openFile(fileData);
+        reader_.readMetadata(fileData);
+        std::vector<std::string> meshVars =
+            fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
+        reader_.readFullData(fileData, meshVars);
+        createLfricAtlasMap(fileData, grid);
+
+        reader_.readFullDatum(fileData, std::string(monio::consts::kTimeVarName));
+        createDateTimes(fileData,
+                        std::string(monio::consts::kTimeVarName),
+                        std::string(monio::consts::kTimeOriginName));
+      }
+      FileData fileData = getFileData(grid.name());
+      // Read fields into memory
+      reader_.readDatumAtTime(fileData,
+                              fieldMetadata.lfricReadName,
+                              dateTime,
+                              std::string(monio::consts::kTimeDimName));
+      atlasReader_.populateFieldWithDataContainer(
+                                       globalField,
+                                       fileData.getData().getContainer(fieldMetadata.lfricReadName),
+                                       fileData.getLfricAtlasMap(),
+                                       fieldMetadata.copyFirstLevel);
+    }
+    auto& functionSpace = globalField.functionspace();
+    functionSpace.scatter(globalField, localField);
+    localField.haloExchange();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

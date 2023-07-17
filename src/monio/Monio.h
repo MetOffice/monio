@@ -34,8 +34,8 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
   // For LFRic-JEDI
-  void readBackground(atlas::Field& localField,
-                const consts::FieldMetadata& fieldMetadata,
+  void readBackground(atlas::FieldSet& localFieldSet,
+                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
 
@@ -57,12 +57,6 @@ class Monio {
                            const std::map<std::string, consts::FieldMetadata>& incMetadataMap,
                            const std::string& filePath);
 
-  void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
-
-  void createDateTimes(FileData& fileData,
-                       const std::string& timeVarName,
-                       const std::string& timeOriginName);
-
  private:
   Monio(const eckit::mpi::Comm& mpiCommunicator,
         const atlas::idx_t mpiRankOwner);
@@ -70,6 +64,12 @@ class Monio {
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath,
                            const util::DateTime& dateTime);
+
+  void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
+
+  void createDateTimes(FileData& fileData,
+                       const std::string& timeVarName,
+                       const std::string& timeOriginName);
 
   // This function returns copies of FileData by design
   FileData getFileData(const std::string& gridName);
