@@ -36,7 +36,7 @@ monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
 
 
 void monio::AtlasWriter::writeFieldSetToFile(const atlas::FieldSet& fieldSet,
-                                                 const std::string outputFilePath) {
+                                             const std::string outputFilePath) {
   oops::Log::debug() << "AtlasWriter::writeFieldSetToFile()" << std::endl;
   if (atlas::mpi::rank() == monio::consts::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {

@@ -39,6 +39,9 @@ class Monio {
                 const std::string& filePath,
                 const util::DateTime& dateTime);
 
+  void writeFieldSet(const atlas::FieldSet& localFieldSet,
+                     const std::string outputFilePath);
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // From LFRic-Lite-JEDI
   void readFile(const atlas::CubedSphereGrid& grid,

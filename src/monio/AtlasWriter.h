@@ -41,8 +41,8 @@ class AtlasWriter {
   AtlasWriter& operator=( AtlasWriter&&)      = delete;  //!< Deleted move assignment
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
-  static void writeFieldSetToFile(const atlas::FieldSet& fieldSet,
-                                  const std::string outputFilePath);
+  void writeFieldSetToFile(const atlas::FieldSet& fieldSet,
+                           const std::string outputFilePath);
 
   void writeIncrementsToFile(atlas::FieldSet& fieldSet,
                        const std::vector<std::string>& varNames,

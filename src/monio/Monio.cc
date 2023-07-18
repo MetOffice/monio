@@ -82,6 +82,13 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
   }
 }
 
+void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
+                                 const std::string outputFilePath) {
+  oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
+  atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(localFieldSet);
+  atlasWriter_.writeFieldSetToFile(globalFieldSet, outputFilePath);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
                             const std::string& filePath,
