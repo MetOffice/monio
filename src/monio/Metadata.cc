@@ -297,6 +297,21 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
   return globalAttrs_;
 }
 
+int monio::Metadata::getDataFormat() {
+  int dataFormatRet = consts::eLfricNaming;
+  for (const auto& globalAttr : globalAttrs_) {
+    if (globalAttr.first == consts::kNamingConvention) {
+      std::shared_ptr<monio::AttributeString> dataFormatAttr =
+            std::dynamic_pointer_cast<monio::AttributeString>(globalAttr.second);
+      std::string dataFormatValue = dataFormatAttr->getValue();
+      if (dataFormatValue == monio::consts::kNamingJediName) {
+        dataFormatRet = consts::eJediNaming;
+      }
+    }
+  }
+  return dataFormatRet;
+}
+
 void monio::Metadata::removeAllButTheseVariables(
     const std::vector<std::string>& varNames) {
   oops::Log::debug() << "Metadata::removeAllButTheseVariables()" << std::endl;

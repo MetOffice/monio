@@ -29,6 +29,9 @@ namespace utils {
   std::vector<T1> extractKeys(std::map<T1, T2> const& inputMap);
 
   template<typename T>
+  int findPosInVector(std::vector<T> vector, T searchTerm);
+
+  template<typename T>
   bool findInVector(std::vector<T> vector, T searchTerm);
 }  // namespace utils
 }  // namespace monio

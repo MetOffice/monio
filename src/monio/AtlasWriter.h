@@ -45,10 +45,10 @@ class AtlasWriter {
                            const std::string outputFilePath);
 
   void writeIncrementsToFile(atlas::FieldSet& fieldSet,
-                       const std::vector<std::string>& varNames,
-                       const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
+                       const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                              monio::FileData& fileData,
-                       const std::string& outputFilePath);
+                       const std::string& outputFilePath,
+                       const bool isLfricFormat);
 
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
@@ -77,13 +77,11 @@ class AtlasWriter {
                                            Data& data,
                                      const atlas::FieldSet& fieldSet);
 
-  void populateMetadataAndDataWithLfricFieldSet(
-                                  Metadata& metadata,
-                                  Data& data,
-                            const std::vector<std::string>& varNames,
-                            const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
-                                  atlas::FieldSet& fieldSet,
-                            const std::vector<size_t>& lfricToAtlasMap);
+  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
+                                               Data& data,
+                                         const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                                               atlas::FieldSet& fieldSet,
+                                         const std::vector<size_t>& lfricToAtlasMap);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,

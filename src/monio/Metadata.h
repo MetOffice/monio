@@ -59,6 +59,8 @@ class Metadata {
   const std::map<std::string, std::shared_ptr<AttributeBase>>& getGlobalAttrsMap() const;
   const std::map<std::string, std::shared_ptr<Variable>>& getVariablesMap() const;
 
+  int getDataFormat();
+
   void removeAllButTheseVariables(const std::vector<std::string>& varNames);
 
   void deleteDimension(const std::string& dimName);

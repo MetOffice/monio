@@ -82,6 +82,65 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
   }
 }
 
+void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
+                            const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                            const std::string& filePath) {
+  oops::Log::debug() << "Monio::readIncrements()" << std::endl;
+  if (localFieldSet.size() == 0) {
+    throw std::runtime_error("Monio::readIncrements()> localFieldSet has zero fields...");
+  }
+  for (const auto& fieldMetadata : fieldMetadataVec) {
+    auto& localField = localFieldSet[fieldMetadata.jediName];
+    atlas::Field globalField = atlasProcessor_.getGlobalField(localField);
+    if (mpiCommunicator_.rank() == mpiRankOwner_) {
+      oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
+                            fieldMetadata.jediName << "\"..." << std::endl;
+      auto& functionSpace = globalField.functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+
+      // Initialise background file
+      if (fileDataExists(grid.name()) == false) {
+        FileData& fileData = createFileData(grid.name(), filePath);
+        reader_.openFile(fileData);
+        reader_.readMetadata(fileData);
+        std::vector<std::string> meshVars =
+            fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
+        reader_.readFullData(fileData, meshVars);
+        createLfricAtlasMap(fileData, grid);
+      }
+      FileData fileData = getFileData(grid.name());
+      // Read fields into memory
+      reader_.readFullDatum(fileData, fieldMetadata.lfricReadName);
+      atlasReader_.populateFieldWithDataContainer(
+                                       globalField,
+                                       fileData.getData().getContainer(fieldMetadata.lfricReadName),
+                                       fileData.getLfricAtlasMap(),
+                                       fieldMetadata.copyFirstLevel);
+    }
+    auto& functionSpace = globalField.functionspace();
+    functionSpace.scatter(globalField, localField);
+    localField.haloExchange();
+  }
+}
+
+void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
+                                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                                   const std::string& filePath,
+                                   const bool isLfricFormat) {
+  oops::Log::debug() << "Monio::writeIncrements()" << std::endl;
+  if (localFieldSet.size() == 0) {
+    throw std::runtime_error("Monio::writeIncrements()> localFieldSet has zero fields...");
+  }
+  atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(localFieldSet);
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    auto& functionSpace = globalFieldSet[0].functionspace();
+    auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+    FileData fileData = getFileData(grid.name());
+    atlasWriter_.writeIncrementsToFile(globalFieldSet, fieldMetadataVec,
+                                       fileData, filePath, isLfricFormat);
+  }
+}
+
 void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
                                  const std::string outputFilePath) {
   oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
@@ -90,68 +149,6 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void monio::Monio::readFile(const atlas::CubedSphereGrid& grid,
-                            const std::string& filePath,
-                            const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::readFile()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-    // Storage of read data isn't hugely important at this stage. However, keying and storing
-    // against the grid name allows for data of different resolutions to be read and available
-    // at the point of writing.
-
-    reader_.openFile(fileData);
-    reader_.readMetadata(fileData);
-
-    std::vector<std::string> variablesToRead =
-        fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
-
-    reader_.readFullData(fileData, variablesToRead);
-    createLfricAtlasMap(fileData, grid);
-
-    reader_.readFullDatum(fileData, std::string(monio::consts::kTimeVarName));
-    createDateTimes(fileData,
-                    std::string(monio::consts::kTimeVarName),
-                    std::string(monio::consts::kTimeOriginName));
-  }
-}
-
-void monio::Monio::readVarAndPopulateField(const std::string& gridName,
-                                           const std::string& varName,
-                                           const util::DateTime& dateTime,
-                                           const atlas::idx_t& levels,
-                                           atlas::Field& globalField) {
-  oops::Log::debug() << "Monio::readVarAndPopulateField()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData fileData = getFileData(gridName);
-    reader_.readDatumAtTime(fileData, varName, dateTime,
-                           std::string(monio::consts::kTimeDimName));
-    globalField.set_levels(levels);
-    atlasReader_.populateFieldWithDataContainer(globalField,
-                                                fileData.getData().getContainer(varName),
-                                                fileData.getLfricAtlasMap());
-  }
-}
-
-void monio::Monio::writeIncrementsFile(
-                               const std::string& gridName,
-                               const atlas::FieldSet& fieldSet,
-                               const std::vector<std::string>& varNames,
-                               const std::map<std::string, consts::FieldMetadata>& fieldMetadataMap,
-                               const std::string& filePath) {
-  oops::Log::debug() << "Monio::writeIncrementsFile()" << std::endl;
-  atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(fieldSet);
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (filePath.length() != 0) {
-      FileData fileData = getFileData(gridName);
-      atlasWriter_.writeIncrementsToFile(globalFieldSet, varNames,
-                                         fieldMetadataMap, fileData, filePath);
-    } else {
-      oops::Log::info() << "Monio::writeIncrementsFile() No outputFilePath supplied. "
-                           "NetCDF writing will not take place." << std::endl;
-    }
-  }
-}
 
 monio::Monio& monio::Monio::get() {
   oops::Log::debug() << "Monio::get()" << std::endl;
@@ -224,7 +221,18 @@ monio::FileData& monio::Monio::createFileData(const std::string& gridName,
   return filesData_.at(gridName);
 }
 
+monio::FileData& monio::Monio::createFileData(const std::string& gridName,
+                                              const std::string& filePath) {
+  oops::Log::debug() << "Monio::createFileData()" << std::endl;
+  auto it = filesData_.find(gridName);
 
+  if (it != filesData_.end()) {
+    filesData_.erase(gridName);
+  }
+  // Overwrite existing data
+  filesData_.insert({gridName, FileData(filePath)});
+  return filesData_.at(gridName);
+}
 
 monio::FileData monio::Monio::getFileData(const std::string& gridName) {
   oops::Log::debug() << "Monio::getFileData()" << std::endl;

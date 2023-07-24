@@ -33,32 +33,22 @@ class Monio {
   Monio& operator=(Monio&&)      = delete;  //!< Deleted move assignment
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
-  // For LFRic-JEDI
   void readBackground(atlas::FieldSet& localFieldSet,
                 const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
 
+  void readIncrements(atlas::FieldSet& localFieldSet,
+               const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+               const std::string& filePath);
+
+  void writeIncrements(const atlas::FieldSet& localFieldSet,
+                       const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                       const std::string& filePath,
+                       const bool isLfricFormat = true);
+
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string outputFilePath);
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  // From LFRic-Lite-JEDI
-  void readFile(const atlas::CubedSphereGrid& grid,
-                const std::string& filePath,
-                const util::DateTime& date);
-
-  void readVarAndPopulateField(const std::string& gridName,
-                               const std::string& varName,
-                               const util::DateTime& dateTime,
-                               const atlas::idx_t& levels,
-                               atlas::Field& globalField);
-
-  void writeIncrementsFile(const std::string& gridName,
-                           const atlas::FieldSet& fieldSet,
-                           const std::vector<std::string>& varNames,
-                           const std::map<std::string, consts::FieldMetadata>& incMetadataMap,
-                           const std::string& filePath);
 
  private:
   Monio(const eckit::mpi::Comm& mpiCommunicator,
@@ -67,6 +57,9 @@ class Monio {
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath,
                            const util::DateTime& dateTime);
+
+  FileData& createFileData(const std::string& gridName,
+                           const std::string& filePath);
 
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
 
