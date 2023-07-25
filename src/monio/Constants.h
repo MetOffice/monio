@@ -135,9 +135,9 @@ const std::string_view kLfricLatVarName = "Mesh2d_face_x";
 const std::string_view kLongitudeVarName = "longitude";
 const std::string_view kLatitudeVarName = "latitude";
 
-const std::string kNamingConvention = "naming_convention";
-const std::string kNamingJediName = "JEDI";
-const std::string kNamingLfricName = "LFRic";
+const std::string_view kNamingConvention = "naming_convention";
+const std::string_view kNamingJediName = "JEDI";
+const std::string_view kNamingLfricName = "LFRic";
 
 const std::string_view kTabSpace = "    ";
 const std::string_view kLevelsSearchTerm = "levels";
