@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+
+finally() {
+    trap '' ERR
+    trap '' EXIT
+    if [[ -d "${WORKD:-}" ]]; then
+        cd /
+        rm -fr "${WORKD}"
+    fi
+}
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+THIS="$(basename "$0")"
+NPROC=${NPROC:-$(nproc)}
+WORKD="$(mktemp -d "${THIS}-XXXXXX" -t)"
+
+trap finally ERR
+trap finally EXIT
+
+cd "${WORKD}"
+
+rm -f "${HERE}/bundle"
+ln -s '..' "${HERE}/bundle"
+
+# -- Configure
+ecbuild -S "${HERE}" -DMPI_ARGS="--oversubscribe"
+# -- dump cmake error and output
+# if ! ecbuild -S "${HERE}" -DMPI_ARGS="--oversubscribe"; then
+#     cat ./CMakeFiles/CMakeOutput.log
+#     cat ./CMakeFiles/CMakeError.log
+# fi
+
+# -- Build
+VERBOSE=1 make -j "${NPROC}"
+
+# -- Test
+env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+    ctest -j "$NPROC" -R "monio_coding_norms"
+
+exit
