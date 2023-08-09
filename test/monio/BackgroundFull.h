@@ -149,14 +149,14 @@ void main() {
   readOutput(outputFilePath);
 }
 
-class MonioReadWrite : public oops::Test{
+class BackgroundFull : public oops::Test{
  public:
-  MonioReadWrite() {}
-  virtual ~MonioReadWrite() {}
+  BackgroundFull() {}
+  virtual ~BackgroundFull() {}
 
  private:
   std::string testid() const override {
-    return "monio::test::MonioReadWrite";
+    return "monio::test::BackgroundFull";
   }
 
   void register_tests() const override {
@@ -164,7 +164,7 @@ class MonioReadWrite : public oops::Test{
 
     std::function<void(std::string&, int&, int)> mainFunction =
         [&](std::string&, int&, int) { main(); };
-    ts.push_back(eckit::testing::Test("monio/test_read_write", mainFunction));
+    ts.push_back(eckit::testing::Test("monio/test_background_full", mainFunction));
   }
   void clear() const override {}
 };
