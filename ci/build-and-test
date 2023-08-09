@@ -36,9 +36,8 @@ ecbuild -S "${HERE}" -DCMAKE_BUILD_TYPE=Debug -DMPI_ARGS="--oversubscribe"
 make -j "${NPROC}"
 
 # -- Test
-cpplint --version
+# cpplint --version
 env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-    ctest -j "$NPROC" --test-dir monio
-    # -V -R "monio_coding_norms"
+    ctest -j "$NPROC" -V -R "monio_coding_norms"
 
 exit

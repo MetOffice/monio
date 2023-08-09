@@ -42,7 +42,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: ./ci/get-ref-branch ./ci/monio
 
-      - name: build and test
+      - name: build and lint
         run: |
           az acr login --name ngmssboxjediacr
           docker run --rm \
