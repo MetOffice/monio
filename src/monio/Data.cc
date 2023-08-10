@@ -52,7 +52,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
 
       if (lhsDataType == rhsDataType && lhsName == rhsName) {
         switch (lhsDataType) {
-          case monio::consts::eDataTypes::eDouble: {
+          case consts::eDataTypes::eDouble: {
             std::shared_ptr<DataContainerDouble> lhsDataContainerDouble =
               std::static_pointer_cast<DataContainerDouble>(lhsDataContainer);
             std::shared_ptr<DataContainerDouble> rhsDataContainerDouble =
@@ -63,7 +63,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::consts::eDataTypes::eFloat: {
+          case consts::eDataTypes::eFloat: {
             std::shared_ptr<DataContainerFloat> lhsDataContainerFloat =
               std::static_pointer_cast<DataContainerFloat>(lhsDataContainer);
             std::shared_ptr<DataContainerFloat> rhsDataContainerFloat =
@@ -74,7 +74,7 @@ bool monio::operator==(const monio::Data& lhs, const monio::Data& rhs) {
               return false;
             break;
           }
-          case monio::consts::eDataTypes::eInt: {
+          case consts::eDataTypes::eInt: {
             std::shared_ptr<DataContainerInt> lhsDataContainerInt =
               std::static_pointer_cast<DataContainerInt>(lhsDataContainer);
             std::shared_ptr<DataContainerInt> rhsDataContainerInt =

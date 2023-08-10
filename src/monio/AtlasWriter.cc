@@ -38,16 +38,16 @@ monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
 void monio::AtlasWriter::writeFieldSetToFile(const atlas::FieldSet& fieldSet,
                                              const std::string outputFilePath) {
   oops::Log::debug() << "AtlasWriter::writeFieldSetToFile()" << std::endl;
-  if (atlas::mpi::rank() == monio::consts::kMPIRankOwner) {
+  if (atlas::mpi::rank() == consts::kMPIRankOwner) {
     if (outputFilePath.length() != 0) {
       monio::Metadata metadata;
       monio::Data data;
       monio::AtlasWriter atlasWriter(atlas::mpi::comm(),
-                                         monio::consts::kMPIRankOwner);
+                                         consts::kMPIRankOwner);
       atlasWriter.populateMetadataAndDataWithFieldSet(metadata, data, fieldSet);
 
       monio::Writer writer(atlas::mpi::comm(),
-                               monio::consts::kMPIRankOwner,
+                               consts::kMPIRankOwner,
                                outputFilePath);
       writer.writeMetadata(metadata);
       writer.writeVariablesData(metadata, data);
@@ -72,11 +72,11 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
 
         readMetadata.clearGlobalAttributes();
 
-        readMetadata.deleteDimension(std::string(monio::consts::kTimeDimName));
-        readMetadata.deleteDimension(std::string(monio::consts::kTileDimName));
+        readMetadata.deleteDimension(std::string(consts::kTimeDimName));
+        readMetadata.deleteDimension(std::string(consts::kTileDimName));
 
-        readData.deleteContainer(std::string(monio::consts::kTimeVarName));
-        readData.deleteContainer(std::string(monio::consts::kTileVarName));
+        readData.deleteContainer(std::string(consts::kTimeVarName));
+        readData.deleteContainer(std::string(consts::kTileVarName));
 
         reconcileMetadataWithData(readMetadata, readData);
 
@@ -85,7 +85,7 @@ void monio::AtlasWriter::writeIncrementsToFile(atlas::FieldSet& fieldSet,
                                                  fieldMetadataVec, fieldSet, lfricAtlasMap);
 
         monio::Writer writer(atlas::mpi::comm(),
-                             monio::consts::kMPIRankOwner,
+                             consts::kMPIRankOwner,
                              outputFilePath);
         writer.writeMetadata(readMetadata);
         writer.writeVariablesData(readMetadata, readData);
@@ -314,7 +314,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
       }
       for (auto& dimSize : dimVec) {
         std::string dimName = metadata.getDimensionName(dimSize);
-        if (dimName == monio::consts::kNotFoundError) {
+        if (dimName == consts::kNotFoundError) {
           dimName = "dim" + std::to_string(dimCount);
           metadata.addDimension(dimName, dimSize);
           dimCount++;

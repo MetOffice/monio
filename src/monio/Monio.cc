@@ -55,21 +55,21 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
         reader_.openFile(fileData);
         reader_.readMetadata(fileData);
         std::vector<std::string> meshVars =
-            fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
+            fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
         reader_.readFullData(fileData, meshVars);
         createLfricAtlasMap(fileData, grid);
 
-        reader_.readFullDatum(fileData, std::string(monio::consts::kTimeVarName));
+        reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
         createDateTimes(fileData,
-                        std::string(monio::consts::kTimeVarName),
-                        std::string(monio::consts::kTimeOriginName));
+                        std::string(consts::kTimeVarName),
+                        std::string(consts::kTimeOriginName));
       }
       FileData fileData = getFileData(grid.name());
       // Read fields into memory
       reader_.readDatumAtTime(fileData,
                               fieldMetadata.lfricReadName,
                               dateTime,
-                              std::string(monio::consts::kTimeDimName));
+                              std::string(consts::kTimeDimName));
       atlasReader_.populateFieldWithDataContainer(
                                        globalField,
                                        fileData.getData().getContainer(fieldMetadata.lfricReadName),
@@ -104,7 +104,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         reader_.openFile(fileData);
         reader_.readMetadata(fileData);
         std::vector<std::string> meshVars =
-            fileData.getMetadata().findVariableNames(std::string(monio::consts::kLfricMeshTerm));
+            fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
         reader_.readFullData(fileData, meshVars);
         createLfricAtlasMap(fileData, grid);
       }
