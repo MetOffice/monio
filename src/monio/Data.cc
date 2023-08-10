@@ -113,7 +113,7 @@ void monio::Data::deleteContainer(const std::string& name) {
   if (it != dataContainers_.end()) {
     dataContainers_.erase(name);
   } else {
-    throw std::runtime_error("DataContainer named \"" + name + "\" was not found.");
+    utils::throwException("DataContainer named \"" + name + "\" was not found.");
   }
 }
 
@@ -144,7 +144,7 @@ std::shared_ptr<monio::DataContainerBase>
   if (it != dataContainers_.end()) {
     return it->second;
   } else {
-    throw std::runtime_error("DataContainer named \"" + name + "\" was not found.");
+    utils::throwException("DataContainer named \"" + name + "\" was not found.");
   }
 }
 

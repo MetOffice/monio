@@ -141,7 +141,7 @@ int monio::Metadata::getDimension(const std::string& dimName) {
   if (isDimDefined(dimName) == true)
     return dimensions_.at(dimName);
   else
-    throw std::runtime_error("Metadata::getDimension()> dimension \"" +
+    utils::throwException("Metadata::getDimension()> dimension \"" +
                                 dimName + "\" not found...");
 }
 
@@ -160,7 +160,7 @@ std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string&
   if (it != variables_.end())
     return variables_.at(varName);
   else
-    throw std::runtime_error("Metadata::getVariable()> variable \"" +
+    utils::throwException("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
 }
 
@@ -172,7 +172,7 @@ const std::shared_ptr<monio::Variable>
   if (it != variables_.end())
     return variables_.at(varName);
   else
-    throw std::runtime_error("Metadata::getVariable()> variable \"" +
+    utils::throwException("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
 }
 
@@ -213,7 +213,7 @@ const std::vector<std::string> monio::Metadata::getVarStrAttrs(
       varStrAttrs.push_back(attr);
   }
   if (varNames.size() != varStrAttrs.size())
-    throw std::runtime_error("Metadata::getVarStrAttrs()> "
+    utils::throwException("Metadata::getVarStrAttrs()> "
         "Unmatched number of variables and attributes...");
 
   return varStrAttrs;
@@ -350,7 +350,7 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
   if (it != variables_.end()) {
     variables_.erase(varName);
   } else {
-    throw std::runtime_error("Metadata::deleteVariable()> Variable \"" +
+    utils::throwException("Metadata::deleteVariable()> Variable \"" +
                              varName + "\" not found...");
   }
 }
@@ -418,7 +418,7 @@ void monio::Metadata::printVariables() {
           break;
         }
         default:
-          throw std::runtime_error("Metadata::printGlobalAttrs()> "
+          utils::throwException("Metadata::printGlobalAttrs()> "
                                    "Data type not coded for...");
       }
     }
@@ -450,7 +450,7 @@ void monio::Metadata::printGlobalAttrs() {
         break;
       }
       default:
-        throw std::runtime_error("Metadata::printGlobalAttrs()> Data type not coded for...");
+        utils::throwException("Metadata::printGlobalAttrs()> Data type not coded for...");
     }
   }
 }

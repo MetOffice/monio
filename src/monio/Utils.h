@@ -33,5 +33,7 @@ namespace utils {
 
   template<typename T>
   bool findInVector(std::vector<T> vector, T searchTerm);
+
+  [[noreturn]] void throwException(const std::string message);
 }  // namespace utils
 }  // namespace monio
