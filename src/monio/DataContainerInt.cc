@@ -13,7 +13,7 @@
 #include "Constants.h"
 
 monio::DataContainerInt::DataContainerInt(const std::string& name) :
-  DataContainerBase(name, monio::consts::eInt) {}
+  DataContainerBase(name, consts::eInt) {}
 
 const std::string& monio::DataContainerInt::getName() const {
   return name_;

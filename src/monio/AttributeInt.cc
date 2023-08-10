@@ -11,7 +11,7 @@
 #include "Constants.h"
 
 monio::AttributeInt::AttributeInt(const std::string& name, const int value) :
-  AttributeBase(name, monio::consts::eInt), value_(value) {}
+  AttributeBase(name, consts::eInt), value_(value) {}
 
 const std::string& monio::AttributeInt::getName() const {
   return name_;
