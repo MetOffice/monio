@@ -11,7 +11,7 @@
 #include "AttributeBase.h"
 
 namespace monio {
-/// \brief Concrete class for integer attributes of a NetCDF file
+/// \brief Concrete class for double attributes of a NetCDF file
 class AttributeDouble : public AttributeBase {
  public:
   AttributeDouble(const std::string& name, const double value);

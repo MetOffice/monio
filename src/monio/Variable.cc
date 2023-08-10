@@ -67,7 +67,7 @@ std::shared_ptr<monio::AttributeBase>
   if (attributes_.find(attrName) != attributes_.end()) {
     return attributes_.at(attrName);
   } else {
-    throw std::runtime_error("Variable::getAttribute()> Attribute \"" +
+    utils::throwException("Variable::getAttribute()> Attribute \"" +
                                     attrName + "\" not found...");
   }
 }
@@ -86,11 +86,11 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       // Does not currently handle AttributeInt types. Used specifically to retrieve LFRic's
       // "standard_type" variable attributes as the closest approximation to a JEDI variable name.
       // These are stored as AttributeString.
-      throw std::runtime_error("Variable::getAttribute()> "
+      utils::throwException("Variable::getAttribute()> "
           "Variable attribute data type not coded for...");
     }
   } else {
-    throw std::runtime_error("Variable::getAttribute()> Attribute \"" +
+    utils::throwException("Variable::getAttribute()> Attribute \"" +
                                     attrName + "\" not found...");
   }
 }
@@ -102,7 +102,7 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
   if (it == dimensions_.end()) {
     dimensions_.push_back(std::make_pair(dimName, size));
   } else {
-      throw std::runtime_error("Variable::addDimension()> Dimension \"" +
+      utils::throwException("Variable::addDimension()> Dimension \"" +
                                     dimName + "\" already defined...");
   }
 }
@@ -113,7 +113,7 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
   if (it == attributes_.end()) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
-    throw std::runtime_error("Variable::addAttribute()>  multiple definitions of \"" +
+    utils::throwException("Variable::addAttribute()>  multiple definitions of \"" +
                                 attrName + "\"...");
   }
 }
@@ -133,7 +133,7 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
   if (it != attributes_.end()) {
     attributes_.erase(attrName);
   } else {
-      throw std::runtime_error("Variable::deleteAttribute()> Attribute \"" +
+      utils::throwException("Variable::deleteAttribute()> Attribute \"" +
                                     attrName + "\" does not exist...");
   }
 }
@@ -146,7 +146,7 @@ size_t monio::Variable::getDimension(const std::string& dimName) {
   if (it != dimensions_.end()) {
     return it->second;
   } else {
-      throw std::runtime_error("Variable::getDimension()> Dimension \"" +
+      utils::throwException("Variable::getDimension()> Dimension \"" +
                                     dimName + "\" does not exist...");
   }
 }

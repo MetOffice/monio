@@ -16,6 +16,7 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
+#include "Utils.h"
 
 #include "oops/util/Logger.h"
 
@@ -32,7 +33,7 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
       std::string message =
           "Writer::Writer()> An exception occurred while creating File...";
       message.append(exception.what());
-      throw std::runtime_error(message);
+      utils::throwException(message);
     }
   }
 }
@@ -80,7 +81,7 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
         break;
       }
       default:
-        throw std::runtime_error("Writer::writeVariablesData()> Data type not coded for...");
+        utils::throwException("Writer::writeVariablesData()> Data type not coded for...");
       }
     }
   }
@@ -89,7 +90,7 @@ void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& dat
 monio::File& monio::Writer::getFile() {
   oops::Log::debug() << "Writer::getFile()" << std::endl;
   if (file_ == nullptr)
-    throw std::runtime_error("Writer::getFile()> File has not been initialised...");
+    utils::throwException("Writer::getFile()> File has not been initialised...");
 
   return *file_;
 }

@@ -38,7 +38,7 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
                             const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::readBackground()" << std::endl;
   if (localFieldSet.size() == 0) {
-    throw std::runtime_error("Monio::readBackground()> localFieldSet has zero fields...");
+    utils::throwException("Monio::readBackground()> localFieldSet has zero fields...");
   }
   for (const auto& fieldMetadata : fieldMetadataVec) {
     auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -87,7 +87,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
                             const std::string& filePath) {
   oops::Log::debug() << "Monio::readIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
-    throw std::runtime_error("Monio::readIncrements()> localFieldSet has zero fields...");
+    utils::throwException("Monio::readIncrements()> localFieldSet has zero fields...");
   }
   for (const auto& fieldMetadata : fieldMetadataVec) {
     auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -129,7 +129,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                    const bool isLfricFormat) {
   oops::Log::debug() << "Monio::writeIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
-    throw std::runtime_error("Monio::writeIncrements()> localFieldSet has zero fields...");
+    utils::throwException("Monio::writeIncrements()> localFieldSet has zero fields...");
   }
   atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(localFieldSet);
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -182,7 +182,7 @@ void monio::Monio::createDateTimes(FileData& fileData,
       std::shared_ptr<DataContainerBase> timeDataBase =
                                              fileData.getData().getContainer(timeVarName);
       if (timeDataBase->getType() != consts::eDouble)
-        throw std::runtime_error("Monio::createDateTimes()> "
+        utils::throwException("Monio::createDateTimes()> "
                                  "Time data not stored as double...");
 
       std::shared_ptr<DataContainerDouble> timeData =
@@ -240,7 +240,7 @@ monio::FileData monio::Monio::getFileData(const std::string& gridName) {
   if (it != filesData_.end()) {
     return FileData(it->second);
   }
-  throw std::runtime_error("Monio::getFileData()> FileData with grid name \"" +
+  utils::throwException("Monio::getFileData()> FileData with grid name \"" +
                            gridName + "\" not found...");
 }
 

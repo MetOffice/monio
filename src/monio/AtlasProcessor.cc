@@ -19,6 +19,7 @@
 
 #include "AttributeString.h"
 #include "Metadata.h"
+#include "Utils.h"
 #include "Writer.h"
 
 monio::AtlasProcessor::AtlasProcessor(const eckit::mpi::Comm& mpiCommunicator,
@@ -46,7 +47,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getLfricCoords(
           coordVectorArray[coordCount] = coordData;
           coordCount++;
         } else {
-          throw std::runtime_error("AtlasProcessor::getLfricCoords()> "
+          utils::throwException("AtlasProcessor::getLfricCoords()> "
               "Data type not coded for...");
         }
       }
@@ -57,7 +58,7 @@ std::vector<atlas::PointLonLat> monio::AtlasProcessor::getLfricCoords(
         lfricCoords.push_back(atlas::PointLonLat(*lonIt, *latIt));
       }
     } else {
-        throw std::runtime_error("AtlasProcessor::getLfricCoords()> "
+        utils::throwException("AtlasProcessor::getLfricCoords()> "
             "Incorrect number of coordinate axes...");
     }
   }
@@ -102,7 +103,7 @@ std::vector<size_t> monio::AtlasProcessor::createLfricAtlasMap(
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     // Essential check to ensure grid is configured to accommodate the data
     if (atlasCoords.size() != lfricCoords.size()) {
-      throw std::runtime_error("AtlasProcessor::createLfricAtlasMap()> "
+      utils::throwException("AtlasProcessor::createLfricAtlasMap()> "
         "Configured grid is not compatible with input file...");
     }
     lfricAtlasMap.reserve(atlasCoords.size());
@@ -148,7 +149,7 @@ atlas::Field monio::AtlasProcessor::getGlobalField(const atlas::Field& field) {
         globalField = functionSpace.createField<int>(atlasOptions);
         break;
       default:
-        throw std::runtime_error("AtlasProcessor::getGlobalFieldSet())> "
+        utils::throwException("AtlasProcessor::getGlobalFieldSet())> "
                                  "Data type not coded for...");
     }
     field.haloExchange();
@@ -168,7 +169,7 @@ atlas::FieldSet monio::AtlasProcessor::getGlobalFieldSet(const atlas::FieldSet& 
     }
     return globalFieldSet;
   } else {
-    throw std::runtime_error("AtlasProcessor::getGlobalFieldSet()> FieldSet has zero fields...");
+    utils::throwException("AtlasProcessor::getGlobalFieldSet()> FieldSet has zero fields...");
   }
 }
 

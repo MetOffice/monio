@@ -15,6 +15,8 @@
 #include "DataContainerBase.h"
 #include "Variable.h"
 
+#include "oops/util/Logger.h"
+
 namespace monio {
 namespace utils {
 std::vector<std::string> strToWords(const std::string inputStr,
@@ -97,5 +99,10 @@ bool findInVector(std::vector<T> vector, T searchTerm) {
 }
 
 template bool findInVector<std::string>(std::vector<std::string> vector, std::string searchTerm);
+
+void throwException(const std::string message) {
+  oops::Log::debug() << message << std::endl;
+  throw std::runtime_error(message);
+}
 }  // namespace utils
 }  // namespace monio

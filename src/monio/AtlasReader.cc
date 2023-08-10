@@ -10,6 +10,8 @@
 
 #include "oops/util/Logger.h"
 
+#include "Utils.h"
+
 monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
                                     const atlas::idx_t mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
@@ -45,7 +47,7 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
       break;
     }
     default:
-      throw std::runtime_error("AtlasReader::populateFieldWithDataContainer()> "
+      utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                "Data type not coded for...");
     }
   }
@@ -76,7 +78,7 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
       break;
     }
     default:
-      throw std::runtime_error("AtlasReader::populateFieldWithDataContainer()> "
+      utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                "Data type not coded for...");
     }
   }
@@ -123,7 +125,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
-        throw std::runtime_error("Calculated index exceeds size of data for field \""
+        utils::throwException("Calculated index exceeds size of data for field \""
                                  + field.name() + "\".");
       }
     }
@@ -160,7 +162,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
-        throw std::runtime_error("Calculated index exceeds size of data.");
+        utils::throwException("Calculated index exceeds size of data.");
       }
     }
   }

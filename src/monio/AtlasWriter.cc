@@ -13,6 +13,7 @@
 #include "oops/util/Logger.h"
 
 #include "Metadata.h"
+#include "Utils.h"
 #include "Writer.h"
 
 namespace {
@@ -191,7 +192,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
       break;
     }
     default:
-      throw std::runtime_error("AtlasWriter::populateDataContainerWithField()> "
+      utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                "Data type not coded for...");
     }
   }
@@ -241,7 +242,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
       break;
     }
     default:
-      throw std::runtime_error("AtlasWriter::populateDataContainerWithField()> "
+      utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                "Data type not coded for...");
     }
   }
@@ -254,7 +255,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
   atlas::idx_t numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
-    throw std::runtime_error("AtlasWriter::populateDataVec()> "
+    utils::throwException("AtlasWriter::populateDataVec()> "
                              "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
@@ -506,6 +507,6 @@ int monio::AtlasWriter::atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
     return consts::eDouble;
   }
   default:
-    throw std::runtime_error("AtlasWriter::fromFieldSet()> Data type not coded for...");
+    utils::throwException("AtlasWriter::fromFieldSet()> Data type not coded for...");
   }
 }

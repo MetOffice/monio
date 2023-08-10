@@ -18,6 +18,7 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
+#include "Utils.h"
 #include "Variable.h"
 
 #include "oops/util/Duration.h"
@@ -59,7 +60,7 @@ void monio::Reader::openFile(const FileData& fileData) {
         std::string message =
             "Reader::openFile()> An exception occurred while creating File...";
         message.append(exception.what());
-        throw std::runtime_error(message);
+        utils::throwException(message);
       }
     }
   }
@@ -167,12 +168,12 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
           break;
         }
         default:
-          throw std::runtime_error("Reader::readFieldData()> Data type not coded for...");
+          utils::throwException("Reader::readFieldData()> Data type not coded for...");
       }
       if (dataContainer != nullptr)
         fileData.getData().addContainer(dataContainer);
       else
-        throw std::runtime_error("Reader::readFieldData()> "
+        utils::throwException("Reader::readFieldData()> "
            "An exception occurred while creating data container...");
     } else {
       oops::Log::debug() << "Reader::readFieldDatum()> DataContainer \""
@@ -224,13 +225,13 @@ void monio::Reader::readFullDatum(FileData& fileData,
         break;
       }
       default:
-        throw std::runtime_error("Reader::readVariable()> Data type not coded for...");
+        utils::throwException("Reader::readVariable()> Data type not coded for...");
     }
 
     if (dataContainer != nullptr)
       fileData.getData().addContainer(dataContainer);
     else
-      throw std::runtime_error("Reader::readVariable()> "
+      utils::throwException("Reader::readVariable()> "
           "An exception occurred while creating data container...");
   }
 }
@@ -238,7 +239,7 @@ void monio::Reader::readFullDatum(FileData& fileData,
 monio::File& monio::Reader::getFile() {
   oops::Log::debug() << "Reader::getFile()" << std::endl;
   if (file_ == nullptr)
-    throw std::runtime_error("Reader::getFile()> File has not been initialised...");
+    utils::throwException("Reader::getFile()> File has not been initialised...");
 
   return *file_;
 }
@@ -272,7 +273,7 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
     }
     return coordContainers;
   } else {
-      throw std::runtime_error("Reader::getCoordData()> Incorrect number of coordinate axes...");
+      utils::throwException("Reader::getCoordData()> Incorrect number of coordinate axes...");
   }
 }
 
@@ -302,12 +303,12 @@ size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTim
   oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
   if (fileData.getDateTimes().size() == 0) {
     oops::Log::debug() << "Reader::findTimeStep()> Date times not initialised..." << std::endl;
-    throw std::runtime_error("Reader::findTimeStep()> Date times not initialised...");
+    utils::throwException("Reader::findTimeStep()> Date times not initialised...");
   }
 
   for (size_t timeStep = 0; timeStep < fileData.getDateTimes().size(); ++timeStep) {
     if (fileData.getDateTimes()[timeStep] == dateTime)
       return timeStep;
   }
-  throw std::runtime_error("Reader::findTimeStep()> DateTime specified not located in file...");
+  utils::throwException("Reader::findTimeStep()> DateTime specified not located in file...");
 }
