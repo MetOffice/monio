@@ -17,6 +17,7 @@
 #include "oops/util/Logger.h"
 
 #include "AttributeBase.h"
+#include "AttributeDouble.h"
 #include "AttributeInt.h"
 #include "AttributeString.h"
 #include "Constants.h"
@@ -128,16 +129,24 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
   netCDF::NcType varType = ncVar.getType();
   std::string varName = ncVar.getName();
   std::shared_ptr<monio::Variable> var = nullptr;
-  if (varType == netCDF::NcType::nc_INT)
-    var = std::make_shared<Variable>(varName, consts::eInt);
-  else if (varType == netCDF::NcType::nc_FLOAT)
-    var = std::make_shared<Variable>(varName, consts::eFloat);
-  else if (varType == netCDF::NcType::nc_DOUBLE)
-    var = std::make_shared<Variable>(varName, consts::eDouble);
-  else
-    throw std::runtime_error("File::readVariable()> Variable data type " +
-                                varType.getName() + " not coded for.");
 
+  switch (varType.getId()) {
+    case netCDF::NcType::nc_DOUBLE: {
+      var = std::make_shared<Variable>(varName, consts::eDouble);
+      break;
+    }
+    case netCDF::NcType::nc_FLOAT: {
+      var = std::make_shared<Variable>(varName, consts::eFloat);
+      break;
+    }
+    case netCDF::NcType::nc_INT: {
+      var = std::make_shared<Variable>(varName, consts::eInt);
+      break;
+    }
+    default:
+      throw std::runtime_error("File::readVariable()> Variable data type " +
+                                  varType.getName() + " not coded for.");
+  }
   std::vector<netCDF::NcDim> ncVarDims = ncVar.getDims();
   for (auto const& ncVarDim : ncVarDims) {
     std::string varDimName = ncVarDim.getName();
@@ -157,21 +166,34 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
     std::shared_ptr<AttributeBase> varAttr = nullptr;
     netCDF::NcType ncVarAttrType = ncVarAttr.getType();
 
-    if (ncVarAttrType == netCDF::NcType::nc_CHAR ||
-        ncVarAttrType == netCDF::NcType::nc_STRING) {
-      std::string strValue;
-      ncVarAttr.getValues(strValue);
-      varAttr = std::make_shared<AttributeString>(ncVarAttr.getName(), strValue);
-      var->addAttribute(varAttr);
-    } else if (ncVarAttrType == netCDF::NcType::nc_INT ||
-               ncVarAttrType == netCDF::NcType::nc_SHORT) {
-      int intValue;
-      ncVarAttr.getValues(&intValue);
-      varAttr = std::make_shared<AttributeInt>(ncVarAttr.getName(), intValue);
-      var->addAttribute(varAttr);
-    } else {
-      throw std::runtime_error("File::readVariable()> Variable attribute data type \""
-                                  + ncVarAttrType.getName() + "\" not coded for.");
+    switch (ncVarAttrType.getId()) {
+      case netCDF::NcType::nc_CHAR:
+      case netCDF::NcType::nc_STRING: {
+        std::string strValue;
+        ncVarAttr.getValues(strValue);
+        varAttr = std::make_shared<AttributeString>(ncVarAttr.getName(), strValue);
+        var->addAttribute(varAttr);
+        break;
+      }
+      case netCDF::NcType::nc_INT:
+      case netCDF::NcType::nc_SHORT: {
+        int intValue;
+        ncVarAttr.getValues(&intValue);
+        varAttr = std::make_shared<AttributeInt>(ncVarAttr.getName(), intValue);
+        var->addAttribute(varAttr);
+        break;
+      }
+      case netCDF::NcType::nc_FLOAT:
+      case netCDF::NcType::nc_DOUBLE: {
+        double dblValue;
+        ncVarAttr.getValues(&dblValue);
+        varAttr = std::make_shared<AttributeDouble>(ncVarAttr.getName(), dblValue);
+        var->addAttribute(varAttr);
+        break;
+      }
+      default:
+        throw std::runtime_error("File::readVariable()> Variable attribute data type \""
+                                    + ncVarAttrType.getName() + "\" not coded for.");
     }
   }
   metadata.addVariable(var->getName(), var);
@@ -186,18 +208,32 @@ void monio::File::readAttributes(Metadata& metadata) {
 
       std::shared_ptr<AttributeBase> globAttr = nullptr;
       netCDF::NcType attrType = ncAttr.getType();
-      if (attrType == netCDF::NcType::nc_CHAR || attrType == netCDF::NcType::nc_STRING) {
-        std::string strValue;
-        ncAttr.getValues(strValue);
-        globAttr = std::make_shared<AttributeString>(ncAttr.getName(), strValue);
 
-      } else if (attrType == netCDF::NcType::nc_INT || attrType == netCDF::NcType::nc_SHORT) {
-        int intValue;
-        ncAttr.getValues(&intValue);
-        globAttr = std::make_shared<AttributeInt>(ncAttr.getName(), intValue);
-      } else {
-        throw std::runtime_error("File::readAttributes()> Global attribute data type \""
-                                 + attrType.getName() + "\" not coded for.");
+      switch (attrType.getId()) {
+        case netCDF::NcType::nc_CHAR:
+        case netCDF::NcType::nc_STRING: {
+          std::string strValue;
+          ncAttr.getValues(strValue);
+          globAttr = std::make_shared<AttributeString>(ncAttr.getName(), strValue);
+          break;
+        }
+        case netCDF::NcType::nc_INT:
+        case netCDF::NcType::nc_SHORT: {
+          int intValue;
+          ncAttr.getValues(&intValue);
+          globAttr = std::make_shared<AttributeInt>(ncAttr.getName(), intValue);
+          break;
+        }
+        case netCDF::NcType::nc_FLOAT:
+        case netCDF::NcType::nc_DOUBLE: {
+          double dblValue;
+          ncAttr.getValues(&dblValue);
+          globAttr = std::make_shared<AttributeDouble>(ncAttr.getName(), dblValue);
+          break;
+        }
+        default:
+          throw std::runtime_error("File::readAttributes()> Global attribute data type \""
+                                   + attrType.getName() + "\" not coded for.");
       }
       metadata.addGlobalAttr(globAttr->getName(), globAttr);
     }
@@ -302,18 +338,29 @@ void monio::File::writeVariables(const Metadata& metadata) {
       std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = var->getAttributes();
       for (const auto& varAttrPair : varAttrsMap) {
         std::shared_ptr<AttributeBase> varAttr = varAttrPair.second;
-        int varAttrType = varAttr->getType();
-        if (varAttrType == consts::eString) {
-          std::shared_ptr<AttributeString> varAttrStr =
-                        std::dynamic_pointer_cast<AttributeString>(varAttr);
-          ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
-        } else if (varAttrType == consts::eInt) {
-          std::shared_ptr<AttributeInt> varAttrInt =
-                        std::dynamic_pointer_cast<AttributeInt>(varAttr);
-          ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT, varAttrInt->getValue());
-        } else {
-          throw std::runtime_error("File::writeVariables()> "
-              "Variable attribute data type not coded for...");
+
+        switch (varAttr->getType()) {
+          case consts::eDataTypes::eDouble: {
+            std::shared_ptr<AttributeDouble> varAttrDbl =
+                          std::dynamic_pointer_cast<AttributeDouble>(varAttr);
+            ncVar.putAtt(varAttrDbl->getName(), netCDF::NcType::nc_DOUBLE, varAttrDbl->getValue());
+            break;
+          }
+          case consts::eDataTypes::eInt: {
+            std::shared_ptr<AttributeInt> varAttrInt =
+                          std::dynamic_pointer_cast<AttributeInt>(varAttr);
+            ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT, varAttrInt->getValue());
+            break;
+          }
+          case consts::eDataTypes::eString: {
+            std::shared_ptr<AttributeString> varAttrStr =
+                          std::dynamic_pointer_cast<AttributeString>(varAttr);
+            ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
+            break;
+          }
+          default:
+            throw std::runtime_error("File::writeVariables()> "
+                "Variable attribute data type not coded for...");
         }
       }
     }
@@ -329,19 +376,30 @@ void monio::File::writeAttributes(const Metadata& metadata) {
                                 metadata.getGlobalAttrsMap();
     for (auto const& globalAttrPair : globalAttrMap) {
       std::shared_ptr<AttributeBase> globAttr = globalAttrPair.second;
-
-      if (globAttr->getType() == consts::eString) {
-        std::shared_ptr<AttributeString> globAttrStr =
-                                         std::static_pointer_cast<AttributeString>(globAttr);
-        std::string globAttrName = globAttrStr->getName();
-        getFile().putAtt(globAttrName, globAttrStr->getValue());
-      } else if (globAttr->getType() == consts::eInt) {
-        std::shared_ptr<AttributeInt> globAttrInt =
-                                      std::static_pointer_cast<AttributeInt>(globAttr);
-        getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
-      } else {
-        throw std::runtime_error("File::writeVariables()> "
-            "Variable attribute data type not coded for...");
+      switch (globAttr->getType()) {
+        case consts::eDataTypes::eDouble: {
+          std::shared_ptr<AttributeDouble> globAttrDbl =
+                                           std::static_pointer_cast<AttributeDouble>(globAttr);
+          std::string globAttrName = globAttrDbl->getName();
+          getFile().putAtt(globAttrName, netCDF::NcType::nc_DOUBLE, globAttrDbl->getValue());
+          break;
+        }
+        case consts::eDataTypes::eInt: {
+          std::shared_ptr<AttributeInt> globAttrInt =
+                                        std::static_pointer_cast<AttributeInt>(globAttr);
+          getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
+          break;
+        }
+        case consts::eDataTypes::eString: {
+          std::shared_ptr<AttributeString> globAttrStr =
+                                           std::static_pointer_cast<AttributeString>(globAttr);
+          std::string globAttrName = globAttrStr->getName();
+          getFile().putAtt(globAttrName, globAttrStr->getValue());
+          break;
+        }
+        default:
+          throw std::runtime_error("File::writeAttributes()> "
+              "Variable attribute data type not coded for...");
       }
     }
   } else {

@@ -19,6 +19,8 @@ monio/AtlasWriter.cc
 monio/AtlasWriter.h
 monio/AttributeBase.cc
 monio/AttributeBase.h
+monio/AttributeDouble.cc
+monio/AttributeDouble.h
 monio/AttributeInt.cc
 monio/AttributeInt.h
 monio/AttributeString.cc

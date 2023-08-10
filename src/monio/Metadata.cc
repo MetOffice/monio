@@ -17,6 +17,7 @@
 
 #include "oops/util/Logger.h"
 
+#include "AttributeDouble.h"
 #include "AttributeInt.h"
 #include "AttributeString.h"
 #include "Utils.h"
@@ -77,6 +78,15 @@ bool monio::operator==(const monio::Metadata& lhs,
 
             if (lhsVarAttrType == rhsVarAttrType && lhsVarAttrName == rhsVarAttrName) {
               switch (lhsVarAttrType) {
+                case monio::consts::eDataTypes::eDouble: {
+                 std::shared_ptr<monio::AttributeDouble> lhsVarAttrDbl =
+                        std::dynamic_pointer_cast<monio::AttributeDouble>(lhsVarAttr);
+                  std::shared_ptr<monio::AttributeDouble> rhsVarAttrDbl =
+                        std::dynamic_pointer_cast<monio::AttributeDouble>(rhsVarAttr);
+                  if (lhsVarAttrDbl->getValue() != rhsVarAttrDbl->getValue())
+                    return false;
+                  break;
+                }
                 case monio::consts::eDataTypes::eInt: {
                  std::shared_ptr<monio::AttributeInt> lhsVarAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(lhsVarAttr);
@@ -389,6 +399,12 @@ void monio::Metadata::printVariables() {
       int dataType = netCDFAttr->getType();
 
       switch (dataType) {
+        case monio::consts::eDataTypes::eDouble: {
+            std::shared_ptr<monio::AttributeDouble> netCDFAttrDbl =
+                        std::dynamic_pointer_cast<monio::AttributeDouble>(netCDFAttr);
+          oops::Log::debug() << netCDFAttrDbl->getValue() << std::endl;
+          break;
+        }
         case monio::consts::eDataTypes::eInt: {
           std::shared_ptr<monio::AttributeInt> netCDFAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(netCDFAttr);
@@ -415,6 +431,12 @@ void monio::Metadata::printGlobalAttrs() {
     std::shared_ptr<AttributeBase> globalAttr = globAttrPair.second;
     int type = globalAttr->getType();
     switch (type) {
+      case monio::consts::eDataTypes::eDouble: {
+        std::shared_ptr<monio::AttributeDouble> globAttrDbl =
+                        std::dynamic_pointer_cast<monio::AttributeDouble>(globalAttr);
+        oops::Log::debug() << " = " << globAttrDbl->getValue() << " ;"  << std::endl;
+        break;
+      }
       case monio::consts::eDataTypes::eInt: {
         std::shared_ptr<monio::AttributeInt> globalAttrInt =
                         std::dynamic_pointer_cast<monio::AttributeInt>(globalAttr);
