@@ -36,7 +36,7 @@
 
 namespace monio {
 namespace test {
-void basicWriteTest() {
+void testFunction() {
   oops::Log::info() << "basicWriteTest()" << std::endl;
   const eckit::LocalConfiguration inputConfig(::test::TestEnvironment::config(), "filePaths");
   eckit::LocalPathName inputFilePath  = inputConfig.getString("inputFilePath");
@@ -78,21 +78,21 @@ void basicWriteTest() {
   }
 }
 
-class NetCDFWrite : public oops::Test{
+class BackgroundBasic : public oops::Test{
  public:
-  NetCDFWrite() {}
-  virtual ~NetCDFWrite() {}
+  BackgroundBasic() {}
+  virtual ~BackgroundBasic() {}
  private:
   std::string testid() const override {
-    return "monio::test::NetCDFWrite";
+    return "monio::test::BackgroundBasic";
   }
 
   void register_tests() const override {
     std::vector<eckit::testing::Test>& ts = eckit::testing::specification();
 
     std::function<void(std::string&, int&, int)> testFn =
-        [](std::string &, int&, int) { basicWriteTest(); };
-    ts.push_back(eckit::testing::Test("monio/basicWriteTest", testFn));
+        [](std::string &, int&, int) { testFunction(); };
+    ts.push_back(eckit::testing::Test("monio/test_background_basic", testFn));
   }
   void clear() const override {}
 };
