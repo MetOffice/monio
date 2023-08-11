@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "AtlasProcessor.h"
 #include "Constants.h"
 #include "Data.h"
 #include "DataContainerDouble.h"
@@ -107,8 +106,6 @@ class AtlasWriter {
                                 const atlas::util::Config& atlasOptions);
 
   int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
-
-  AtlasProcessor atlasProcessor_;
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

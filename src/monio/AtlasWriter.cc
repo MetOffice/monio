@@ -14,6 +14,7 @@
 
 #include "Metadata.h"
 #include "Utils.h"
+#include "UtilsAtlas.h"
 #include "Writer.h"
 
 namespace {
@@ -29,7 +30,6 @@ namespace {
 
 monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
                                     const atlas::idx_t mpiRankOwner):
-    atlasProcessor_(mpiCommunicator, mpiRankOwner),
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
@@ -109,7 +109,7 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
 
   // Check if Field is not global
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[0] = atlasProcessor_.getSizeOwned(field);  // If so, get the 'size owned' by the Fields
+    dimVec[0] = utilsatlas::getSizeOwned(field);  // If so, get the 'size owned' by the Fields
   }
   if (reverseDims == true) {
     std::reverse(dimVec.begin(), dimVec.end());
@@ -311,7 +311,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
     for (const auto& field : fieldSet) {
       std::vector<int> dimVec = field.shape();
       if (field.metadata().get<bool>("global") == false) {
-        dimVec[0] = atlasProcessor_.getSizeOwned(field);
+        dimVec[0] = utilsatlas::getSizeOwned(field);
       }
       for (auto& dimSize : dimVec) {
         std::string dimName = metadata.getDimensionName(dimSize);
@@ -323,7 +323,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
       }
       populateMetadataWithField(metadata, field);
       if (createdLonLat == false) {
-        std::vector<atlas::PointLonLat> atlasLonLat = atlasProcessor_.getAtlasCoords(field);
+        std::vector<atlas::PointLonLat> atlasLonLat = utilsatlas::getAtlasCoords(field);
         std::vector<std::shared_ptr<DataContainerBase>> coordContainers =
                   convertLatLonToContainers(atlasLonLat, consts::kCoordVarNames);
         for (const auto& coordContainer : coordContainers) {

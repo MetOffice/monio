@@ -11,12 +11,12 @@
 #include "oops/util/Logger.h"
 
 #include "Utils.h"
+#include "UtilsAtlas.h"
 
 monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
                                     const atlas::idx_t mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
-    mpiRankOwner_(mpiRankOwner),
-    atlasProcessor_(mpiCommunicator, mpiRankOwner) {
+    mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
 }
 
@@ -152,7 +152,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
 
   std::vector<atlas::idx_t> dimVec = field.shape();
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[consts::eHorizontal] = atlasProcessor_.getSizeOwned(field);
+    dimVec[consts::eHorizontal] = utilsatlas::getSizeOwned(field);
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
   atlas::idx_t numLevels = field.levels();
