@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "AtlasProcessor.h"
 #include "Constants.h"
 #include "Data.h"
 #include "DataContainerDouble.h"
@@ -68,7 +67,5 @@ class AtlasReader {
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;
-
-  AtlasProcessor atlasProcessor_;
 };
 }  // namespace monio

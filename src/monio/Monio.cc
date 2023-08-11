@@ -17,6 +17,7 @@
 
 #include "Constants.h"
 #include "Utils.h"
+#include "UtilsAtlas.h"
 
 namespace  {
   std::string convertToAtlasDateTimeStr(std::string lfricDateTimeStr) {
@@ -42,7 +43,7 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
   }
   for (const auto& fieldMetadata : fieldMetadataVec) {
     auto& localField = localFieldSet[fieldMetadata.jediName];
-    atlas::Field globalField = atlasProcessor_.getGlobalField(localField);
+    atlas::Field globalField = utilsatlas::getGlobalField(localField);
     if (mpiCommunicator_.rank() == mpiRankOwner_) {
       oops::Log::debug() << "Monio::readBackground() processing data for> \"" <<
                             fieldMetadata.jediName << "\"..." << std::endl;
@@ -91,7 +92,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
   }
   for (const auto& fieldMetadata : fieldMetadataVec) {
     auto& localField = localFieldSet[fieldMetadata.jediName];
-    atlas::Field globalField = atlasProcessor_.getGlobalField(localField);
+    atlas::Field globalField = utilsatlas::getGlobalField(localField);
     if (mpiCommunicator_.rank() == mpiRankOwner_) {
       oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
                             fieldMetadata.jediName << "\"..." << std::endl;
@@ -131,7 +132,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::writeIncrements()> localFieldSet has zero fields...");
   }
-  atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(localFieldSet);
+  atlas::FieldSet globalFieldSet = utilsatlas::getGlobalFieldSet(localFieldSet);
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     auto& functionSpace = globalFieldSet[0].functionspace();
     auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
@@ -144,7 +145,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
 void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
                                  const std::string outputFilePath) {
   oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
-  atlas::FieldSet globalFieldSet = atlasProcessor_.getGlobalFieldSet(localFieldSet);
+  atlas::FieldSet globalFieldSet = utilsatlas::getGlobalFieldSet(localFieldSet);
   atlasWriter_.writeFieldSetToFile(globalFieldSet, outputFilePath);
 }
 
@@ -165,9 +166,9 @@ void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSph
       reader_.readFullData(fileData, consts::kLfricCoordVarNames);
       std::vector<std::shared_ptr<monio::DataContainerBase>> coordData =
                                 reader_.getCoordData(fileData, consts::kLfricCoordVarNames);
-      std::vector<atlas::PointLonLat> lfricCoords = atlasProcessor_.getLfricCoords(coordData);
-      std::vector<atlas::PointLonLat> atlasCoords = atlasProcessor_.getAtlasCoords(grid);
-      fileData.setLfricAtlasMap(atlasProcessor_.createLfricAtlasMap(atlasCoords, lfricCoords));
+      std::vector<atlas::PointLonLat> lfricCoords = utilsatlas::getLfricCoords(coordData);
+      std::vector<atlas::PointLonLat> atlasCoords = utilsatlas::getAtlasCoords(grid);
+      fileData.setLfricAtlasMap(utilsatlas::createLfricAtlasMap(atlasCoords, lfricCoords));
     }
   }
 }
@@ -258,7 +259,6 @@ monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
       mpiCommunicator_(mpiCommunicator),
       mpiRankOwner_(mpiRankOwner),
       reader_(mpiCommunicator, mpiRankOwner_),
-      atlasProcessor_(mpiCommunicator, mpiRankOwner_),
       atlasReader_(mpiCommunicator, mpiRankOwner_),
       atlasWriter_(mpiCommunicator, mpiRankOwner_)   {
   oops::Log::debug() << "Monio::Monio()" << std::endl;

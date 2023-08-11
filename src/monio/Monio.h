@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "AtlasProcessor.h"
 #include "AtlasReader.h"
 #include "AtlasWriter.h"
 #include "FileData.h"
@@ -78,7 +77,6 @@ class Monio {
   const std::size_t mpiRankOwner_;
 
   Reader reader_;
-  AtlasProcessor atlasProcessor_;
   AtlasReader atlasReader_;
   AtlasWriter atlasWriter_;
 
