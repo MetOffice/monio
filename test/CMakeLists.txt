@@ -22,8 +22,8 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 list(APPEND monio_testinput
-  testinput/background_basic.yaml
-  testinput/background_full.yaml
+  testinput/state_basic.yaml
+  testinput/state_full.yaml
 )
 
 foreach(FILENAME ${monio_testinput})
@@ -47,15 +47,15 @@ ecbuild_add_test(TARGET monio_coding_norms
                        ${PROJECT_SOURCE_DIR}/src
                        ${PROJECT_SOURCE_DIR}/test)
 
-ecbuild_add_test(TARGET  test_background_basic
-                 SOURCES mains/TestBackgroundBasic.cc
-                 ARGS    "testinput/background_basic.yaml"
+ecbuild_add_test(TARGET  test_state_basic
+                 SOURCES mains/TestStateBasic.cc
+                 ARGS    "testinput/state_basic.yaml"
                  LIBS    monio
                  MPI     4)
 
-ecbuild_add_test(TARGET  test_background_full
-                 SOURCES mains/TestBackgroundFull.cc
-                 ARGS    "testinput/background_full.yaml"
+ecbuild_add_test(TARGET  test_state_full
+                 SOURCES mains/TestStateFull.cc
+                 ARGS    "testinput/state_full.yaml"
                  LIBS    monio
                  MPI     4)
 

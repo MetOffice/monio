@@ -6,11 +6,11 @@
 # This software is licensed under the terms of the Apache Licence Version 2.0 #
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
 #############################################################################*/
-#include "../monio/BackgroundFull.h"
+#include "../monio/StateFull.h"
 #include "oops/runs/Run.h"
 
 int main(int argc,  char ** argv) {
   oops::Run run(argc, argv);
-  monio::test::BackgroundFull tests;
+  monio::test::StateFull tests;
   return run.execute(tests);
 }
