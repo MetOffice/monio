@@ -45,7 +45,6 @@ class AtlasReader {
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const bool copyFirstLevel = false);  // Monio::readBackground
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
@@ -61,7 +60,6 @@ class AtlasReader {
                                     const std::vector<size_t>& lfricToAtlasMap,
                                     const bool copyFirstLevel);
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec);
 
