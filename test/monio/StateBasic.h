@@ -78,13 +78,13 @@ void testFunction() {
   }
 }
 
-class BackgroundBasic : public oops::Test{
+class StateBasic : public oops::Test{
  public:
-  BackgroundBasic() {}
-  virtual ~BackgroundBasic() {}
+  StateBasic() {}
+  virtual ~StateBasic() {}
  private:
   std::string testid() const override {
-    return "monio::test::BackgroundBasic";
+    return "monio::test::StateBasic";
   }
 
   void register_tests() const override {
@@ -92,7 +92,7 @@ class BackgroundBasic : public oops::Test{
 
     std::function<void(std::string&, int&, int)> testFn =
         [](std::string &, int&, int) { testFunction(); };
-    ts.push_back(eckit::testing::Test("monio/test_background_basic", testFn));
+    ts.push_back(eckit::testing::Test("monio/test_state_basic", testFn));
   }
   void clear() const override {}
 };
