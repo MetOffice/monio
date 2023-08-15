@@ -146,24 +146,24 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
         case consts::eDataTypes::eDouble: {
           std::shared_ptr<DataContainerDouble> dataContainerDouble =
                                       std::make_shared<DataContainerDouble>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                              startVec, countVec, dataContainerDouble->getData());
+          dataContainerDouble->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerDouble->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
           break;
         }
         case consts::eDataTypes::eFloat: {
           std::shared_ptr<DataContainerFloat> dataContainerFloat =
                                       std::make_shared<DataContainerFloat>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                               startVec, countVec, dataContainerFloat->getData());
+          dataContainerFloat->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerFloat->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
           break;
         }
         case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                                       std::make_shared<DataContainerInt>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                               startVec, countVec, dataContainerInt->getData());
+          dataContainerInt->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerInt->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
           break;
         }
@@ -203,24 +203,24 @@ void monio::Reader::readFullDatum(FileData& fileData,
       case consts::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
                             std::make_shared<DataContainerDouble>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerDouble->getData());
+        dataContainerDouble->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerDouble->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
       }
       case consts::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
                             std::make_shared<DataContainerFloat>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerFloat->getData());
+        dataContainerFloat->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerFloat->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
       }
       case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                             std::make_shared<DataContainerInt>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerInt->getData());
+        dataContainerInt->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerInt->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
       }

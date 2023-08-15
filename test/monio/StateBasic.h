@@ -57,7 +57,7 @@ void testFunction() {
     monio::Writer writer(atlas::mpi::comm(),
                          monio::consts::kMPIRankOwner,
                          outputFilePath);
-    writer.writeData(firstFileData.getMetadata(), firstFileData.getData());
+    writer.writeData(firstFileData);
 
     monio::FileData secondFileData(outputFilePath);
     reader.openFile(secondFileData);

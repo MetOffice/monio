@@ -38,9 +38,9 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   }
 }
 
-void monio::Writer::writeData(const Metadata& metadata, const Data& data) {
-  writeMetadata(metadata);
-  writeVariablesData(metadata, data);
+void monio::Writer::writeData(const FileData& fileData) {
+  writeMetadata(fileData.getMetadata());
+  writeVariablesData(fileData);
 }
 
 void monio::Writer::writeMetadata(const Metadata& metadata) {
@@ -50,38 +50,38 @@ void monio::Writer::writeMetadata(const Metadata& metadata) {
   }
 }
 
-void monio::Writer::writeVariablesData(const Metadata& metadata, const Data& data) {
+void monio::Writer::writeVariablesData(const FileData& fileData) {
   oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap =
-                                                                     data.getContainers();
+                                                                fileData.getData().getContainers();
     for (const auto& dataContainerPair : dataContainerMap) {
       std::string varName = dataContainerPair.first;
       // Checks variable exists in metadata
-      metadata.getVariable(varName);
+      fileData.getMetadata().getVariable(varName);
       std::shared_ptr<DataContainerBase> dataContainer = dataContainerPair.second;
       int dataType = dataContainerPair.second->getType();
       switch (dataType) {
-      case consts::eDataTypes::eDouble: {
-        std::shared_ptr<DataContainerDouble> dataContainerDouble =
-            std::static_pointer_cast<DataContainerDouble>(dataContainer);
-        getFile().writeSingleDatum(varName, dataContainerDouble->getData());
-        break;
-      }
-      case consts::eDataTypes::eFloat: {
-        std::shared_ptr<DataContainerFloat> dataContainerFloat =
-            std::static_pointer_cast<DataContainerFloat>(dataContainer);
-        getFile().writeSingleDatum(varName, dataContainerFloat->getData());
-        break;
-      }
-      case consts::eDataTypes::eInt: {
-        std::shared_ptr<DataContainerInt> dataContainerInt =
-            std::static_pointer_cast<DataContainerInt>(dataContainer);
-        getFile().writeSingleDatum(varName, dataContainerInt->getData());
-        break;
-      }
-      default:
-        utils::throwException("Writer::writeVariablesData()> Data type not coded for...");
+        case consts::eDataTypes::eDouble: {
+          std::shared_ptr<DataContainerDouble> dataContainerDouble =
+              std::static_pointer_cast<DataContainerDouble>(dataContainer);
+          getFile().writeSingleDatum(varName, dataContainerDouble->getData());
+          break;
+        }
+        case consts::eDataTypes::eFloat: {
+          std::shared_ptr<DataContainerFloat> dataContainerFloat =
+              std::static_pointer_cast<DataContainerFloat>(dataContainer);
+          getFile().writeSingleDatum(varName, dataContainerFloat->getData());
+          break;
+        }
+        case consts::eDataTypes::eInt: {
+          std::shared_ptr<DataContainerInt> dataContainerInt =
+              std::static_pointer_cast<DataContainerInt>(dataContainer);
+          getFile().writeSingleDatum(varName, dataContainerInt->getData());
+          break;
+        }
+        default:
+          utils::throwException("Writer::writeVariablesData()> Data type not coded for...");
       }
     }
   }

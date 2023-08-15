@@ -18,6 +18,7 @@
 
 #include "Data.h"
 #include "File.h"
+#include "FileData.h"
 #include "Metadata.h"
 
 namespace monio {
@@ -35,9 +36,9 @@ class Writer {
   Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
-  void writeData(const Metadata& metadata, const Data& data);
+  void writeData(const FileData& fileData);
   void writeMetadata(const Metadata& metadata);
-  void writeVariablesData(const Metadata& metadata, const Data& data);
+  void writeVariablesData(const FileData& fileData);
 
  private:
   File& getFile();

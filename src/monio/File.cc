@@ -246,12 +246,10 @@ void monio::File::readAttributes(Metadata& metadata) {
 
 template<typename T>
 void monio::File::readSingleDatum(const std::string& varName,
-                                  const int varSize,
                                   std::vector<T>& dataVec) {
   oops::Log::debug() << "File::readData()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile().getVar(varName);
-    dataVec.resize(varSize, 0);
     var.getVar(dataVec.data());
   } else {
     utils::throwException("File::readSingleDatum()> Write file accessed for reading...");
@@ -259,25 +257,20 @@ void monio::File::readSingleDatum(const std::string& varName,
 }
 
 template void monio::File::readSingleDatum<double>(const std::string& varName,
-                                                   const int varSize,
                                                    std::vector<double>& dataVec);
 template void monio::File::readSingleDatum<float>(const std::string& varName,
-                                                  const int varSize,
                                                   std::vector<float>& dataVec);
 template void monio::File::readSingleDatum<int>(const std::string& varName,
-                                                const int varSize,
                                                 std::vector<int>& dataVec);
 
 template<typename T>
 void monio::File::readFieldDatum(const std::string& fieldName,
-                                 const int varSize,
                                  const std::vector<size_t>& startVec,
                                  const std::vector<size_t>& countVec,
                                  std::vector<T>& dataVec) {
   oops::Log::debug() << "File::readFieldDatum()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile().getVar(fieldName);
-    dataVec.resize(varSize, 0);
     var.getVar(startVec, countVec, dataVec.data());
   } else {
     utils::throwException("File::readFieldDatum()> Write file accessed for reading...");
@@ -285,17 +278,14 @@ void monio::File::readFieldDatum(const std::string& fieldName,
 }
 
 template void monio::File::readFieldDatum<double>(const std::string& varName,
-                                                  const int varSize,
                                                   const std::vector<size_t>& startVec,
                                                   const std::vector<size_t>& countVec,
                                                   std::vector<double>& dataVec);
 template void monio::File::readFieldDatum<float>(const std::string& varName,
-                                                 const int varSize,
                                                  const std::vector<size_t>& startVec,
                                                  const std::vector<size_t>& countVec,
                                                  std::vector<float>& dataVec);
 template void monio::File::readFieldDatum<int>(const std::string& varName,
-                                               const int varSize,
                                                const std::vector<size_t>& startVec,
                                                const std::vector<size_t>& countVec,
                                                std::vector<int>& dataVec);
