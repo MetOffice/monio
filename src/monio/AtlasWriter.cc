@@ -242,11 +242,12 @@ template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec
                                                        const atlas::Field& field,
                                                        const std::vector<int>& dimensions);
 
-void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
-                                                             Data& data,
-                                                       const atlas::FieldSet& fieldSet) {
+void monio::AtlasWriter::populateFileDataWithFieldSet(FileData& fileData,
+                                                const atlas::FieldSet& fieldSet) {
   oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithFieldSet()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    Metadata& metadata = fileData.getMetadata();
+    Data& data = fileData.getData();
     int dimCount = 0;
     bool createdLonLat = false;
     for (const auto& field : fieldSet) {
@@ -258,7 +259,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
         std::string dimName = metadata.getDimensionName(dimSize);
         if (dimName == consts::kNotFoundError) {
           dimName = "dim" + std::to_string(dimCount);
-          metadata.addDimension(dimName, dimSize);
+          fileData.getMetadata().addDimension(dimName, dimSize);
           dimCount++;
         }
       }
@@ -288,18 +289,18 @@ void monio::AtlasWriter::populateMetadataAndDataWithFieldSet(Metadata& metadata,
 
       std::shared_ptr<monio::AttributeString> producedByAttr =
               std::make_shared<AttributeString>(producedByName, producedByString);
-      metadata.addGlobalAttr(producedByName, producedByAttr);
+      fileData.getMetadata().addGlobalAttr(producedByName, producedByAttr);
     }
   }
 }
 
-void monio::AtlasWriter::populateMetadataAndDataWithLfricFieldSet(
-                                               Metadata& metadata,
-                                               Data& data,
+void monio::AtlasWriter::populateFileDataWithLfricFieldSet(FileData& fileData,
                                          const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                                                atlas::FieldSet& fieldSet,
                                          const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithLfricFieldSet()" << std::endl;
+  Metadata& metadata = fileData.getMetadata();
+  Data& data = fileData.getData();
   // Dimensions
   metadata.addDimension(std::string(consts::kHorizontalName), lfricToAtlasMap.size());
   metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
@@ -318,7 +319,7 @@ void monio::AtlasWriter::populateMetadataAndDataWithLfricFieldSet(
 
   std::shared_ptr<monio::AttributeString> producedByAttr =
           std::make_shared<AttributeString>(producedByName, producedByString);
-  metadata.addGlobalAttr(producedByName, producedByAttr);
+  fileData.getMetadata().addGlobalAttr(producedByName, producedByAttr);
 }
 
 void monio::AtlasWriter::populateDataWithField(Data& data,

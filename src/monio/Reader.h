@@ -22,8 +22,7 @@
 #include "FileData.h"
 
 namespace monio {
-/// \brief Top-level class uses File, Metadata,
-/// and Data to read from a NetCDF file
+/// \brief Top-level class reads from a NetCDF file and populates FileData
 class Reader {
  public:
   Reader(const eckit::mpi::Comm& mpiCommunicator,

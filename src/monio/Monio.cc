@@ -140,8 +140,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
     FileData fileData = getFileData(grid.name());
 
     if (filePath.length() != 0) {
-//      monio::Metadata& readMetadata = fileData.getMetadata();
-//      monio::Data& readData = fileData.getData();
       std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
 
       fileData.getMetadata().clearGlobalAttributes();
@@ -164,8 +162,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         }
       }
       // Add data and metadata for increments in fieldSet
-      atlasWriter_.populateMetadataAndDataWithLfricFieldSet(fileData.getMetadata(),
-                                                            fileData.getData(),
+      atlasWriter_.populateFileDataWithLfricFieldSet(fileData,
                                                             fieldMetadataVec,
                                                             globalFieldSet,
                                                             lfricAtlasMap);
@@ -190,8 +187,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       FileData fileData;
       monio::AtlasWriter atlasWriter(atlas::mpi::comm(),
                                      consts::kMPIRankOwner);
-      atlasWriter.populateMetadataAndDataWithFieldSet(fileData.getMetadata(),
-                                                      fileData.getData(),
+      atlasWriter.populateFileDataWithFieldSet(fileData,
                                                       globalFieldSet);
       monio::Writer writer(atlas::mpi::comm(), consts::kMPIRankOwner, outputFilePath);
       writer.writeMetadata(fileData.getMetadata());

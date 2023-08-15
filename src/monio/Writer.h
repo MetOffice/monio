@@ -22,8 +22,7 @@
 #include "Metadata.h"
 
 namespace monio {
-/// \brief Top-level class uses File, Metadata, AtlasData,
-/// and Data to write to a NetCDF file
+/// \brief Top-level class uses FileData and its contents to write to a NetCDF file
 class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
