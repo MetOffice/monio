@@ -40,15 +40,10 @@ class AtlasReader {
   AtlasReader& operator=( AtlasReader&&)      = delete;  //!< Deleted move assignment
   AtlasReader& operator=(const AtlasReader&)  = delete;  //!< Deleted copy assignment
 
-  void populateFieldSetWithData(atlas::FieldSet& fieldSet, const Data& data);
-  void populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                          const Data& data,
-                          const std::vector<std::string>& fieldNames);
-
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const std::vector<size_t>& lfricToAtlasMap,
-                                const bool copyFirstLevel = false);  // Monio::readBackground
+                                const bool copyFirstLevel = false);
 
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);

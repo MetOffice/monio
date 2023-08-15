@@ -20,29 +20,6 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
 }
 
-void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                                                  const Data& data) {
-  oops::Log::debug() << "AtlasReader::populateFieldSetWithData()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    for (auto& field : fieldSet) {
-      populateFieldWithDataContainer(field, data.getContainer(field.name()));
-    }
-  }
-}
-
-void monio::AtlasReader::populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                                                  const Data& data,
-                                                  const std::vector<std::string>& fieldNames) {
-  oops::Log::debug() << "AtlasReader::populateFieldSetWithData()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    auto fieldNameIt = fieldNames.begin();
-    for (auto& field : fieldSet) {
-      populateFieldWithDataContainer(field, data.getContainer(*fieldNameIt));
-      ++fieldNameIt;
-    }
-  }
-}
-
 void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer,
                                       const std::vector<size_t>& lfricToAtlasMap,
