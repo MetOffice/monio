@@ -15,10 +15,6 @@
 
 #include "Constants.h"
 #include "Data.h"
-#include "DataContainerDouble.h"
-#include "DataContainerFloat.h"
-#include "DataContainerInt.h"
-#include "FileData.h"
 #include "Metadata.h"
 
 #include "atlas/array/DataType.h"
@@ -40,14 +36,15 @@ class AtlasWriter {
   AtlasWriter& operator=( AtlasWriter&&)      = delete;  //!< Deleted move assignment
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
-  void writeFieldSetToFile(const atlas::FieldSet& fieldSet,
-                           const std::string outputFilePath);
+  void populateMetadataAndDataWithFieldSet(Metadata& metadata,
+                                           Data& data,
+                                     const atlas::FieldSet& fieldSet);
 
-  void writeIncrementsToFile(atlas::FieldSet& fieldSet,
-                       const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                             monio::FileData& fileData,
-                       const std::string& outputFilePath,
-                       const bool isLfricFormat);
+  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
+                                               Data& data,
+                                         const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                                               atlas::FieldSet& fieldSet,
+                                         const std::vector<size_t>& lfricToAtlasMap);
 
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
@@ -72,16 +69,6 @@ class AtlasWriter {
                                       const std::vector<int>& dimensions);
 
  private:
-  void populateMetadataAndDataWithFieldSet(Metadata& metadata,
-                                           Data& data,
-                                     const atlas::FieldSet& fieldSet);
-
-  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
-                                               Data& data,
-                                         const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                                               atlas::FieldSet& fieldSet,
-                                         const std::vector<size_t>& lfricToAtlasMap);
-
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
@@ -90,22 +77,6 @@ class AtlasWriter {
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
-
-  void reconcileMetadataWithData(Metadata& metdata, Data& data);
-
-  std::vector<std::shared_ptr<DataContainerBase>> convertLatLonToContainers(
-                                        const std::vector<atlas::PointLonLat>& atlasCoords,
-                                        const std::vector<std::string>& coordNames);
-
-  atlas::Field processField(atlas::Field& inputField,
-                      const consts::FieldMetadata& fieldMetadata);
-
-  template<typename T>
-  atlas::Field copySurfaceLevel(const atlas::Field& inputField,
-                                const atlas::FunctionSpace& functionSpace,
-                                const atlas::util::Config& atlasOptions);
-
-  int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

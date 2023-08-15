@@ -17,7 +17,7 @@
 #include "atlas/util/KDTree.h"
 #include "oops/util/Logger.h"
 
-#include "Constants.h"
+#include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "Utils.h"
 
@@ -76,6 +76,23 @@ std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::Grid& grid) {
   atlasCoords.resize(grid.size());
   std::copy(grid.lonlat().begin(), grid.lonlat().end(), atlasCoords.begin());
   return atlasCoords;
+}
+
+std::vector<std::shared_ptr<monio::DataContainerBase>> convertLatLonToContainers(
+                        const std::vector<atlas::PointLonLat>& atlasCoords,
+                        const std::vector<std::string>& coordNames) {
+  std::vector<std::shared_ptr<monio::DataContainerBase>> coordContainers;
+  std::shared_ptr<DataContainerDouble> lonContainer =
+            std::make_shared<DataContainerDouble>(coordNames[consts::eLongitude]);
+  std::shared_ptr<DataContainerDouble> latContainer =
+            std::make_shared<DataContainerDouble>(coordNames[consts::eLatitude]);
+  for (const auto& atlasCoord : atlasCoords) {
+    lonContainer->setDatum(atlasCoord.lon());
+    latContainer->setDatum(atlasCoord.lat());
+  }
+  coordContainers.push_back(lonContainer);
+  coordContainers.push_back(latContainer);
+  return coordContainers;
 }
 
 std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& atlasCoords,
@@ -139,6 +156,37 @@ atlas::Field getGlobalField(const atlas::Field& field) {
   }
 }
 
+atlas::Field getFormattedField(atlas::Field& inputField,
+                               const consts::FieldMetadata& fieldMetadata) {
+  oops::Log::debug() << "AtlasWriter::processField()" << std::endl;
+  atlas::FunctionSpace functionSpace = inputField.functionspace();
+  atlas::array::DataType atlasType = inputField.datatype();
+
+  // WARNING - This name-check is an LFRic-Lite specific convention...
+  if (fieldMetadata.lfricWriteName != "TO BE DERIVED" &&
+      fieldMetadata.lfricWriteName != "TO BE IMPLEMENTED") {
+    if (fieldMetadata.copyFirstLevel == true) {
+      atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.lfricWriteName) |
+                                         atlas::option::global(0) |
+                                         atlas::option::levels(inputField.levels() + 1);
+      switch (atlasType.kind()) {
+        case atlasType.KIND_REAL64: {
+          return copySurfaceLevel<double>(inputField, functionSpace, atlasOptions);
+        }
+        case atlasType.KIND_REAL32: {
+          return copySurfaceLevel<float>(inputField, functionSpace, atlasOptions);
+        }
+        case atlasType.KIND_INT32: {
+          return copySurfaceLevel<int>(inputField, functionSpace, atlasOptions);
+        }
+      }
+    } else {
+      inputField.metadata().set("name", fieldMetadata.lfricWriteName);
+    }
+  }
+  return inputField;
+}
+
 atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
   if (fieldSet.size() != 0) {
     atlas::FieldSet globalFieldSet;
@@ -163,6 +211,53 @@ atlas::idx_t getSizeOwned(const atlas::Field& field) {
     }
   }
   return sizeOwned;
+}
+
+template<typename T>
+atlas::Field copySurfaceLevel(const atlas::Field& inputField,
+                              const atlas::FunctionSpace& functionSpace,
+                              const atlas::util::Config& atlasOptions) {
+  oops::Log::debug() << "AtlasWriter::copySurfaceLevel()" << std::endl;
+  atlas::Field copiedField = functionSpace.createField<T>(atlasOptions);
+  auto copiedFieldView = atlas::array::make_view<T, 2>(copiedField);
+  auto inputFieldView = atlas::array::make_view<T, 2>(inputField);
+  std::vector<int> dimVec = inputField.shape();
+  for (atlas::idx_t j = 0; j < dimVec[consts::eVertical]; ++j) {
+    for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+      copiedFieldView(i, j + 1) = inputFieldView(i, j);
+    }
+  }
+  // Copy surface level of input field
+  for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+    copiedFieldView(i, 0) = inputFieldView(i, 0);
+  }
+  return copiedField;
+}
+
+template atlas::Field copySurfaceLevel<double>(const atlas::Field& inputField,
+                                               const atlas::FunctionSpace& functionSpace,
+                                               const atlas::util::Config& atlasOptions);
+template atlas::Field copySurfaceLevel<float>(const atlas::Field& inputField,
+                                              const atlas::FunctionSpace& functionSpace,
+                                              const atlas::util::Config& atlasOptions);
+template atlas::Field copySurfaceLevel<int>(const atlas::Field& inputField,
+                                            const atlas::FunctionSpace& functionSpace,
+                                            const atlas::util::Config& atlasOptions);
+
+int atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
+  switch (atlasType.kind()) {
+  case atlasType.KIND_INT32: {
+    return consts::eInt;
+  }
+  case atlasType.KIND_REAL32: {
+    return consts::eFloat;
+  }
+  case atlasType.KIND_REAL64: {
+    return consts::eDouble;
+  }
+  default:
+    utils::throwException("AtlasWriter::fromFieldSet()> Data type not coded for...");
+  }
 }
 }  // namespace utilsatlas
 }  // namespace monio
