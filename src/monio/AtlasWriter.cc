@@ -189,59 +189,6 @@ void monio::AtlasWriter::populateDataContainerWithField(
   }
 }
 
-template<typename T>
-void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
-                                         const atlas::Field& field,
-                                         const std::vector<size_t>& lfricToAtlasMap) {
-  oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
-  atlas::idx_t numLevels = field.levels();
-  if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
-    utils::throwException("AtlasWriter::populateDataVec()> "
-                             "Data container is not configured for the expected data...");
-  }
-  auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
-    for (atlas::idx_t j = 0; j < numLevels; ++j) {
-      int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
-      dataVec[index] = fieldView(i, j);
-    }
-  }
-}
-
-template void monio::AtlasWriter::populateDataVec<double>(std::vector<double>& dataVec,
-                                                    const atlas::Field& field,
-                                                    const std::vector<size_t>& lfricToAtlasMap);
-template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dataVec,
-                                                   const atlas::Field& field,
-                                                   const std::vector<size_t>& lfricToAtlasMap);
-template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
-                                                 const atlas::Field& field,
-                                                 const std::vector<size_t>& lfricToAtlasMap);
-
-template<typename T>
-void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
-                                   const atlas::Field& field,
-                                   const std::vector<int>& dimensions) {
-  oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
-  auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (atlas::idx_t i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
-    for (atlas::idx_t j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
-      int index = j + (i * dimensions[consts::eVertical]);
-      dataVec[index] = fieldView(i, j);
-    }
-  }
-}
-
-template void monio::AtlasWriter::populateDataVec<double>(std::vector<double>& dataVec,
-                                                          const atlas::Field& field,
-                                                          const std::vector<int>& dimensions);
-template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dataVec,
-                                                         const atlas::Field& field,
-                                                         const std::vector<int>& dimensions);
-template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
-                                                       const atlas::Field& field,
-                                                       const std::vector<int>& dimensions);
-
 void monio::AtlasWriter::populateFileDataWithFieldSet(FileData& fileData,
                                                 const atlas::FieldSet& fieldSet) {
   oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithFieldSet()" << std::endl;
@@ -340,3 +287,56 @@ void monio::AtlasWriter::populateDataWithField(Data& data,
   populateDataContainerWithField(dataContainer, field, dimensions);
   data.addContainer(dataContainer);
 }
+
+template<typename T>
+void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
+                                         const atlas::Field& field,
+                                         const std::vector<size_t>& lfricToAtlasMap) {
+  oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
+  atlas::idx_t numLevels = field.levels();
+  if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
+    utils::throwException("AtlasWriter::populateDataVec()> "
+                             "Data container is not configured for the expected data...");
+  }
+  auto fieldView = atlas::array::make_view<T, 2>(field);
+  for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
+    for (atlas::idx_t j = 0; j < numLevels; ++j) {
+      int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
+      dataVec[index] = fieldView(i, j);
+    }
+  }
+}
+
+template void monio::AtlasWriter::populateDataVec<double>(std::vector<double>& dataVec,
+                                                    const atlas::Field& field,
+                                                    const std::vector<size_t>& lfricToAtlasMap);
+template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dataVec,
+                                                   const atlas::Field& field,
+                                                   const std::vector<size_t>& lfricToAtlasMap);
+template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
+                                                 const atlas::Field& field,
+                                                 const std::vector<size_t>& lfricToAtlasMap);
+
+template<typename T>
+void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
+                                   const atlas::Field& field,
+                                   const std::vector<int>& dimensions) {
+  oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
+  auto fieldView = atlas::array::make_view<T, 2>(field);
+  for (atlas::idx_t i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
+    for (atlas::idx_t j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
+      int index = j + (i * dimensions[consts::eVertical]);
+      dataVec[index] = fieldView(i, j);
+    }
+  }
+}
+
+template void monio::AtlasWriter::populateDataVec<double>(std::vector<double>& dataVec,
+                                                          const atlas::Field& field,
+                                                          const std::vector<int>& dimensions);
+template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dataVec,
+                                                         const atlas::Field& field,
+                                                         const std::vector<int>& dimensions);
+template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
+                                                       const atlas::Field& field,
+                                                       const std::vector<int>& dimensions);
