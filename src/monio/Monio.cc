@@ -51,7 +51,7 @@ void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
       auto& functionSpace = globalField.functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-      // Initialise background file
+      // Initialise file
       if (fileDataExists(grid.name()) == false) {
         FileData& fileData = createFileData(grid.name(), filePath, dateTime);
         reader_.openFile(fileData);
@@ -100,7 +100,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
       auto& functionSpace = globalField.functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-      // Initialise background file
+      // Initialise file
       if (fileDataExists(grid.name()) == false) {
         FileData& fileData = createFileData(grid.name(), filePath);
         reader_.openFile(fileData);
@@ -162,10 +162,8 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         }
       }
       // Add data and metadata for increments in fieldSet
-      atlasWriter_.populateFileDataWithLfricFieldSet(fileData,
-                                                            fieldMetadataVec,
-                                                            globalFieldSet,
-                                                            lfricAtlasMap);
+      atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
+                                                     globalFieldSet, lfricAtlasMap);
       monio::Writer writer(atlas::mpi::comm(),
                            consts::kMPIRankOwner,
                            filePath);
@@ -187,8 +185,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       FileData fileData;
       monio::AtlasWriter atlasWriter(atlas::mpi::comm(),
                                      consts::kMPIRankOwner);
-      atlasWriter.populateFileDataWithFieldSet(fileData,
-                                                      globalFieldSet);
+      atlasWriter.populateFileDataWithFieldSet(fileData, globalFieldSet);
       monio::Writer writer(atlas::mpi::comm(), consts::kMPIRankOwner, outputFilePath);
       writer.writeMetadata(fileData.getMetadata());
       writer.writeVariablesData(fileData);
