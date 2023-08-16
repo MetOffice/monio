@@ -211,17 +211,6 @@ monio::File& monio::Reader::getFile() {
   return *file_;
 }
 
-std::vector<std::string> monio::Reader::getVarStrAttrs(const FileData& fileData,
-                                                       const std::vector<std::string>& varNames,
-                                                       const std::string& attrName) {
-  oops::Log::debug() << "Reader::getVarStrAttrs()" << std::endl;
-  std::vector<std::string> varStrAttrs;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    varStrAttrs = fileData.getMetadata().getVarStrAttrs(varNames, attrName);
-  }
-  return varStrAttrs;
-}
-
 std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordData(
                                                        FileData& fileData,
                                                    const std::vector<std::string>& coordNames) {

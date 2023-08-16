@@ -56,10 +56,6 @@ class Reader {
                       const size_t timeStep,
                       const std::string& timeDimName);
 
-  std::vector<std::string> getVarStrAttrs(const FileData& fileData,
-                                          const std::vector<std::string>& varNames,
-                                          const std::string& attrName);
-
   std::vector<std::shared_ptr<DataContainerBase>> getCoordData(FileData& fileData,
                                                   const std::vector<std::string>& coordNames);
 
