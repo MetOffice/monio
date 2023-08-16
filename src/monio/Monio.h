@@ -33,7 +33,7 @@ class Monio {
   Monio& operator=(Monio&&)      = delete;  //!< Deleted move assignment
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
-  void readBackground(atlas::FieldSet& localFieldSet,
+  void readState(atlas::FieldSet& localFieldSet,
                 const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
@@ -41,6 +41,10 @@ class Monio {
   void readIncrements(atlas::FieldSet& localFieldSet,
                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                const std::string& filePath);
+
+  void writeState(const atlas::FieldSet& localFieldSet,
+                  const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                  const std::string& filePath);
 
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,

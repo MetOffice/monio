@@ -92,7 +92,7 @@ void readInput(atlas::FieldSet& fieldSet,
   oops::Log::info() << "inputFilePath> " << inputFilePath << std::endl;
   oops::Log::info() << "dateTime> " << dateTime << std::endl;
 
-  Monio::get().readBackground(fieldSet, fieldMetadataVec, inputFilePath, dateTime);
+  Monio::get().readState(fieldSet, fieldMetadataVec, inputFilePath, dateTime);
 }
 
 /// Sets up the objects required to mimic an operational call to Monio::Read via readInput

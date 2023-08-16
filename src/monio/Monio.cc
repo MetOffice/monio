@@ -8,6 +8,7 @@
 #############################################################################*/
 #include "Monio.h"
 
+#include <filesystem>
 #include <memory>
 #include <vector>
 
@@ -34,53 +35,61 @@ monio::Monio::~Monio() {
   delete this_;
 }
 
-void monio::Monio::readBackground(atlas::FieldSet& localFieldSet,
+void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                             const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                             const std::string& filePath,
                             const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::readBackground()" << std::endl;
+  oops::Log::debug() << "Monio::readState()" << std::endl;
   if (localFieldSet.size() == 0) {
-    utils::throwException("Monio::readBackground()> localFieldSet has zero fields...");
+    utils::throwException("Monio::readState()> localFieldSet has zero fields...");
   }
-  for (const auto& fieldMetadata : fieldMetadataVec) {
-    auto& localField = localFieldSet[fieldMetadata.jediName];
-    atlas::Field globalField = utilsatlas::getGlobalField(localField);
-    if (mpiCommunicator_.rank() == mpiRankOwner_) {
-      oops::Log::debug() << "Monio::readBackground() processing data for> \"" <<
-                            fieldMetadata.jediName << "\"..." << std::endl;
-      auto& functionSpace = globalField.functionspace();
-      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+  if (filePath.length() != 0) {
+    if (std::filesystem::exists(filePath)) {
+      for (const auto& fieldMetadata : fieldMetadataVec) {
+        auto& localField = localFieldSet[fieldMetadata.jediName];
+        atlas::Field globalField = utilsatlas::getGlobalField(localField);
+        if (mpiCommunicator_.rank() == mpiRankOwner_) {
+          oops::Log::debug() << "Monio::readState() processing data for> \"" <<
+                                fieldMetadata.jediName << "\"..." << std::endl;
+          auto& functionSpace = globalField.functionspace();
+          auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-      // Initialise file
-      if (fileDataExists(grid.name()) == false) {
-        FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-        reader_.openFile(fileData);
-        reader_.readMetadata(fileData);
-        std::vector<std::string> meshVars =
-            fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-        reader_.readFullData(fileData, meshVars);
-        createLfricAtlasMap(fileData, grid);
+          // Initialise file
+          if (fileDataExists(grid.name()) == false) {
+            FileData& fileData = createFileData(grid.name(), filePath, dateTime);
+            reader_.openFile(fileData);
+            reader_.readMetadata(fileData);
+            std::vector<std::string> meshVars =
+                fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+            reader_.readFullData(fileData, meshVars);
+            createLfricAtlasMap(fileData, grid);
 
-        reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
-        createDateTimes(fileData,
-                        std::string(consts::kTimeVarName),
-                        std::string(consts::kTimeOriginName));
-      }
-      FileData fileData = getFileData(grid.name());
-      // Read fields into memory
-      reader_.readDatumAtTime(fileData,
-                              fieldMetadata.lfricReadName,
-                              dateTime,
-                              std::string(consts::kTimeDimName));
-      atlasReader_.populateFieldWithDataContainer(
+            reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+            createDateTimes(fileData,
+                            std::string(consts::kTimeVarName),
+                            std::string(consts::kTimeOriginName));
+          }
+          FileData fileData = getFileData(grid.name());
+          // Read fields into memory
+          reader_.readDatumAtTime(fileData,
+                                  fieldMetadata.lfricReadName,
+                                  dateTime,
+                                  std::string(consts::kTimeDimName));
+          atlasReader_.populateFieldWithDataContainer(
                                        globalField,
                                        fileData.getData().getContainer(fieldMetadata.lfricReadName),
                                        fileData.getLfricAtlasMap(),
                                        fieldMetadata.copyFirstLevel);
+        }
+        auto& functionSpace = globalField.functionspace();
+        functionSpace.scatter(globalField, localField);
+        localField.haloExchange();
+      }
+    } else {
+      utils::throwException("Monio::readState()> File \"" + filePath + "\" does not exist...");
     }
-    auto& functionSpace = globalField.functionspace();
-    functionSpace.scatter(globalField, localField);
-    localField.haloExchange();
+  } else {
+    utils::throwException("Monio::readState()> No file path supplied...");
   }
 }
 
@@ -91,37 +100,58 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::readIncrements()> localFieldSet has zero fields...");
   }
-  for (const auto& fieldMetadata : fieldMetadataVec) {
-    auto& localField = localFieldSet[fieldMetadata.jediName];
-    atlas::Field globalField = utilsatlas::getGlobalField(localField);
-    if (mpiCommunicator_.rank() == mpiRankOwner_) {
-      oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
-                            fieldMetadata.jediName << "\"..." << std::endl;
-      auto& functionSpace = globalField.functionspace();
-      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+  if (filePath.length() != 0) {
+    if (std::filesystem::exists(filePath)) {
+      for (const auto& fieldMetadata : fieldMetadataVec) {
+        auto& localField = localFieldSet[fieldMetadata.jediName];
+        atlas::Field globalField = utilsatlas::getGlobalField(localField);
+        if (mpiCommunicator_.rank() == mpiRankOwner_) {
+          oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
+                                fieldMetadata.jediName << "\"..." << std::endl;
+          auto& functionSpace = globalField.functionspace();
+          auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-      // Initialise file
-      if (fileDataExists(grid.name()) == false) {
-        FileData& fileData = createFileData(grid.name(), filePath);
-        reader_.openFile(fileData);
-        reader_.readMetadata(fileData);
-        std::vector<std::string> meshVars =
-            fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-        reader_.readFullData(fileData, meshVars);
-        createLfricAtlasMap(fileData, grid);
-      }
-      FileData fileData = getFileData(grid.name());
-      // Read fields into memory
-      reader_.readFullDatum(fileData, fieldMetadata.lfricReadName);
-      atlasReader_.populateFieldWithDataContainer(
+          // Initialise file
+          if (fileDataExists(grid.name()) == false) {
+            FileData& fileData = createFileData(grid.name(), filePath);
+            reader_.openFile(fileData);
+            reader_.readMetadata(fileData);
+            std::vector<std::string> meshVars =
+                fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+            reader_.readFullData(fileData, meshVars);
+            createLfricAtlasMap(fileData, grid);
+          }
+          FileData fileData = getFileData(grid.name());
+          // Read fields into memory
+          reader_.readFullDatum(fileData, fieldMetadata.lfricReadName);
+          atlasReader_.populateFieldWithDataContainer(
                                        globalField,
                                        fileData.getData().getContainer(fieldMetadata.lfricReadName),
                                        fileData.getLfricAtlasMap(),
                                        fieldMetadata.copyFirstLevel);
+        }
+        auto& functionSpace = globalField.functionspace();
+        functionSpace.scatter(globalField, localField);
+        localField.haloExchange();
+      }
+    } else {
+      utils::throwException("Monio::writeState()> File \"" + filePath + "\" does not exist...");
     }
-    auto& functionSpace = globalField.functionspace();
-    functionSpace.scatter(globalField, localField);
-    localField.haloExchange();
+  } else {
+    utils::throwException("Monio::writeState()> No file path supplied...");
+  }
+}
+
+void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
+                              const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                              const std::string& filePath) {
+  if (localFieldSet.size() == 0) {
+    utils::throwException("Monio::writeState()> localFieldSet has zero fields...");
+  }
+  if (filePath.length() != 0) {
+    std::cout << filePath;
+  } else {
+    utils::throwException("Monio::writeState()> No file path supplied...");
   }
 }
 
@@ -169,7 +199,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
     } else {
-      oops::Log::info() << "AtlasWriter::writeFieldSetToFile() No outputFilePath supplied. "
+      oops::Log::info() << "Monio::writeIncrements()> No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
     }
   }
@@ -188,7 +218,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
     } else {
-      oops::Log::info() << "Monio::writeFieldSet() No outputFilePath supplied. "
+      oops::Log::info() << "Monio::writeFieldSet()> No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
     }
   }
