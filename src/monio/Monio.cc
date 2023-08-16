@@ -149,9 +149,48 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
     utils::throwException("Monio::writeState()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
-    std::cout << filePath;
+    for (const auto& fieldMetadata : fieldMetadataVec) {
+      auto& localField = localFieldSet[fieldMetadata.jediName];
+      atlas::Field globalField = utilsatlas::getGlobalField(localField);
+      if (mpiCommunicator_.rank() == mpiRankOwner_) {
+        oops::Log::debug() << "Monio::writeState() processing data for> \"" <<
+                              fieldMetadata.jediName << "\"..." << std::endl;
+        auto& functionSpace = globalField.functionspace();
+        auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+
+        FileData fileData = getFileData(grid.name());
+        fileData.setFilePath(filePath);
+        std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+
+        fileData.getMetadata().clearGlobalAttributes();
+        fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
+        fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
+
+        fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
+        fileData.getData().deleteContainer(std::string(consts::kTileVarName));
+
+        // Reconcile Metadata with Data
+        std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();
+        std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
+
+        for (const auto& metadataVarName : metadataVarNames) {
+          auto it = std::find(begin(dataContainerNames), end(dataContainerNames), metadataVarName);
+          if (it == std::end(dataContainerNames)) {
+            fileData.getMetadata().deleteVariable(metadataVarName);
+          }
+        }
+
+        // Add data and metadata for increments in fieldSet
+        //        atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
+        //                                                       globalFieldSet, lfricAtlasMap);
+        //        writer_.openFile(fileData);
+        //        writer_.writeMetadata(fileData.getMetadata());
+        //        writer_.writeVariablesData(fileData);
+      }
+    }
   } else {
-    utils::throwException("Monio::writeState()> No file path supplied...");
+    oops::Log::info() << "Monio::writeState()> No file path supplied. "
+                         "NetCDF writing will not take place..." << std::endl;
   }
 }
 
@@ -163,18 +202,17 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::writeIncrements()> localFieldSet has zero fields...");
   }
-  atlas::FieldSet globalFieldSet = utilsatlas::getGlobalFieldSet(localFieldSet);
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    auto& functionSpace = globalFieldSet[0].functionspace();
-    auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
-    FileData fileData = getFileData(grid.name());
+  if (filePath.length() != 0) {
+    atlas::FieldSet globalFieldSet = utilsatlas::getGlobalFieldSet(localFieldSet);
+    if (mpiCommunicator_.rank() == mpiRankOwner_) {
+      auto& functionSpace = globalFieldSet[0].functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-    if (filePath.length() != 0) {
+      FileData fileData = getFileData(grid.name());
       fileData.setFilePath(filePath);
       std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
 
       fileData.getMetadata().clearGlobalAttributes();
-
       fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
       fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
 
@@ -182,7 +220,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       fileData.getData().deleteContainer(std::string(consts::kTileVarName));
 
       // Reconcile Metadata with Data
-      oops::Log::debug() << "AtlasWriter::reconcileMetadataWithData()" << std::endl;
       std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();
       std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
 
@@ -199,8 +236,8 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
     } else {
-      oops::Log::info() << "Monio::writeIncrements()> No outputFilePath supplied. "
-                           "NetCDF writing will not take place." << std::endl;
+      oops::Log::info() << "Monio::writeIncrements()> No file path supplied. "
+                           "NetCDF writing will not take place..." << std::endl;
     }
   }
 }
@@ -218,8 +255,8 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
     } else {
-      oops::Log::info() << "Monio::writeFieldSet()> No outputFilePath supplied. "
-                           "NetCDF writing will not take place." << std::endl;
+      oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "
+                           "NetCDF writing will not take place..." << std::endl;
     }
   }
 }
