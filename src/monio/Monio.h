@@ -18,6 +18,7 @@
 #include "AtlasWriter.h"
 #include "FileData.h"
 #include "Reader.h"
+#include "Writer.h"
 
 namespace monio {
 class Monio {
@@ -47,7 +48,7 @@ class Monio {
                        const bool isLfricFormat = true);
 
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
-                     const std::string outputFilePath);
+                     const std::string& filePath);
 
  private:
   Monio(const eckit::mpi::Comm& mpiCommunicator,
@@ -77,6 +78,8 @@ class Monio {
   const std::size_t mpiRankOwner_;
 
   Reader reader_;
+  Writer writer_;
+
   AtlasReader atlasReader_;
   AtlasWriter atlasWriter_;
 

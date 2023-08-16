@@ -22,18 +22,28 @@
 
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
-                      const std::string& filePath)
-    : mpiCommunicator_(mpiCommunicator),
-      mpiRankOwner_(mpiRankOwner) {
+                      const FileData& fileData) :
+    mpiCommunicator_(mpiCommunicator),
+    mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Writer::Writer()" << std::endl;
+  openFile(fileData);
+}
+
+monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
+                      const atlas::idx_t mpiRankOwner) :
+    mpiCommunicator_(mpiCommunicator),
+    mpiRankOwner_(mpiRankOwner) {
+  oops::Log::debug() << "Writer::Writer()" << std::endl;
+}
+
+void monio::Writer::openFile(const FileData& fileData) {
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    try {
-      file_ = std::make_unique<File>(filePath, netCDF::NcFile::replace);
-    } catch (netCDF::exceptions::NcException& exception) {
-      std::string message =
-          "Writer::Writer()> An exception occurred while creating File...";
-      message.append(exception.what());
-      utils::throwException(message);
+    if (fileData.getFilePath().size() != 0) {
+      try {
+        file_ = std::make_unique<File>(fileData.getFilePath(), netCDF::NcFile::replace);
+      } catch (netCDF::exceptions::NcException& exception) {
+        utils::throwException("Writer::openFile()> An exception occurred while creating File...");
+      }
     }
   }
 }

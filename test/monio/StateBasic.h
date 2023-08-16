@@ -54,9 +54,10 @@ void testFunction() {
     reader.readMetadata(firstFileData);
     reader.readAllData(firstFileData);
 
+    firstFileData.setFilePath(outputFilePath);
     monio::Writer writer(atlas::mpi::comm(),
                          monio::consts::kMPIRankOwner,
-                         outputFilePath);
+                         firstFileData);
     writer.writeData(firstFileData);
 
     monio::FileData secondFileData(outputFilePath);

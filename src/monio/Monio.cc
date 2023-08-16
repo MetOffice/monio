@@ -140,6 +140,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
     FileData fileData = getFileData(grid.name());
 
     if (filePath.length() != 0) {
+      fileData.setFilePath(filePath);
       std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
 
       fileData.getMetadata().clearGlobalAttributes();
@@ -164,11 +165,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       // Add data and metadata for increments in fieldSet
       atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
                                                      globalFieldSet, lfricAtlasMap);
-      monio::Writer writer(atlas::mpi::comm(),
-                           consts::kMPIRankOwner,
-                           filePath);
-      writer.writeMetadata(fileData.getMetadata());
-      writer.writeVariablesData(fileData);
+      writer_.openFile(fileData);
+      writer_.writeMetadata(fileData.getMetadata());
+      writer_.writeVariablesData(fileData);
     } else {
       oops::Log::info() << "AtlasWriter::writeFieldSetToFile() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
@@ -177,18 +176,17 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
 }
 
 void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
-                                 const std::string outputFilePath) {
+                                 const std::string& filePath) {
   oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
   atlas::FieldSet globalFieldSet = utilsatlas::getGlobalFieldSet(localFieldSet);
   if (atlas::mpi::rank() == consts::kMPIRankOwner) {
-    if (outputFilePath.length() != 0) {
+    if (filePath.length() != 0) {
       FileData fileData;
-      monio::AtlasWriter atlasWriter(atlas::mpi::comm(),
-                                     consts::kMPIRankOwner);
-      atlasWriter.populateFileDataWithFieldSet(fileData, globalFieldSet);
-      monio::Writer writer(atlas::mpi::comm(), consts::kMPIRankOwner, outputFilePath);
-      writer.writeMetadata(fileData.getMetadata());
-      writer.writeVariablesData(fileData);
+      fileData.setFilePath(filePath);
+      atlasWriter_.populateFileDataWithFieldSet(fileData, globalFieldSet);
+      writer_.openFile(fileData);
+      writer_.writeMetadata(fileData.getMetadata());
+      writer_.writeVariablesData(fileData);
     } else {
       oops::Log::info() << "Monio::writeFieldSet() No outputFilePath supplied. "
                            "NetCDF writing will not take place." << std::endl;
@@ -306,6 +304,7 @@ monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
       mpiCommunicator_(mpiCommunicator),
       mpiRankOwner_(mpiRankOwner),
       reader_(mpiCommunicator, mpiRankOwner_),
+      writer_(mpiCommunicator, mpiRankOwner_),
       atlasReader_(mpiCommunicator, mpiRankOwner_),
       atlasWriter_(mpiCommunicator, mpiRankOwner_)   {
   oops::Log::debug() << "Monio::Monio()" << std::endl;

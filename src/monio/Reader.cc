@@ -27,16 +27,16 @@
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
                       const FileData& fileData):
-  mpiCommunicator_(mpiCommunicator),
-  mpiRankOwner_(mpiRankOwner) {
+    mpiCommunicator_(mpiCommunicator),
+    mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;
   openFile(fileData);
 }
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner):
-  mpiCommunicator_(mpiCommunicator),
-  mpiRankOwner_(mpiRankOwner) {
+    mpiCommunicator_(mpiCommunicator),
+    mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;
 }
 
@@ -46,10 +46,7 @@ void monio::Reader::openFile(const FileData& fileData) {
       try {
         file_ = std::make_unique<File>(fileData.getFilePath(), netCDF::NcFile::read);
       } catch (netCDF::exceptions::NcException& exception) {
-        std::string message =
-            "Reader::openFile()> An exception occurred while creating File...";
-        message.append(exception.what());
-        utils::throwException(message);
+        utils::throwException("Reader::openFile()> An exception occurred while accessing File...");
       }
     }
   }
