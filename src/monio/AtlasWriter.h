@@ -14,8 +14,7 @@
 #include <vector>
 
 #include "Constants.h"
-#include "Data.h"
-#include "Metadata.h"
+#include "FileData.h"
 
 #include "atlas/array/DataType.h"
 #include "atlas/field.h"
@@ -36,16 +35,15 @@ class AtlasWriter {
   AtlasWriter& operator=( AtlasWriter&&)      = delete;  //!< Deleted move assignment
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
-  void populateMetadataAndDataWithFieldSet(Metadata& metadata,
-                                           Data& data,
-                                     const atlas::FieldSet& fieldSet);
+  void populateFileDataWithFieldSet(FileData& fileData,
+                              const atlas::FieldSet& fieldSet);
 
-  void populateMetadataAndDataWithLfricFieldSet(Metadata& metadata,
-                                               Data& data,
-                                         const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                                               atlas::FieldSet& fieldSet,
-                                         const std::vector<size_t>& lfricToAtlasMap);
+  void populateFileDataWithLfricFieldSet(FileData& fileData,
+                                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                                         atlas::FieldSet& fieldSet,
+                                   const std::vector<size_t>& lfricToAtlasMap);
 
+ private:
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const consts::FieldMetadata* fieldMetadata = nullptr,
@@ -60,15 +58,6 @@ class AtlasWriter {
                                 const atlas::Field& field,
                                 const std::vector<int>& dimensions);
 
-  template<typename T> void populateDataVec(std::vector<T>& dataVec,
-                                      const atlas::Field& field,
-                                      const std::vector<size_t>& lfricToAtlasMap);
-
-  template<typename T> void populateDataVec(std::vector<T>& dataVec,
-                                      const atlas::Field& field,
-                                      const std::vector<int>& dimensions);
-
- private:
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
@@ -77,6 +66,14 @@ class AtlasWriter {
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
+
+  template<typename T> void populateDataVec(std::vector<T>& dataVec,
+                                      const atlas::Field& field,
+                                      const std::vector<size_t>& lfricToAtlasMap);
+
+  template<typename T> void populateDataVec(std::vector<T>& dataVec,
+                                      const atlas::Field& field,
+                                      const std::vector<int>& dimensions);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

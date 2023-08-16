@@ -36,11 +36,9 @@ class File {
               const std::vector<std::string>& varNames);
 
   template<typename T> void readSingleDatum(const std::string& varName,
-                                            const int varSize,
                                             std::vector<T>& dataVec);
 
   template<typename T> void readFieldDatum(const std::string& fieldName,
-                                           const int varSize,
                                            const std::vector<size_t>& startVec,
                                            const std::vector<size_t>& countVec,
                                            std::vector<T>& dataVec);

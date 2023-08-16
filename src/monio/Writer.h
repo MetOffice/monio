@@ -18,11 +18,11 @@
 
 #include "Data.h"
 #include "File.h"
+#include "FileData.h"
 #include "Metadata.h"
 
 namespace monio {
-/// \brief Top-level class uses File, Metadata, AtlasData,
-/// and Data to write to a NetCDF file
+/// \brief Top-level class uses FileData and its contents to write to a NetCDF file
 class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
@@ -35,9 +35,9 @@ class Writer {
   Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
-  void writeData(const Metadata& metadata, const Data& data);
+  void writeData(const FileData& fileData);
   void writeMetadata(const Metadata& metadata);
-  void writeVariablesData(const Metadata& metadata, const Data& data);
+  void writeVariablesData(const FileData& fileData);
 
  private:
   File& getFile();

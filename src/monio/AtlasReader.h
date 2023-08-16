@@ -43,18 +43,12 @@ class AtlasReader {
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const std::vector<size_t>& lfricToAtlasMap,
-                                const bool copyFirstLevel = false);  // Monio::readBackground
+                                const bool copyFirstLevel = false);
 
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
-  void populateFieldSetWithData(atlas::FieldSet& fieldSet, const Data& data);
-  void populateFieldSetWithData(atlas::FieldSet& fieldSet,
-                          const Data& data,
-                          const std::vector<std::string>& fieldNames);
-
  private:
-  // AtlasWriter::populateFieldWithDataContainer
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec,
                                     const std::vector<size_t>& lfricToAtlasMap,

@@ -47,13 +47,13 @@ ecbuild_add_test(TARGET monio_coding_norms
                        ${PROJECT_SOURCE_DIR}/src
                        ${PROJECT_SOURCE_DIR}/test)
 
-ecbuild_add_test(TARGET  test_state_basic
+ecbuild_add_test(TARGET  test_monio_state_basic
                  SOURCES mains/TestStateBasic.cc
                  ARGS    "testinput/state_basic.yaml"
                  LIBS    monio
                  MPI     4)
 
-ecbuild_add_test(TARGET  test_state_full
+ecbuild_add_test(TARGET  test_monio_state_full
                  SOURCES mains/TestStateFull.cc
                  ARGS    "testinput/state_full.yaml"
                  LIBS    monio

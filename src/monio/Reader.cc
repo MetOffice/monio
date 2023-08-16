@@ -24,17 +24,6 @@
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
 
-namespace {
-bool isStringInVector(std::string searchStr, const std::vector<std::string>& strVec) {
-  oops::Log::debug() << "isStringInVector()" << std::endl;
-  std::vector<std::string>::const_iterator it = std::find(strVec.begin(), strVec.end(), searchStr);
-  if (it != strVec.end())
-    return true;
-  else
-    return false;
-}
-}  // anonymous namespace
-
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
                       const FileData& fileData):
@@ -72,36 +61,6 @@ void monio::Reader::readMetadata(FileData& fileData) {
     getFile().readMetadata(fileData.getMetadata());
   }
 }
-
-void monio::Reader::readAllData(FileData& fileData) {
-  oops::Log::debug() << "Reader::readAllData()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::vector<std::string> varNames = fileData.getMetadata().getVariableNames();
-    readFullData(fileData, varNames);
-  }
-}
-
-//  void monio::Reader::readDataAtTime(FileData& fileData,
-//                                    const std::vector<std::string>& varNames,
-//                                    const std::string& dateString,
-//                                    const std::string& timeDimName) {
-//    oops::Log::debug() << "Reader::readFieldData()" << std::endl;
-//    util::DateTime dateToRead(dateString);
-//    readDataAtTime(fileData, varNames, dateToRead, timeDimName);
-//  }
-
-//  void monio::Reader::readDataAtTime(FileData& fileData,
-//                                    const std::vector<std::string>& varNames,
-//                                    const util::DateTime& dateToRead,
-//                                    const std::string& timeDimName) {
-//    oops::Log::debug() << "Reader::readFieldData()" << std::endl;
-//    if (mpiCommunicator_.rank() == mpiRankOwner_) {
-//      size_t timeStep = findTimeStep(fileData, dateToRead);
-//      for (auto& varName : varNames) {
-//        readDatumAtTime(fileData, varName, timeStep, timeDimName);
-//      }
-//    }
-//  }
 
 void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,
@@ -146,24 +105,24 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
         case consts::eDataTypes::eDouble: {
           std::shared_ptr<DataContainerDouble> dataContainerDouble =
                                       std::make_shared<DataContainerDouble>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                              startVec, countVec, dataContainerDouble->getData());
+          dataContainerDouble->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerDouble->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
           break;
         }
         case consts::eDataTypes::eFloat: {
           std::shared_ptr<DataContainerFloat> dataContainerFloat =
                                       std::make_shared<DataContainerFloat>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                               startVec, countVec, dataContainerFloat->getData());
+          dataContainerFloat->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerFloat->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
           break;
         }
         case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                                       std::make_shared<DataContainerInt>(varName);
-          getFile().readFieldDatum(varName, varSizeNoTime,
-                               startVec, countVec, dataContainerInt->getData());
+          dataContainerInt->setSize(varSizeNoTime);
+          getFile().readFieldDatum(varName, startVec, countVec, dataContainerInt->getData());
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
           break;
         }
@@ -179,6 +138,14 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
       oops::Log::debug() << "Reader::readFieldDatum()> DataContainer \""
         << varName << "\" aleady defined." << std::endl;
     }
+  }
+}
+
+void monio::Reader::readAllData(FileData& fileData) {
+  oops::Log::debug() << "Reader::readAllData()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    std::vector<std::string> varNames = fileData.getMetadata().getVariableNames();
+    readFullData(fileData, varNames);
   }
 }
 
@@ -203,24 +170,24 @@ void monio::Reader::readFullDatum(FileData& fileData,
       case consts::eDataTypes::eDouble: {
         std::shared_ptr<DataContainerDouble> dataContainerDouble =
                             std::make_shared<DataContainerDouble>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerDouble->getData());
+        dataContainerDouble->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerDouble->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerDouble);
         break;
       }
       case consts::eDataTypes::eFloat: {
         std::shared_ptr<DataContainerFloat> dataContainerFloat =
                             std::make_shared<DataContainerFloat>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerFloat->getData());
+        dataContainerFloat->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerFloat->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerFloat);
         break;
       }
       case consts::eDataTypes::eInt: {
         std::shared_ptr<DataContainerInt> dataContainerInt =
                             std::make_shared<DataContainerInt>(varName);
-        getFile().readSingleDatum(varName,
-            variable->getTotalSize(), dataContainerInt->getData());
+        dataContainerInt->setSize(variable->getTotalSize());
+        getFile().readSingleDatum(varName, dataContainerInt->getData());
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
       }
@@ -265,7 +232,7 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
       std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainers =
                                                             fileData.getData().getContainers();
       for (auto& dataPair : dataContainers) {
-        if (isStringInVector(dataPair.first, coordNames) == true) {
+        if (utils::findInVector(coordNames, dataPair.first) == true) {
           std::shared_ptr<DataContainerBase> dataContainer = dataContainers.at(dataPair.first);
           coordContainers.push_back(dataContainer);
         }
@@ -275,28 +242,6 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
   } else {
       utils::throwException("Reader::getCoordData()> Incorrect number of coordinate axes...");
   }
-}
-
-size_t monio::Reader::getSizeOwned(const FileData& fileData, const std::string& varName) {
-  oops::Log::debug() << "Reader::getSizeOwned()" << std::endl;
-  size_t totalSize;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
-    totalSize = variable->getTotalSize();
-  }
-  mpiCommunicator_.broadcast(totalSize, mpiRankOwner_);
-  return totalSize;
-}
-
-int monio::Reader::getVarDataType(const FileData& fileData, const std::string& varName) {
-  oops::Log::debug() << "Reader::getVarDataType()" << std::endl;
-  int dataType;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
-    dataType = variable->getType();
-  }
-  mpiCommunicator_.broadcast(dataType, mpiRankOwner_);
-  return dataType;
 }
 
 size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTime& dateTime) {
