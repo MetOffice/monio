@@ -236,7 +236,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                                      globalFieldSet, lfricAtlasMap);
       writer_.openFile(fileData);
       writer_.writeMetadata(fileData.getMetadata());
-      writer_.writeVariablesData(fileData);
+      writer_.writeData(fileData);
       writer_.closeFile();
     } else {
       oops::Log::info() << "Monio::writeIncrements()> No file path supplied. "
@@ -256,7 +256,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       atlasWriter_.populateFileDataWithFieldSet(fileData, globalFieldSet);
       writer_.openFile(fileData);
       writer_.writeMetadata(fileData.getMetadata());
-      writer_.writeVariablesData(fileData);
+      writer_.writeData(fileData);
       writer_.closeFile();
     } else {
       oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "

@@ -41,9 +41,8 @@ class Writer {
   void openFile(const FileData& fileData);
   void closeFile();
 
-  void writeData(const FileData& fileData);
   void writeMetadata(const Metadata& metadata);
-  void writeVariablesData(const FileData& fileData);
+  void writeData(const FileData& fileData);
 
  private:
   File& getFile();

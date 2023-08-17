@@ -56,12 +56,6 @@ void monio::Writer::closeFile() {
   }
 }
 
-void monio::Writer::writeData(const FileData& fileData) {
-  oops::Log::debug() << "Writer::writeData()" << std::endl;
-  writeMetadata(fileData.getMetadata());
-  writeVariablesData(fileData);
-}
-
 void monio::Writer::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -69,7 +63,7 @@ void monio::Writer::writeMetadata(const Metadata& metadata) {
   }
 }
 
-void monio::Writer::writeVariablesData(const FileData& fileData) {
+void monio::Writer::writeData(const FileData& fileData) {
   oops::Log::debug() << "Writer::writeVariablesData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     const std::map<std::string, std::shared_ptr<DataContainerBase>>& dataContainerMap =
