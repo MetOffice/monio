@@ -85,6 +85,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
         functionSpace.scatter(globalField, localField);
         localField.haloExchange();
       }
+      reader_.closeFile();
     } else {
       utils::throwException("Monio::readState()> File \"" + filePath + "\" does not exist...");
     }
@@ -134,6 +135,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         functionSpace.scatter(globalField, localField);
         localField.haloExchange();
       }
+      reader_.closeFile();
     } else {
       utils::throwException("Monio::writeState()> File \"" + filePath + "\" does not exist...");
     }
@@ -235,6 +237,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       writer_.openFile(fileData);
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
+      writer_.closeFile();
     } else {
       oops::Log::info() << "Monio::writeIncrements()> No file path supplied. "
                            "NetCDF writing will not take place..." << std::endl;
@@ -254,6 +257,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       writer_.openFile(fileData);
       writer_.writeMetadata(fileData.getMetadata());
       writer_.writeVariablesData(fileData);
+      writer_.closeFile();
     } else {
       oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "
                            "NetCDF writing will not take place..." << std::endl;

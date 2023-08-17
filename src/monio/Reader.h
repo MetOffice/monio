@@ -39,6 +39,8 @@ class Reader {
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
   void openFile(const FileData& fileData);
+  void closeFile();
+
   void readMetadata(FileData& fileData);
 
   void readAllData(FileData& fileData);

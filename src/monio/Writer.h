@@ -39,6 +39,8 @@ class Writer {
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
   void openFile(const FileData& fileData);
+  void closeFile();
+
   void writeData(const FileData& fileData);
   void writeMetadata(const Metadata& metadata);
   void writeVariablesData(const FileData& fileData);

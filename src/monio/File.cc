@@ -42,15 +42,21 @@ monio::File::File(const std::string& filePath,
 }
 
 monio::File::~File() {
-  std::cout << "File::~File() ";
-  if (fileMode_ == netCDF::NcFile::read) {
-    std::cout << "read" << std::endl;
-  } else {
-    std::cout << "write" << std::endl;
-  }
-  dataFile_->close();
+  oops::Log::debug() << "File::~File() ";
+  close();
 }
 
+void monio::File::close() {
+  oops::Log::debug() << "File::close() ";
+  if (dataFile_->isNull() == false) {
+    if (fileMode_ == netCDF::NcFile::read) {
+      oops::Log::debug() << "read" << std::endl;
+    } else {
+      oops::Log::debug() << "write" << std::endl;
+    }
+    dataFile_->close();
+  }
+}
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 
 void monio::File::readMetadata(Metadata& metadata) {

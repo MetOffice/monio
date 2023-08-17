@@ -41,6 +41,7 @@ monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 void monio::Reader::openFile(const FileData& fileData) {
+  oops::Log::debug() << "Reader::openFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (fileData.getFilePath().size() != 0) {
       try {
@@ -49,6 +50,13 @@ void monio::Reader::openFile(const FileData& fileData) {
         utils::throwException("Reader::openFile()> An exception occurred while accessing File...");
       }
     }
+  }
+}
+
+void monio::Reader::closeFile() {
+  oops::Log::debug() << "Reader::closeFile()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    file_->close();
   }
 }
 
@@ -63,7 +71,7 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,
                                    const util::DateTime& dateToRead,
                                    const std::string& timeDimName) {
-  oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
+  oops::Log::debug() << "Reader::readDatumAtTime()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     size_t timeStep = findTimeStep(fileData, dateToRead);
     readDatumAtTime(fileData, varName, timeStep, timeDimName);
@@ -74,7 +82,7 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& varName,
                                    const size_t timeStep,
                                    const std::string& timeDimName) {
-  oops::Log::debug() << "Reader::readFieldDatum()" << std::endl;
+  oops::Log::debug() << "Reader::readDatumAtTime()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (fileData.getData().isPresent(varName) == false) {
       std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
@@ -124,15 +132,15 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
           break;
         }
         default:
-          utils::throwException("Reader::readFieldData()> Data type not coded for...");
+          utils::throwException("Reader::readDatumAtTime()> Data type not coded for...");
       }
       if (dataContainer != nullptr)
         fileData.getData().addContainer(dataContainer);
       else
-        utils::throwException("Reader::readFieldData()> "
+        utils::throwException("Reader::readDatumAtTime()> "
            "An exception occurred while creating data container...");
     } else {
-      oops::Log::debug() << "Reader::readFieldDatum()> DataContainer \""
+      oops::Log::debug() << "Reader::readDatumAtTime()> DataContainer \""
         << varName << "\" aleady defined." << std::endl;
     }
   }
@@ -148,7 +156,7 @@ void monio::Reader::readAllData(FileData& fileData) {
 
 void monio::Reader::readFullData(FileData& fileData,
                                  const std::vector<std::string>& varNames) {
-  oops::Log::debug() << "Reader::readSingleData()" << std::endl;
+  oops::Log::debug() << "Reader::readFullData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     for (const auto& varName : varNames) {
       readFullDatum(fileData, varName);
@@ -158,7 +166,7 @@ void monio::Reader::readFullData(FileData& fileData,
 
 void monio::Reader::readFullDatum(FileData& fileData,
                                   const std::string& varName) {
-  oops::Log::debug() << "Reader::readSingleDatum()" << std::endl;
+  oops::Log::debug() << "Reader::readFullDatum()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::shared_ptr<DataContainerBase> dataContainer = nullptr;
     std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
@@ -189,13 +197,13 @@ void monio::Reader::readFullDatum(FileData& fileData,
         break;
       }
       default:
-        utils::throwException("Reader::readVariable()> Data type not coded for...");
+        utils::throwException("Reader::readFullDatum()> Data type not coded for...");
     }
 
     if (dataContainer != nullptr)
       fileData.getData().addContainer(dataContainer);
     else
-      utils::throwException("Reader::readVariable()> "
+      utils::throwException("Reader::readFullDatum()> "
           "An exception occurred while creating data container...");
   }
 }

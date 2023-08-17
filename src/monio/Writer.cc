@@ -37,6 +37,7 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 void monio::Writer::openFile(const FileData& fileData) {
+  oops::Log::debug() << "Writer::openFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (fileData.getFilePath().size() != 0) {
       try {
@@ -48,7 +49,15 @@ void monio::Writer::openFile(const FileData& fileData) {
   }
 }
 
+void monio::Writer::closeFile() {
+  oops::Log::debug() << "Writer::closeFile()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    file_->close();
+  }
+}
+
 void monio::Writer::writeData(const FileData& fileData) {
+  oops::Log::debug() << "Writer::writeData()" << std::endl;
   writeMetadata(fileData.getMetadata());
   writeVariablesData(fileData);
 }
