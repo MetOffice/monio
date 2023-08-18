@@ -55,7 +55,6 @@ monio/Writer.h
 )
 
 set(MONIO_LIB_DEP oops atlas NetCDF::NetCDF_CXX MPI::MPI_CXX)
-#set(MONIO_LIB_DEP oops atlas Boost::boost NetCDF::NetCDF_CXX MPI::MPI_CXX)
 
 ecbuild_add_library(TARGET ${PROJECT_NAME}
                     SOURCES ${monio_src_files}
@@ -65,7 +64,6 @@ ecbuild_add_library(TARGET ${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
 target_link_libraries(${PROJECT_NAME} PUBLIC NetCDF::NetCDF_CXX)
-#target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
 target_link_libraries(${PROJECT_NAME} PUBLIC atlas)
 target_link_libraries(${PROJECT_NAME} PUBLIC oops)
 
