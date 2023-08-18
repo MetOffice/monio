@@ -20,22 +20,20 @@ namespace monio {
 class FileData {
  public:
   FileData();
-  explicit FileData(const std::string filePath);
-  FileData(const std::string filePath, const util::DateTime date);
+  explicit FileData(const util::DateTime date);
 
+  void clearData();
   bool isInitialised() const;
 
   Data& getData();
   const Data& getData() const;
   Metadata& getMetadata();
   const Metadata& getMetadata() const;
-  const std::string& getFilePath() const;
   const util::DateTime& getDate() const;
   std::vector<size_t>& getLfricAtlasMap();
   const std::vector<size_t>& getLfricAtlasMap() const;
   const std::vector<util::DateTime>& getDateTimes() const;
 
-  void setFilePath(std::string);
   void setDate(util::DateTime);
   void setLfricAtlasMap(std::vector<size_t>);
   void setDateTimes(std::vector<util::DateTime>);
@@ -44,7 +42,6 @@ class FileData {
   Data data_;
   Metadata metadata_;
 
-  std::string filePath_;
   util::DateTime date_;
   std::vector<size_t> lfricAtlasMap_;
   std::vector<util::DateTime> dateTimes_;

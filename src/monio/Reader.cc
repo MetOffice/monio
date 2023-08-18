@@ -26,11 +26,11 @@
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
-                      const FileData& fileData):
+                      const std::string& filePath):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;
-  openFile(fileData);
+  openFile(filePath);
 }
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
@@ -40,13 +40,14 @@ monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Reader::Reader()" << std::endl;
 }
 
-void monio::Reader::openFile(const FileData& fileData) {
+void monio::Reader::openFile(const std::string& filePath) {
   oops::Log::debug() << "Reader::openFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (fileData.getFilePath().size() != 0) {
+    if (filePath.size() != 0) {
       try {
-        file_ = std::make_unique<File>(fileData.getFilePath(), netCDF::NcFile::read);
+        file_ = std::make_unique<File>(filePath, netCDF::NcFile::read);
       } catch (netCDF::exceptions::NcException& exception) {
+        closeFile();
         utils::throwException("Reader::openFile()> An exception occurred while accessing File...");
       }
     }
@@ -131,14 +132,18 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
           dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
           break;
         }
-        default:
+        default: {
+          closeFile();
           utils::throwException("Reader::readDatumAtTime()> Data type not coded for...");
+        }
       }
-      if (dataContainer != nullptr)
+      if (dataContainer != nullptr) {
         fileData.getData().addContainer(dataContainer);
-      else
+      } else {
+        closeFile();
         utils::throwException("Reader::readDatumAtTime()> "
            "An exception occurred while creating data container...");
+      }
     } else {
       oops::Log::debug() << "Reader::readDatumAtTime()> DataContainer \""
         << varName << "\" aleady defined." << std::endl;
@@ -196,23 +201,27 @@ void monio::Reader::readFullDatum(FileData& fileData,
         dataContainer = std::static_pointer_cast<DataContainerBase>(dataContainerInt);
         break;
       }
-      default:
+      default: {
+        closeFile();
         utils::throwException("Reader::readFullDatum()> Data type not coded for...");
+      }
     }
 
-    if (dataContainer != nullptr)
+    if (dataContainer != nullptr) {
       fileData.getData().addContainer(dataContainer);
-    else
+    } else {
+      closeFile();
       utils::throwException("Reader::readFullDatum()> "
           "An exception occurred while creating data container...");
+    }
   }
 }
 
 monio::File& monio::Reader::getFile() {
   oops::Log::debug() << "Reader::getFile()" << std::endl;
-  if (file_ == nullptr)
+  if (file_ == nullptr) {
     utils::throwException("Reader::getFile()> File has not been initialised...");
-
+  }
   return *file_;
 }
 
@@ -234,7 +243,8 @@ std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordDa
     }
     return coordContainers;
   } else {
-      utils::throwException("Reader::getCoordData()> Incorrect number of coordinate axes...");
+    closeFile();
+    utils::throwException("Reader::getCoordData()> Incorrect number of coordinate axes...");
   }
 }
 
@@ -246,8 +256,10 @@ size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTim
   }
 
   for (size_t timeStep = 0; timeStep < fileData.getDateTimes().size(); ++timeStep) {
-    if (fileData.getDateTimes()[timeStep] == dateTime)
+    if (fileData.getDateTimes()[timeStep] == dateTime) {
       return timeStep;
+    }
   }
+  closeFile();
   utils::throwException("Reader::findTimeStep()> DateTime specified not located in file...");
 }

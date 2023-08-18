@@ -35,20 +35,10 @@ class AtlasWriter {
   AtlasWriter& operator=( AtlasWriter&&)      = delete;  //!< Deleted move assignment
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
-  void populateFileDataWithFieldSet(FileData& fileData,
-                              const atlas::FieldSet& fieldSet);
-
-  void populateFileDataWithLfricFieldSet(FileData& fileData,
-                                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                                         atlas::FieldSet& fieldSet,
-                                   const std::vector<size_t>& lfricToAtlasMap);
+  void populateFileDataWithField(FileData& fileData,
+                           const atlas::Field& field);
 
  private:
-  void populateMetadataWithField(Metadata& metadata,
-                           const atlas::Field& field,
-                           const consts::FieldMetadata* fieldMetadata = nullptr,
-                                 bool reverseDims = false);
-
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<size_t>& lfricToAtlasMap,
@@ -57,6 +47,10 @@ class AtlasWriter {
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<int>& dimensions);
+
+
+  void populateMetadataWithField(Metadata& metadata,
+                           const atlas::Field& field);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,

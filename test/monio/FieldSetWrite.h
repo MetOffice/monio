@@ -67,20 +67,10 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   return fieldSet;
 }
 
-void compare() {
-  oops::Log::info() << "monio::test::compare()" << std::endl;
-}
-
-/// Reads
-void readOutput(const std::string& outputFilePath) {
-  oops::Log::info() << "monio::test::readOutput()" << std::endl;
-  oops::Log::info() << "outputFilePath> " << outputFilePath << std::endl;
-}
-
 /// Writes FieldSet to file.
-void write(const std::string& outputFilePath) {
+void write(const atlas::FieldSet& fieldSet, const std::string& outputFilePath) {
   oops::Log::info() << "monio::test::write()" << std::endl;
-  oops::Log::info() << "outputFilePath> " << outputFilePath << std::endl;
+  Monio::get().writeFieldSet(fieldSet, outputFilePath);
 }
 
 /// Reads data from file and populates the FieldSet
@@ -145,19 +135,17 @@ void main() {
   initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
 
   readInput(fieldSet, fieldMetadataVec, dateTime, inputFilePath);
-
-  write(outputFilePath);
-  readOutput(outputFilePath);
+  write(fieldSet, outputFilePath);
 }
 
-class StateFull : public oops::Test{
+class FieldSetWrite : public oops::Test{
  public:
-  StateFull() {}
-  virtual ~StateFull() {}
+  FieldSetWrite() {}
+  virtual ~FieldSetWrite() {}
 
  private:
   std::string testid() const override {
-    return "monio::test::StateFull";
+    return "monio::test::FieldSetWrite";
   }
 
   void register_tests() const override {
@@ -165,7 +153,7 @@ class StateFull : public oops::Test{
 
     std::function<void(std::string&, int&, int)> mainFunction =
         [&](std::string&, int&, int) { main(); };
-    ts.push_back(eckit::testing::Test("monio/test_state_full", mainFunction));
+    ts.push_back(eckit::testing::Test("monio/test_fieldset_write", mainFunction));
   }
   void clear() const override {}
 };

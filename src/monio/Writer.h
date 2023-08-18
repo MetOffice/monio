@@ -27,7 +27,7 @@ class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
                   const atlas::idx_t mpiRankOwner,
-                  const FileData& fileData);
+                  const std::string& filePath);
 
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
                   const atlas::idx_t mpiRankOwner);
@@ -38,8 +38,11 @@ class Writer {
   Writer& operator=(Writer&&)      = delete;  //!< Deleted move assign
   Writer& operator=(const Writer&) = delete;  //!< Deleted copy assign
 
-  void openFile(const FileData& fileData);
+  void openFile(const std::string& filePath);
   void closeFile();
+
+  void writeMetadatum(const Metadata& metadata);
+  void writeDatum(const FileData& fileData);
 
   void writeMetadata(const Metadata& metadata);
   void writeData(const FileData& fileData);

@@ -36,6 +36,8 @@ class Data {
 
   std::vector<std::string> getDataContainerNames() const;
 
+  void clear();
+
  private:
   std::map<std::string, std::shared_ptr<DataContainerBase>> dataContainers_;
 };

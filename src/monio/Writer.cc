@@ -22,11 +22,11 @@
 
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
                       const atlas::idx_t mpiRankOwner,
-                      const FileData& fileData) :
+                      const std::string& filePath) :
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Writer::Writer()" << std::endl;
-  openFile(fileData);
+  openFile(filePath);
 }
 
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
@@ -36,13 +36,14 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "Writer::Writer()" << std::endl;
 }
 
-void monio::Writer::openFile(const FileData& fileData) {
+void monio::Writer::openFile(const std::string& filePath) {
   oops::Log::debug() << "Writer::openFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (fileData.getFilePath().size() != 0) {
+    if (filePath.size() != 0) {
       try {
-        file_ = std::make_unique<File>(fileData.getFilePath(), netCDF::NcFile::replace);
+        file_ = std::make_unique<File>(filePath, netCDF::NcFile::replace);
       } catch (netCDF::exceptions::NcException& exception) {
+        closeFile();
         utils::throwException("Writer::openFile()> An exception occurred while creating File...");
       }
     }
@@ -53,6 +54,14 @@ void monio::Writer::closeFile() {
   oops::Log::debug() << "Writer::closeFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     file_->close();
+    file_.release();
+  }
+}
+
+void monio::Writer::writeMetadatum(const Metadata& metadata) {
+  oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    getFile().writeMetadata(metadata);
   }
 }
 
@@ -93,8 +102,10 @@ void monio::Writer::writeData(const FileData& fileData) {
           getFile().writeSingleDatum(varName, dataContainerInt->getData());
           break;
         }
-        default:
+        default: {
+          closeFile();
           utils::throwException("Writer::writeVariablesData()> Data type not coded for...");
+        }
       }
     }
   }
@@ -102,8 +113,8 @@ void monio::Writer::writeData(const FileData& fileData) {
 
 monio::File& monio::Writer::getFile() {
   oops::Log::debug() << "Writer::getFile()" << std::endl;
-  if (file_ == nullptr)
+  if (file_ == nullptr) {
     utils::throwException("Writer::getFile()> File has not been initialised...");
-
+  }
   return *file_;
 }

@@ -24,6 +24,7 @@ namespace utils {
   std::string strTolower(std::string input);
 
   bool strToBool(std::string input);
+  bool fileExists(std::string path);
 
   template<typename T1, typename T2>
   std::vector<T1> extractKeys(std::map<T1, T2> const& inputMap);

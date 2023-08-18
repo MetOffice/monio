@@ -27,7 +27,7 @@ class Reader {
  public:
   explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
                   const atlas::idx_t mpiRankOwner,
-                  const FileData& fileData);
+                  const std::string& filePath);
 
   explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
                   const atlas::idx_t mpiRankOwner);
@@ -38,7 +38,7 @@ class Reader {
   Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
-  void openFile(const FileData& fileData);
+  void openFile(const std::string& filePath);
   void closeFile();
 
   void readMetadata(FileData& fileData);

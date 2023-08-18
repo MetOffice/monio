@@ -46,6 +46,7 @@ class File {
                                            std::vector<T>& dataVec);
 
   void writeMetadata(const Metadata& metadata);
+
   template<typename T> void writeSingleDatum(const std::string& varName,
                                              const std::vector<T>& dataVec);
 
