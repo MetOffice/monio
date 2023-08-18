@@ -45,11 +45,11 @@ void testFunction() {
   if (inputFilePath.exists() == false) {
     throw eckit::CantOpenFile(inputFilePath + " file not found...");
   } else {
-    monio::FileData firstFileData(inputFilePath);
+    monio::FileData firstFileData;
 
     monio::Reader reader(atlas::mpi::comm(),
                          monio::consts::kMPIRankOwner,
-                         firstFileData);
+                         inputFilePath);
 
     reader.readMetadata(firstFileData);
     reader.readAllData(firstFileData);
@@ -57,10 +57,12 @@ void testFunction() {
     monio::Writer writer(atlas::mpi::comm(),
                          monio::consts::kMPIRankOwner,
                          outputFilePath);
+
+    writer.writeMetadata(firstFileData.getMetadata());
     writer.writeData(firstFileData);
 
-    monio::FileData secondFileData(outputFilePath);
-    reader.openFile(secondFileData);
+    monio::FileData secondFileData;
+    reader.openFile(outputFilePath);
 
     reader.readMetadata(secondFileData);
     if (firstFileData.getMetadata() == secondFileData.getMetadata()) {

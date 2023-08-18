@@ -31,6 +31,8 @@ class File {
   File& operator=(File&&)      = delete;  //!< Deleted move assignment
   File& operator=(const File&) = delete;  //!< Deleted copy assignment
 
+  void close();
+
   void readMetadata(Metadata& metadata);
   void readMetadata(Metadata& metadata,
               const std::vector<std::string>& varNames);
@@ -44,6 +46,7 @@ class File {
                                            std::vector<T>& dataVec);
 
   void writeMetadata(const Metadata& metadata);
+
   template<typename T> void writeSingleDatum(const std::string& varName,
                                              const std::vector<T>& dataVec);
 

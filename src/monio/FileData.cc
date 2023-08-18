@@ -12,16 +12,14 @@ monio::FileData::FileData() :
   data_(),
   metadata_() {}
 
-monio::FileData::FileData(const std::string filePath, const util::DateTime date) :
+monio::FileData::FileData(const util::DateTime date) :
   data_(),
   metadata_(),
-  filePath_(filePath),
   date_(date) {}
 
-monio::FileData::FileData(const std::string filePath) :
-  data_(),
-  metadata_(),
-  filePath_(filePath) {}
+void monio::FileData::clearData() {
+  data_.clear();
+}
 
 bool monio::FileData::isInitialised() const {
   return lfricAtlasMap_.size() > 0;
@@ -43,10 +41,6 @@ const monio::Metadata& monio::FileData::getMetadata() const {
   return metadata_;
 }
 
-const std::string& monio::FileData::getFilePath() const {
-  return filePath_;
-}
-
 std::vector<size_t>& monio::FileData::getLfricAtlasMap() {
   return lfricAtlasMap_;
 }
@@ -57,10 +51,6 @@ const std::vector<size_t>& monio::FileData::getLfricAtlasMap() const {
 
 const std::vector<util::DateTime>& monio::FileData::getDateTimes() const {
   return dateTimes_;
-}
-
-void monio::FileData::setFilePath(std::string filePath) {
-  filePath_ = filePath;
 }
 
 void monio::FileData::setDate(util::DateTime date) {

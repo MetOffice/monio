@@ -22,6 +22,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 list(APPEND monio_testinput
+  testinput/fieldset_write.yaml
   testinput/state_basic.yaml
   testinput/state_full.yaml
 )
@@ -46,6 +47,12 @@ ecbuild_add_test(TARGET monio_coding_norms
                  ARGS --quiet --recursive
                        ${PROJECT_SOURCE_DIR}/src
                        ${PROJECT_SOURCE_DIR}/test)
+
+ecbuild_add_test(TARGET  test_monio_fieldset_write
+                 SOURCES mains/TestFieldSetWrite.cc
+                 ARGS    "testinput/fieldset_write.yaml"
+                 LIBS    monio
+                 MPI     4)
 
 ecbuild_add_test(TARGET  test_monio_state_basic
                  SOURCES mains/TestStateBasic.cc

@@ -164,3 +164,7 @@ std::vector<std::string> monio::Data::getDataContainerNames() const {
   oops::Log::debug() << "Data::getDataContainerNames()" << std::endl;
   return utils::extractKeys(dataContainers_);
 }
+
+void monio::Data::clear() {
+  dataContainers_.clear();
+}

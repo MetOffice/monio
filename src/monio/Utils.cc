@@ -9,6 +9,7 @@
 #include "Utils.h"
 
 #include <algorithm>
+#include <fstream>
 #include <memory>
 
 #include "AttributeBase.h"
@@ -55,6 +56,11 @@ bool strToBool(std::string input) {
   } else {
     throw std::invalid_argument("ERROR> Input value of \"" + input + "\" is not valid.");
   }
+}
+
+bool fileExists(std::string path) {
+  std::ifstream f(path.c_str());
+  return f.good();
 }
 
 template<typename T1, typename T2>

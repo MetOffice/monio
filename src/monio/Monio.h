@@ -18,6 +18,7 @@
 #include "AtlasWriter.h"
 #include "FileData.h"
 #include "Reader.h"
+#include "Writer.h"
 
 namespace monio {
 class Monio {
@@ -32,7 +33,7 @@ class Monio {
   Monio& operator=(Monio&&)      = delete;  //!< Deleted move assignment
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
-  void readBackground(atlas::FieldSet& localFieldSet,
+  void readState(atlas::FieldSet& localFieldSet,
                 const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 const std::string& filePath,
                 const util::DateTime& dateTime);
@@ -41,13 +42,17 @@ class Monio {
                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                const std::string& filePath);
 
+  void writeState(const atlas::FieldSet& localFieldSet,
+                  const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                  const std::string& filePath);
+
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                        const std::string& filePath,
                        const bool isLfricFormat = true);
 
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
-                     const std::string outputFilePath);
+                     const std::string& filePath);
 
  private:
   Monio(const eckit::mpi::Comm& mpiCommunicator,
@@ -77,6 +82,8 @@ class Monio {
   const std::size_t mpiRankOwner_;
 
   Reader reader_;
+  Writer writer_;
+
   AtlasReader atlasReader_;
   AtlasWriter atlasWriter_;
 

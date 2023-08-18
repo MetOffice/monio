@@ -27,7 +27,7 @@ set(MONIO_LINKER_LANGUAGE CXX)
 
 ## Dependencies
 find_package(jedicmake REQUIRED)
-find_package(MPI REQUIRED COMPONENTS CXX Fortran)
+find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
 find_package(NetCDF COMPONENTS CXX)
 find_package(eckit 1.16.1 REQUIRED COMPONENTS MPI)

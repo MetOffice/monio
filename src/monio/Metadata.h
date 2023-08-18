@@ -66,6 +66,7 @@ class Metadata {
   void deleteDimension(const std::string& dimName);
   void deleteVariable(const std::string& varName);
 
+  void clear();
   void clearGlobalAttributes();
 
   void print();

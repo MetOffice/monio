@@ -130,19 +130,21 @@ bool monio::operator==(const monio::Metadata& lhs,
 bool monio::Metadata::isDimDefined(const std::string& dimName) {
   oops::Log::debug() << "Metadata::isDimDefined()" << std::endl;
   auto it = dimensions_.find(dimName);
-  if (it != dimensions_.end())
+  if (it != dimensions_.end()) {
     return true;
-  else
+  } else {
     return false;
+  }
 }
 
 int monio::Metadata::getDimension(const std::string& dimName) {
   oops::Log::debug() << "Metadata::getDimension()" << std::endl;
-  if (isDimDefined(dimName) == true)
+  if (isDimDefined(dimName) == true) {
     return dimensions_.at(dimName);
-  else
+  } else {
     utils::throwException("Metadata::getDimension()> dimension \"" +
                                 dimName + "\" not found...");
+  }
 }
 
 std::string monio::Metadata::getDimensionName(const int dimValue) {
@@ -157,11 +159,12 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
-  if (it != variables_.end())
+  if (it != variables_.end()) {
     return variables_.at(varName);
-  else
+  } else {
     utils::throwException("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
+  }
 }
 
 const std::shared_ptr<monio::Variable>
@@ -169,11 +172,12 @@ const std::shared_ptr<monio::Variable>
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
   std::shared_ptr<monio::Variable> variable;
-  if (it != variables_.end())
+  if (it != variables_.end()) {
     return variables_.at(varName);
-  else
+  } else {
     utils::throwException("Metadata::getVariable()> variable \"" +
                                 varName + "\" not found...");
+  }
 }
 
 std::vector<std::shared_ptr<monio::Variable>>
@@ -212,10 +216,10 @@ const std::vector<std::string> monio::Metadata::getVarStrAttrs(
       std::string attr = var->getStrAttr(attrName);
       varStrAttrs.push_back(attr);
   }
-  if (varNames.size() != varStrAttrs.size())
+  if (varNames.size() != varStrAttrs.size()) {
     utils::throwException("Metadata::getVarStrAttrs()> "
         "Unmatched number of variables and attributes...");
-
+  }
   return varStrAttrs;
 }
 
@@ -338,7 +342,10 @@ void monio::Metadata::deleteDimension(const std::string& dimName) {
   auto itDim = dimensions_.find(dimName);
   if (itDim != dimensions_.end()) {
     dimensions_.erase(dimName);
-  }  // No longer throwing exception
+  } else {
+    utils::throwException("Metadata::deleteDimension()> Dimension \"" +
+                               dimName + "\" not found...");
+  }
   for (const auto& varPair : variables_) {
     varPair.second->deleteDimension(dimName);
   }
@@ -353,6 +360,12 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
     utils::throwException("Metadata::deleteVariable()> Variable \"" +
                              varName + "\" not found...");
   }
+}
+
+void monio::Metadata::clear() {
+  dimensions_.clear();
+  variables_.clear();
+  globalAttrs_.clear();
 }
 
 void monio::Metadata::clearGlobalAttributes() {
@@ -374,9 +387,7 @@ void monio::Metadata::printVariables() {
     oops::Log::debug() << consts::kTabSpace <<
                           consts::kDataTypeNames[netCDFVar->getType()] <<
                            " " << netCDFVar->getName();
-
     std::vector<std::string> varDims = netCDFVar->getDimensionNames();
-
     if (varDims.size() > 0) {
       oops::Log::debug() << "(";
       for (auto it = varDims.begin(); it != varDims.end() - 1; ++it) {
@@ -386,7 +397,6 @@ void monio::Metadata::printVariables() {
     } else {
       oops::Log::debug() << std::endl;
     }
-
     std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap =
                                                         netCDFVar->getAttributes();
     for (auto const& varAttrPair : varAttrsMap) {
@@ -397,7 +407,6 @@ void monio::Metadata::printVariables() {
                             netCDFVar->getName() << ":" <<
                             netCDFAttr->getName() << " = ";
       int dataType = netCDFAttr->getType();
-
       switch (dataType) {
         case consts::eDataTypes::eDouble: {
             std::shared_ptr<monio::AttributeDouble> netCDFAttrDbl =

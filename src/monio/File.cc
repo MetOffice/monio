@@ -42,15 +42,21 @@ monio::File::File(const std::string& filePath,
 }
 
 monio::File::~File() {
-  std::cout << "File::~File() ";
-  if (fileMode_ == netCDF::NcFile::read) {
-    std::cout << "read" << std::endl;
-  } else {
-    std::cout << "write" << std::endl;
-  }
-  dataFile_->close();
+  oops::Log::debug() << "File::~File() ";
+  close();
 }
 
+void monio::File::close() {
+  oops::Log::debug() << "File::close() ";
+  if (dataFile_->isNull() == false) {
+    if (fileMode_ == netCDF::NcFile::read) {
+      oops::Log::debug() << "read" << std::endl;
+    } else {
+      oops::Log::debug() << "write" << std::endl;
+    }
+    dataFile_->close();
+  }
+}
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 
 void monio::File::readMetadata(Metadata& metadata) {
@@ -295,9 +301,9 @@ template void monio::File::readFieldDatum<int>(const std::string& varName,
 void monio::File::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "File::writeMetadata()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
-    writeDimensions(metadata);  // Should be called before readVariables()
+    writeDimensions(metadata);
     writeVariables(metadata);
-    writeAttributes(metadata);  // Global attributes
+    writeAttributes(metadata);
   } else {
     utils::throwException(
         "File::writeMetadata()> Read file accessed for writing...");
@@ -307,9 +313,12 @@ void monio::File::writeMetadata(const Metadata& metadata) {
 void monio::File::writeDimensions(const Metadata& metadata) {
   oops::Log::debug() << "File::writeDimensions()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
-    const std::map<std::string, int>& dimMap = metadata.getDimensionsMap();
-    for (auto const& dimPair : dimMap) {
-      getFile().addDim(dimPair.first, dimPair.second);
+    const std::map<std::string, int>& dimsMap = metadata.getDimensionsMap();
+    const std::multimap<std::string, netCDF::NcDim> ncDimsMap = getFile().getDims();
+    for (auto const& dimPair : dimsMap) {
+      if (ncDimsMap.find(dimPair.first) == ncDimsMap.end()) {  // If dim not already defined
+        getFile().addDim(dimPair.first, dimPair.second);
+      }
     }
   } else {
     utils::throwException("File::writeDimensions()> Read file accessed for writing...");
@@ -320,38 +329,43 @@ void monio::File::writeVariables(const Metadata& metadata) {
   oops::Log::debug() << "File::writeVariables()" << std::endl;
   if (fileMode_ != netCDF::NcFile::read) {
     const std::map<std::string, std::shared_ptr<Variable>>& varsMap = metadata.getVariablesMap();
+    const std::multimap<std::string, netCDF::NcVar> ncVarsMap = getFile().getVars();
     for (auto const& varPair : varsMap) {
-      std::shared_ptr<Variable> var = varPair.second;
-      netCDF::NcVar ncVar = getFile().addVar(var->getName(),
-                            std::string(consts::kDataTypeNames[var->getType()]),
-                            var->getDimensionNames());
+      if (ncVarsMap.find(varPair.first) == ncVarsMap.end()) {  // If var not already defined
+        std::shared_ptr<Variable> var = varPair.second;
+        netCDF::NcVar ncVar = getFile().addVar(var->getName(),
+                              std::string(consts::kDataTypeNames[var->getType()]),
+                              var->getDimensionNames());
 
-      std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = var->getAttributes();
-      for (const auto& varAttrPair : varAttrsMap) {
-        std::shared_ptr<AttributeBase> varAttr = varAttrPair.second;
+        std::map<std::string, std::shared_ptr<AttributeBase>>& varAttrsMap = var->getAttributes();
+        for (const auto& varAttrPair : varAttrsMap) {
+          std::shared_ptr<AttributeBase> varAttr = varAttrPair.second;
 
-        switch (varAttr->getType()) {
-          case consts::eDataTypes::eDouble: {
-            std::shared_ptr<AttributeDouble> varAttrDbl =
-                          std::dynamic_pointer_cast<AttributeDouble>(varAttr);
-            ncVar.putAtt(varAttrDbl->getName(), netCDF::NcType::nc_DOUBLE, varAttrDbl->getValue());
-            break;
+          switch (varAttr->getType()) {
+            case consts::eDataTypes::eDouble: {
+              std::shared_ptr<AttributeDouble> varAttrDbl =
+                            std::dynamic_pointer_cast<AttributeDouble>(varAttr);
+              ncVar.putAtt(varAttrDbl->getName(), netCDF::NcType::nc_DOUBLE,
+                           varAttrDbl->getValue());
+              break;
+            }
+            case consts::eDataTypes::eInt: {
+              std::shared_ptr<AttributeInt> varAttrInt =
+                            std::dynamic_pointer_cast<AttributeInt>(varAttr);
+              ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT,
+                           varAttrInt->getValue());
+              break;
+            }
+            case consts::eDataTypes::eString: {
+              std::shared_ptr<AttributeString> varAttrStr =
+                            std::dynamic_pointer_cast<AttributeString>(varAttr);
+              ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
+              break;
+            }
+            default:
+              utils::throwException("File::writeVariables()> "
+                  "Variable attribute data type not coded for...");
           }
-          case consts::eDataTypes::eInt: {
-            std::shared_ptr<AttributeInt> varAttrInt =
-                          std::dynamic_pointer_cast<AttributeInt>(varAttr);
-            ncVar.putAtt(varAttrInt->getName(), netCDF::NcType::nc_INT, varAttrInt->getValue());
-            break;
-          }
-          case consts::eDataTypes::eString: {
-            std::shared_ptr<AttributeString> varAttrStr =
-                          std::dynamic_pointer_cast<AttributeString>(varAttr);
-            ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
-            break;
-          }
-          default:
-            utils::throwException("File::writeVariables()> "
-                "Variable attribute data type not coded for...");
         }
       }
     }
@@ -365,32 +379,37 @@ void monio::File::writeAttributes(const Metadata& metadata) {
   if (fileMode_ != netCDF::NcFile::read) {
     const std::map<std::string, std::shared_ptr<AttributeBase>>& globalAttrMap =
                                 metadata.getGlobalAttrsMap();
+    const std::multimap<std::string, netCDF::NcGroupAtt> ncAttsMap = getFile().getAtts();
     for (auto const& globalAttrPair : globalAttrMap) {
-      std::shared_ptr<AttributeBase> globAttr = globalAttrPair.second;
-      switch (globAttr->getType()) {
-        case consts::eDataTypes::eDouble: {
-          std::shared_ptr<AttributeDouble> globAttrDbl =
-                                           std::static_pointer_cast<AttributeDouble>(globAttr);
-          std::string globAttrName = globAttrDbl->getName();
-          getFile().putAtt(globAttrName, netCDF::NcType::nc_DOUBLE, globAttrDbl->getValue());
-          break;
+      if (ncAttsMap.find(globalAttrPair.first) == ncAttsMap.end()) {  // If attr not already defined
+        std::shared_ptr<AttributeBase> globAttr = globalAttrPair.second;
+        switch (globAttr->getType()) {
+          case consts::eDataTypes::eDouble: {
+            std::shared_ptr<AttributeDouble> globAttrDbl =
+                                             std::static_pointer_cast<AttributeDouble>(globAttr);
+            std::string globAttrName = globAttrDbl->getName();
+            getFile().putAtt(globAttrName, netCDF::NcType::nc_DOUBLE,
+                             globAttrDbl->getValue());
+            break;
+          }
+          case consts::eDataTypes::eInt: {
+            std::shared_ptr<AttributeInt> globAttrInt =
+                                          std::static_pointer_cast<AttributeInt>(globAttr);
+            getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT,
+                             globAttrInt->getValue());
+            break;
+          }
+          case consts::eDataTypes::eString: {
+            std::shared_ptr<AttributeString> globAttrStr =
+                                             std::static_pointer_cast<AttributeString>(globAttr);
+            std::string globAttrName = globAttrStr->getName();
+            getFile().putAtt(globAttrName, globAttrStr->getValue());
+            break;
+          }
+          default:
+            utils::throwException("File::writeAttributes()> "
+                "Variable attribute data type not coded for...");
         }
-        case consts::eDataTypes::eInt: {
-          std::shared_ptr<AttributeInt> globAttrInt =
-                                        std::static_pointer_cast<AttributeInt>(globAttr);
-          getFile().putAtt(globAttrInt->getName(), netCDF::NcType::nc_INT, globAttrInt->getValue());
-          break;
-        }
-        case consts::eDataTypes::eString: {
-          std::shared_ptr<AttributeString> globAttrStr =
-                                           std::static_pointer_cast<AttributeString>(globAttr);
-          std::string globAttrName = globAttrStr->getName();
-          getFile().putAtt(globAttrName, globAttrStr->getValue());
-          break;
-        }
-        default:
-          utils::throwException("File::writeAttributes()> "
-              "Variable attribute data type not coded for...");
       }
     }
   } else {

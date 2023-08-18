@@ -25,12 +25,12 @@ namespace monio {
 /// \brief Top-level class reads from a NetCDF file and populates FileData
 class Reader {
  public:
-  Reader(const eckit::mpi::Comm& mpiCommunicator,
-         const atlas::idx_t mpiRankOwner,
-         const FileData& fileData);
+  explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
+                  const atlas::idx_t mpiRankOwner,
+                  const std::string& filePath);
 
-  Reader(const eckit::mpi::Comm& mpiCommunicator,
-         const atlas::idx_t mpiRankOwner);
+  explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
+                  const atlas::idx_t mpiRankOwner);
 
   Reader()                         = delete;  //!< Deleted default constructor
   Reader(Reader&&)                 = delete;  //!< Deleted move constructor
@@ -38,7 +38,9 @@ class Reader {
   Reader& operator=(Reader&&)      = delete;  //!< Deleted move assignment
   Reader& operator=(const Reader&) = delete;  //!< Deleted copy assignment
 
-  void openFile(const FileData& fileData);
+  void openFile(const std::string& filePath);
+  void closeFile();
+
   void readMetadata(FileData& fileData);
 
   void readAllData(FileData& fileData);
@@ -55,10 +57,6 @@ class Reader {
                       const std::string& variableName,
                       const size_t timeStep,
                       const std::string& timeDimName);
-
-  std::vector<std::string> getVarStrAttrs(const FileData& fileData,
-                                          const std::vector<std::string>& varNames,
-                                          const std::string& attrName);
 
   std::vector<std::shared_ptr<DataContainerBase>> getCoordData(FileData& fileData,
                                                   const std::vector<std::string>& coordNames);
