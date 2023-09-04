@@ -24,17 +24,11 @@ rm -f "${HERE}/bundle"
 ln -s '..' "${HERE}/bundle"
 
 # -- Configure
-#ecbuild -S "${HERE}" -DCMAKE_BUILD_TYPE=Debug -DMPI_ARGS="--oversubscribe"
 cmake -B . -S "${HERE}" -DCMAKE_BUILD_TYPE=Debug -DMPI_ARGS="--oversubscribe"
-# -- dump cmake error and output
-# if ! ecbuild -S "${HERE}" -DMPI_ARGS="--oversubscribe"; then
-#     cat ./CMakeFiles/CMakeOutput.log
-#     cat ./CMakeFiles/CMakeError.log
-# fi
+
 
 # -- Build
 # VERBOSE=1 make -j "${NPROC}"
-# make -j "${NPROC}"
 cmake --build . -j "${NPROC}"
 
 
