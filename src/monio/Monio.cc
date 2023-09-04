@@ -265,11 +265,11 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
   }
   if (filePath.length() != 0) {
     try {
+      FileData fileData;
       writer_.openFile(filePath);
       for (const auto& localField : localFieldSet) {
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          FileData fileData;
           std::shared_ptr<monio::DataContainerBase> dataContainer = nullptr;
           atlasWriter_.populateFileDataWithField(fileData, globalField);
           writer_.writeMetadata(fileData.getMetadata());
