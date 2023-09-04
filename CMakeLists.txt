@@ -18,6 +18,7 @@ set(CMAKE_DIRECTORY_LABELS ${PROJECT_NAME})
 set(ECBUILD_DEFAULT_BUILD_TYPE Release)
 set(ENABLE_MPI ON CACHE BOOL "Compile with MPI")
 
+find_package(ecbuild)
 include(ecbuild_system NO_POLICY_SCOPE)
 ecbuild_requires_macro_version(2.7)
 
