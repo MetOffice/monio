@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: jedi-self-hosted
+    runs-on: jedi-self-hosted-rg
     steps:
       - name: checkout current repo
         uses: actions/checkout@v3
