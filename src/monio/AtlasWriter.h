@@ -71,5 +71,7 @@ class AtlasWriter {
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;
+
+  int dimCount_ = 0;  // Used for automatic creation of dimension names
 };
 }  // namespace monio

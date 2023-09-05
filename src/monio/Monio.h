@@ -71,10 +71,11 @@ class Monio {
                        const std::string& timeVarName,
                        const std::string& timeOriginName);
 
-  // This function returns copies of FileData by design
-  FileData getFileData(const std::string& gridName);
+  FileData getFileData(const std::string& gridName);  // This function returns copies by design
 
   bool fileDataExists(const std::string& gridName) const;
+
+  void cleanFileData(FileData& fileData);
 
   static Monio* this_;
 

@@ -46,7 +46,6 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     Metadata& metadata = fileData.getMetadata();
     Data& data = fileData.getData();
     // Create dims
-    int dimCount = 0;
     std::vector<int> dimVec = field.shape();
     if (field.metadata().get<bool>("global") == false) {
       dimVec[0] = utilsatlas::getSizeOwned(field);
@@ -54,9 +53,9 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     for (auto& dimSize : dimVec) {
       std::string dimName = metadata.getDimensionName(dimSize);
       if (dimName == consts::kNotFoundError) {
-        dimName = "dim" + std::to_string(dimCount);
+        dimName = "dim" + std::to_string(dimCount_);
         fileData.getMetadata().addDimension(dimName, dimSize);
-        dimCount++;
+        dimCount_++;
       }
     }
     populateMetadataWithField(metadata, field);
