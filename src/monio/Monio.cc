@@ -265,7 +265,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
   }
   if (filePath.length() != 0) {
     try {
-      FileData fileData;
+      FileData fileData;  // Object needs to persist across fields for correct metadata creation
       writer_.openFile(filePath);
       for (const auto& localField : localFieldSet) {
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
@@ -274,7 +274,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
           atlasWriter_.populateFileDataWithField(fileData, globalField);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();
+          fileData.clearData();  // Globalised field data no longer required
         }
       }
       writer_.closeFile();
