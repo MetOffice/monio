@@ -235,12 +235,11 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         FileData fileData = getFileData(grid.name());
         cleanFileData(fileData);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          //std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-          //atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
+          // std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+          // atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
           //                                               globalFieldSet, lfricAtlasMap);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-
         }
       }
       writer_.closeFile();
