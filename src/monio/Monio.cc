@@ -226,13 +226,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   }
   if (filePath.length() != 0) {
     try {
-      for (const auto& fieldMetadata : fieldMetadataVec) {
-        auto& localField = localFieldSet[fieldMetadata.jediName];
-        atlas::Field globalField = utilsatlas::getGlobalField(localField);
-
-      }
-
-
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
