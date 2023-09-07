@@ -42,7 +42,8 @@ namespace utilsatlas {
 
   atlas::Field getGlobalField(const atlas::Field& field);
   atlas::Field getFormattedField(atlas::Field& inputField,
-                                 const consts::FieldMetadata& fieldMetadata);
+                           const std::string& writeName,
+                           const bool copyFirstLevel);
 
   template<typename T>
   atlas::Field copySurfaceLevel(const atlas::Field& inputField,

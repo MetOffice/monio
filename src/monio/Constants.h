@@ -143,6 +143,9 @@ const std::string_view kTabSpace = "    ";
 const std::string_view kLevelsSearchTerm = "levels";
 const std::string_view kNotFoundError = "NOT_FOUND";
 
+const std::string_view kToBeDerived = "TO BE DERIVED";
+const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /// Increment file metadata attributes
 /// Attribute names

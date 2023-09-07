@@ -41,11 +41,11 @@ monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
 
 void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
                                              const atlas::Field& field) {
-  oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithFieldSet()" << std::endl;
+  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     Metadata& metadata = fileData.getMetadata();
     Data& data = fileData.getData();
-    // Create dims
+    // Create dimensions
     std::vector<int> dimVec = field.shape();
     if (field.metadata().get<bool>("global") == false) {
       dimVec[0] = utilsatlas::getSizeOwned(field);
@@ -58,6 +58,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
         dimCount_++;
       }
     }
+    // Create metadata
     populateMetadataWithField(metadata, field);
     // Create lon and lat
     std::vector<atlas::PointLonLat> atlasLonLat = utilsatlas::getAtlasCoords(field);
@@ -87,6 +88,32 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
   }
 }
 
+void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
+                                                   atlas::Field& field,
+                                             const std::string& writeName,
+                                             const bool copyFirstLevel) {
+  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    Metadata& metadata = fileData.getMetadata();
+    Data& data = fileData.getData();
+    std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+    // Create dimensions
+    metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
+    metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
+    metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
+
+    // Create metadata
+    populateMetadataWithField(metadata, field);
+
+    // Data
+    atlas::Field formattedField = utilsatlas::getFormattedField(field, writeName, copyFirstLevel);
+
+    populateDataWithField(data, formattedField, lfricAtlasMap);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
                                              const atlas::Field& field) {
   oops::Log::debug() << "AtlasWriter::populateMetadataWithField()" << std::endl;
@@ -111,13 +138,12 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
 void monio::AtlasWriter::populateDataContainerWithField(
                                      std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                const atlas::Field& field,
-                               const std::vector<size_t>& lfricToAtlasMap,
-                               const size_t fieldSize) {
+                               const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-
+    int fieldSize = utilsatlas::getSizeOwned(field);
     switch (atlasType.kind()) {
       case atlasType.KIND_INT32: {
         if (dataContainer == nullptr) {
@@ -212,11 +238,10 @@ void monio::AtlasWriter::populateDataContainerWithField(
 
 void monio::AtlasWriter::populateDataWithField(Data& data,
                                          const atlas::Field& field,
-                                         const std::vector<size_t>& lfricToAtlasMap,
-                                         const size_t totalFieldSize) {
+                                         const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, totalFieldSize);
+  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap);
   data.addContainer(dataContainer);
 }
 

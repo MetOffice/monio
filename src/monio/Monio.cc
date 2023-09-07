@@ -226,28 +226,37 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   }
   if (filePath.length() != 0) {
     try {
-      writer_.openFile(filePath);
-      for (const auto& localField : localFieldSet) {
+      for (const auto& fieldMetadata : fieldMetadataVec) {
+        auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
-        auto& functionSpace = globalField.functionspace();
-        auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-        FileData fileData = getFileData(grid.name());
-        cleanFileData(fileData);
+      }
+
+
+      auto& functionSpace = localFieldSet[0].functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+      FileData fileData = getFileData(grid.name());
+      cleanFileData(fileData);
+      writer_.openFile(filePath);
+
+      for (const auto& fieldMetadata : fieldMetadataVec) {
+        auto& localField = localFieldSet[fieldMetadata.jediName];
+        atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          // std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-          // atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
-          //                                               globalFieldSet, lfricAtlasMap);
+          atlasWriter_.populateFileDataWithField(fileData,
+                                                 globalField,
+                                                 fieldMetadata.lfricWriteName,
+                                                 fieldMetadata.copyFirstLevel);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
+          fileData.clearData();  // Globalised field data no longer required
         }
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
-      utils::throwException("Monio::writeFieldSet()> An exception occurred: " +
-                              exceptionMessage);
+      utils::throwException("Monio::writeIncrements()> An exception occurred: " + exceptionMessage);
     }
   } else {
       oops::Log::info() << "Monio::writeIncrements()> No file path supplied. "
@@ -269,7 +278,6 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       for (const auto& localField : localFieldSet) {
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          std::shared_ptr<monio::DataContainerBase> dataContainer = nullptr;
           atlasWriter_.populateFileDataWithField(fileData, globalField);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
@@ -280,8 +288,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
-      utils::throwException("Monio::writeFieldSet()> An exception occurred: " +
-                            exceptionMessage);
+      utils::throwException("Monio::writeFieldSet()> An exception occurred: " + exceptionMessage);
     }
   } else {
     oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "

@@ -38,11 +38,15 @@ class AtlasWriter {
   void populateFileDataWithField(FileData& fileData,
                            const atlas::Field& field);
 
+  void populateFileDataWithField(FileData& fileData,
+                                 atlas::Field& field,
+                           const std::string& writeName,
+                           const bool copyFirstLevel = false);
+
  private:
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
-                                const std::vector<size_t>& lfricToAtlasMap,
-                                const size_t fieldSize);
+                                const std::vector<size_t>& lfricToAtlasMap);
 
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
@@ -54,8 +58,7 @@ class AtlasWriter {
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
-                       const std::vector<size_t>& lfricToAtlasMap,
-                       const size_t totalFieldSize);
+                       const std::vector<size_t>& lfricToAtlasMap);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,

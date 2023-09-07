@@ -157,16 +157,16 @@ atlas::Field getGlobalField(const atlas::Field& field) {
 }
 
 atlas::Field getFormattedField(atlas::Field& inputField,
-                               const consts::FieldMetadata& fieldMetadata) {
+                         const std::string& writeName,
+                         const bool copyFirstLevel) {
   oops::Log::debug() << "AtlasWriter::processField()" << std::endl;
   atlas::FunctionSpace functionSpace = inputField.functionspace();
   atlas::array::DataType atlasType = inputField.datatype();
 
   // WARNING - This name-check is an LFRic-Lite specific convention...
-  if (fieldMetadata.lfricWriteName != "TO BE DERIVED" &&
-      fieldMetadata.lfricWriteName != "TO BE IMPLEMENTED") {
-    if (fieldMetadata.copyFirstLevel == true) {
-      atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.lfricWriteName) |
+  if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
+    if (copyFirstLevel == true) {
+      atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
                                          atlas::option::levels(inputField.levels() + 1);
       switch (atlasType.kind()) {
@@ -181,7 +181,7 @@ atlas::Field getFormattedField(atlas::Field& inputField,
         }
       }
     } else {
-      inputField.metadata().set("name", fieldMetadata.lfricWriteName);
+      inputField.metadata().set("name", writeName);
     }
   }
   return inputField;
