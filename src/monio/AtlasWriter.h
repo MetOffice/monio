@@ -27,7 +27,7 @@ namespace monio {
 class AtlasWriter {
  public:
   AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
-              const atlas::idx_t mpiRankOwner);
+              const int mpiRankOwner);
 
   AtlasWriter()                               = delete;  //!< Deleted default constructor
   AtlasWriter(AtlasWriter&&)                  = delete;  //!< Deleted move constructor

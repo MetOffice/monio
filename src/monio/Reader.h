@@ -26,11 +26,11 @@ namespace monio {
 class Reader {
  public:
   explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
-                  const atlas::idx_t mpiRankOwner,
+                  const int mpiRankOwner,
                   const std::string& filePath);
 
   explicit Reader(const eckit::mpi::Comm& mpiCommunicator,
-                  const atlas::idx_t mpiRankOwner);
+                  const int mpiRankOwner);
 
   Reader()                         = delete;  //!< Deleted default constructor
   Reader(Reader&&)                 = delete;  //!< Deleted move constructor

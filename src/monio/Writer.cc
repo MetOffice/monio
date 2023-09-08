@@ -21,7 +21,7 @@
 #include "oops/util/Logger.h"
 
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
-                      const atlas::idx_t mpiRankOwner,
+                      const int mpiRankOwner,
                       const std::string& filePath) :
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
@@ -30,7 +30,7 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
-                      const atlas::idx_t mpiRankOwner) :
+                      const int mpiRankOwner) :
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Writer::Writer()" << std::endl;

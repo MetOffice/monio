@@ -14,7 +14,7 @@
 #include "UtilsAtlas.h"
 
 monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
-                                    const atlas::idx_t mpiRankOwner):
+                                    const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
@@ -91,11 +91,11 @@ void monio::AtlasReader::populateField(atlas::Field& field,
                                        const bool copyFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  atlas::idx_t numLevels = field.levels();
+  int numLevels = field.levels();
   if (copyFirstLevel == true) {
     numLevels -= 1;
   }
-  for (atlas::idx_t j = 0; j < numLevels; ++j) {
+  for (int j = 0; j < numLevels; ++j) {
     for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
       if (std::size_t(index) <= dataVec.size()) {
@@ -126,14 +126,14 @@ void monio::AtlasReader::populateField(atlas::Field& field,
                                        const std::vector<T>& dataVec) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
 
-  std::vector<atlas::idx_t> dimVec = field.shape();
+  std::vector<int> dimVec = field.shape();
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[consts::eHorizontal] = utilsatlas::getSizeOwned(field);
+    dimVec[consts::eHorizontal] = utilsatlas::getHorizontalSize(field);
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  atlas::idx_t numLevels = field.levels();
-  for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
-    for (atlas::idx_t j = 0; j < numLevels; ++j) {
+  int numLevels = field.levels();
+  for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+    for (int j = 0; j < numLevels; ++j) {
       int index = i + (j * dimVec[consts::eHorizontal]);
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];

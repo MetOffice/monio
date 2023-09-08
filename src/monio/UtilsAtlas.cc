@@ -60,7 +60,7 @@ std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::Field& field) {
   if (field.metadata().get<bool>("global") == false) {
     auto lonLatField = field.functionspace().lonlat();
     auto lonLatView = atlas::array::make_view<double, 2>(lonLatField);
-    for (int i = 0; i < getSizeOwned(field); ++i) {
+    for (int i = 0; i < getHorizontalSize(field); ++i) {
       atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, consts::eLongitude),
                                                lonLatView(i, consts::eLatitude)));
     }
@@ -200,18 +200,28 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
 }
 
 
-atlas::idx_t getSizeOwned(const atlas::Field& field) {
+int getHorizontalSize(const atlas::Field& field) {
   atlas::Field ghostField = field.functionspace().ghost();
-  atlas::idx_t sizeOwned = 0;
+  int size = 0;
   auto ghostView = atlas::array::make_view<int, 1>(ghostField);
-  for (atlas::idx_t i = ghostField.size() - 1; i >= 0; --i) {
+  for (int i = ghostField.size() - 1; i >= 0; --i) {
     if (ghostView(i) == 0) {
-      sizeOwned = i + 1;
+      size = i + 1;
       break;
     }
   }
-  return sizeOwned;
+  return size;
 }
+
+int getDataSize(const atlas::Field& field) {
+  std::vector<int> dimVec = field.shape();
+  int size = 1;
+  for (const auto& dim : dimVec) {
+    size *= dim;
+  }
+  return size;
+}
+
 
 template<typename T>
 atlas::Field copySurfaceLevel(const atlas::Field& inputField,
@@ -222,8 +232,8 @@ atlas::Field copySurfaceLevel(const atlas::Field& inputField,
   auto copiedFieldView = atlas::array::make_view<T, 2>(copiedField);
   auto inputFieldView = atlas::array::make_view<T, 2>(inputField);
   std::vector<int> dimVec = inputField.shape();
-  for (atlas::idx_t j = 0; j < dimVec[consts::eVertical]; ++j) {
-    for (atlas::idx_t i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+  for (int j = 0; j < dimVec[consts::eVertical]; ++j) {
+    for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
       copiedFieldView(i, j + 1) = inputFieldView(i, j);
     }
   }

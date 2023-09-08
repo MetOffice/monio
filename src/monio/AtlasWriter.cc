@@ -21,19 +21,8 @@
 #include "UtilsAtlas.h"
 #include "Writer.h"
 
-namespace {
-  template<typename T>
-  T productOfVector(const std::vector<T>& vectorToMultiply) {
-    T sum = 1;
-    std::for_each(begin(vectorToMultiply), end(vectorToMultiply), [&](T elem) {
-      sum *= elem;
-    });
-    return sum;
-  }
-}  // anonymous namespace
-
 monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
-                                    const atlas::idx_t mpiRankOwner):
+                                    const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
@@ -48,7 +37,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     // Create dimensions
     std::vector<int> dimVec = field.shape();
     if (field.metadata().get<bool>("global") == false) {
-      dimVec[0] = utilsatlas::getSizeOwned(field);
+      dimVec[0] = utilsatlas::getHorizontalSize(field);
     }
     for (auto& dimSize : dimVec) {
       std::string dimName = metadata.getDimensionName(dimSize);
@@ -124,7 +113,7 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
 
   // Check if Field is not global
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[0] = utilsatlas::getSizeOwned(field);  // If so, get the 'size owned' by the Fields
+    dimVec[0] = utilsatlas::getHorizontalSize(field);  // If so, get the 2D size of the Field
   }
   for (auto& dimSize : dimVec) {
     std::string dimName = metadata.getDimensionName(dimSize);
@@ -143,7 +132,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-    int fieldSize = utilsatlas::getSizeOwned(field);
+    int fieldSize = utilsatlas::getDataSize(field);
     switch (atlasType.kind()) {
       case atlasType.KIND_INT32: {
         if (dataContainer == nullptr) {
@@ -191,10 +180,11 @@ void monio::AtlasWriter::populateDataContainerWithField(
                                const atlas::Field& field,
                                const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
+  oops::Log::info() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-    int fieldSize = productOfVector(dimensions);
+    int fieldSize = utilsatlas::getDataSize(field);
     switch (atlasType.kind()) {
     case atlasType.KIND_INT32: {
       if (dataContainer == nullptr) {
@@ -259,14 +249,15 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const atlas::Field& field,
                                    const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
-  atlas::idx_t numLevels = field.levels();
+  int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
+    oops::Log::info() << "lfricToAtlasMap.size()> " << lfricToAtlasMap.size() << ", numLevels> " << numLevels << ", dataVec.size()> " << dataVec.size() << std::endl;
     utils::throwException("AtlasWriter::populateDataVec()> "
                              "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
   for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
-    for (atlas::idx_t j = 0; j < numLevels; ++j) {
+    for (int j = 0; j < numLevels; ++j) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
       dataVec[index] = fieldView(i, j);
     }
@@ -289,8 +280,8 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (atlas::idx_t i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
-    for (atlas::idx_t j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
+  for (int i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
+    for (int j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
       int index = j + (i * dimensions[consts::eVertical]);
       dataVec[index] = fieldView(i, j);
     }

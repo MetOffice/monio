@@ -186,7 +186,7 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-const atlas::idx_t kMPIRankOwner = 0;
+const int kMPIRankOwner = 0;
 
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;

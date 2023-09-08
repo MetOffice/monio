@@ -50,7 +50,8 @@ namespace utilsatlas {
                                 const atlas::FunctionSpace& functionSpace,
                                 const atlas::util::Config& atlasOptions);
 
-  atlas::idx_t getSizeOwned(const atlas::Field& field);
+  int getHorizontalSize(const atlas::Field& field);  // Just 2D size
+  int getDataSize(const atlas::Field& field);  // Full 3D size of data
 
   int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
 }  // namespace utilsatlas
