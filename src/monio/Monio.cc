@@ -241,7 +241,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-
           std::string writeName = isLfricFormat == true ? fieldMetadata.lfricWriteName :
                                                           globalField.name();
           atlasWriter_.populateFileDataWithField(fileData,
