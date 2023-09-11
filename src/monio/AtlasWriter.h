@@ -36,17 +36,19 @@ class AtlasWriter {
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
   void populateFileDataWithField(FileData& fileData,
-                           const atlas::Field& field);
+                           const atlas::Field& field,
+                           const std::string& writeName);
 
   void populateFileDataWithField(FileData& fileData,
                                  atlas::Field& field,
-                           const std::string& writeName,
-                           const bool copyFirstLevel = false);
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& writeName);
 
  private:
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
-                                const std::vector<size_t>& lfricToAtlasMap);
+                                const std::vector<size_t>& lfricToAtlasMap,
+                                const std::string& fieldName);
 
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
@@ -54,11 +56,18 @@ class AtlasWriter {
 
 
   void populateMetadataWithField(Metadata& metadata,
-                           const atlas::Field& field);
+                           const atlas::Field& field,
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& varName);
+
+  void populateMetadataWithField(Metadata& metadata,
+                           const atlas::Field& field,
+                           const std::string& varName);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
-                       const std::vector<size_t>& lfricToAtlasMap);
+                       const std::vector<size_t>& lfricToAtlasMap,
+                       const std::string& fieldName);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,

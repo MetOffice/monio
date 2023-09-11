@@ -199,7 +199,6 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
   }
 }
 
-
 int getHorizontalSize(const atlas::Field& field) {
   atlas::Field ghostField = field.functionspace().ghost();
   int size = 0;

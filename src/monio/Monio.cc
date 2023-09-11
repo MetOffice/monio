@@ -241,10 +241,13 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
+
+          std::string writeName = isLfricFormat == true ? fieldMetadata.lfricWriteName :
+                                                          globalField.name();
           atlasWriter_.populateFileDataWithField(fileData,
                                                  globalField,
-                                                 fieldMetadata.lfricWriteName,
-                                                 fieldMetadata.copyFirstLevel);
+                                                 fieldMetadata,
+                                                 writeName);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
           fileData.clearData();  // Globalised field data no longer required
@@ -276,7 +279,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       for (const auto& localField : localFieldSet) {
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          atlasWriter_.populateFileDataWithField(fileData, globalField);
+          atlasWriter_.populateFileDataWithField(fileData, globalField, globalField.name());
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
           fileData.clearData();  // Globalised field data no longer required
