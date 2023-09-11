@@ -112,9 +112,7 @@ void monio::Data::deleteContainer(const std::string& name) {
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end()) {
     dataContainers_.erase(name);
-  } else {
-    utils::throwException("DataContainer named \"" + name + "\" was not found.");
-  }
+  }  // Non-existant container is a legitimate use-case.
 }
 
 void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {

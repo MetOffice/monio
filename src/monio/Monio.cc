@@ -400,11 +400,10 @@ bool monio::Monio::fileDataExists(const std::string& gridName) const {
 
 void monio::Monio::cleanFileData(FileData& fileData) {
   fileData.getMetadata().clearGlobalAttributes();
-  // PJU FIX
-  // fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
-  // fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
-  // fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
-  // fileData.getData().deleteContainer(std::string(consts::kTileVarName));
+  fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
+  fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
+  fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
+  fileData.getData().deleteContainer(std::string(consts::kTileVarName));
 
   // Reconcile Metadata with Data
   std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();

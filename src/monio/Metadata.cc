@@ -342,10 +342,7 @@ void monio::Metadata::deleteDimension(const std::string& dimName) {
   auto itDim = dimensions_.find(dimName);
   if (itDim != dimensions_.end()) {
     dimensions_.erase(dimName);
-  } else {
-    utils::throwException("Metadata::deleteDimension()> Dimension \"" +
-                               dimName + "\" not found...");
-  }
+  }  // Non-existant dimension is a legitimate use-case.
   for (const auto& varPair : variables_) {
     varPair.second->deleteDimension(dimName);
   }
