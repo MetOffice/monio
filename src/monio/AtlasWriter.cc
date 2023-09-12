@@ -338,9 +338,11 @@ void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLf
                                                    std::string(consts::kDataFormatAtlas);
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> producedByAttr =
-      std::make_shared<AttributeString>(std::string(consts::kProducedByName), std::string(consts::kProducedByString));
+      std::make_shared<AttributeString>(std::string(consts::kProducedByName),
+                                        std::string(consts::kProducedByString));
   std::shared_ptr<monio::AttributeString> formatAttr =
-      std::make_shared<AttributeString>(std::string(consts::kDataFormatName), formatType);
+      std::make_shared<AttributeString>(std::string(consts::kDataFormatName),
+                                        formatType);
   // Add to metadata
   metadata.addGlobalAttr(formatAttr->getName(), formatAttr);
   metadata.addGlobalAttr(producedByAttr->getName(), producedByAttr);
