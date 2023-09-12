@@ -34,9 +34,9 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
 
-  void initialiseFile(const atlas::Grid& grid,
-                      const std::string& filePath,
-                      const util::DateTime& dateTime);  // Public, whilst called from LFRic-Lite
+  int initialiseFile(const atlas::Grid& grid,
+                     const std::string& filePath,
+                     const util::DateTime& dateTime);  // Public, whilst called from LFRic-Lite
 
   void readState(atlas::FieldSet& localFieldSet,
                 const std::vector<consts::FieldMetadata>& fieldMetadataVec,

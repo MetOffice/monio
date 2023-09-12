@@ -34,21 +34,28 @@ monio::Monio::~Monio() {
   delete this_;
 }
 
-void monio::Monio::initialiseFile(const atlas::Grid& grid,
-                                  const std::string& filePath,
-                                  const util::DateTime& dateTime) {
-  FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-  reader_.openFile(filePath);
-  reader_.readMetadata(fileData);
-  std::vector<std::string> meshVars =
-      fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-  reader_.readFullData(fileData, meshVars);
-  createLfricAtlasMap(fileData, grid);
+int monio::Monio::initialiseFile(const atlas::Grid& grid,
+                                 const std::string& filePath,
+                                 const util::DateTime& dateTime) {
+  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
+  int dataFormat = consts::eLfricFormat;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    FileData& fileData = createFileData(grid.name(), filePath, dateTime);
+    reader_.openFile(filePath);
+    reader_.readMetadata(fileData);
+    std::vector<std::string> meshVars =
+        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+    reader_.readFullData(fileData, meshVars);
+    createLfricAtlasMap(fileData, grid);
 
-  reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
-  createDateTimes(fileData,
-                  std::string(consts::kTimeVarName),
-                  std::string(consts::kTimeOriginName));
+    reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+    createDateTimes(fileData,
+                    std::string(consts::kTimeVarName),
+                    std::string(consts::kTimeOriginName));
+
+    dataFormat = fileData.getMetadata().getDataFormat();
+  }
+  return dataFormat;
 }
 
 void monio::Monio::readState(atlas::FieldSet& localFieldSet,

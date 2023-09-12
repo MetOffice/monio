@@ -25,6 +25,11 @@ struct FieldMetadata {
   bool copyFirstLevel;
 };
 
+enum eFileDataFormat {
+  eLfricFormat,
+  eAtlasFormat
+};
+
 enum eAtlasLonLat {
   eLongitude,
   eLatitude
