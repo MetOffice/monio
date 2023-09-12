@@ -246,7 +246,8 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
           atlasWriter_.populateFileDataWithField(fileData,
                                                  globalField,
                                                  fieldMetadata,
-                                                 writeName);
+                                                 writeName,
+                                                 isLfricFormat);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
           fileData.clearData();  // Globalised field data no longer required

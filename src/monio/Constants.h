@@ -146,6 +146,13 @@ const std::string_view kNotFoundError = "NOT_FOUND";
 const std::string_view kToBeDerived = "TO BE DERIVED";
 const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
 
+const std::string_view kProducedByName = "Produced_by";
+const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
+
+const std::string_view kDataFormatName = "Data_format";
+const std::string_view kDataFormatAtlas = "Atlas";
+const std::string_view kDataFormatLfric = "LFRic";
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /// Increment file metadata attributes
 /// Attribute names

@@ -156,6 +156,15 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
   return std::string(consts::kNotFoundError);
 }
 
+const std::string monio::Metadata::getDimensionName(const int dimValue) const {
+  for (auto it = dimensions_.begin(); it != dimensions_.end(); ++it) {
+    if (it->second == dimValue) {
+      return it->first;
+    }
+  }
+  return std::string(consts::kNotFoundError);
+}
+
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);

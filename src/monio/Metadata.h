@@ -29,6 +29,7 @@ class Metadata {
   int getDimension(const std::string& dimName);
 
   std::string getDimensionName(const int dimValue);
+  const std::string getDimensionName(const int dimValue) const;
 
   std::shared_ptr<Variable> getVariable(const std::string& varName);
   const std::shared_ptr<Variable> getVariable(const std::string& varName) const;
