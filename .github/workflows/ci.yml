@@ -10,16 +10,18 @@ on:
 jobs:
   build:
     runs-on: jedi-self-hosted-rg
+    env:
+      PR_NUMBER: ${{ github.event.number }}
     steps:
       - name: checkout current
         uses: actions/checkout@v4
         with:
-          path: bundle/monio
+          path: $PR_NUMBER/monio
 
       - name: checkout jedicmake
         uses: actions/checkout@v4
         with:
-          path: bundle/jedicmake
+          path: "$PR_NUMBER/jedicmake"
           repository: JCSDA-internal/jedi-cmake
           submodules: true
           token: ${{ secrets.GH_PAT }}
@@ -27,12 +29,12 @@ jobs:
       - name: checkout oops
         uses: actions/checkout@v4
         with:
-          path: bundle/oops
+          path: "$PR_NUMBER/oops"
           repository: JCSDA-internal/oops
           token: ${{ secrets.GH_PAT }}
       - name: matching branch checkout attempt oops ${{ github.head_ref }}
         if: github.event_name == 'pull_request'
-        run: ./ci/get-ref-branch ./bundle/oops
+        run: ./$PR_NUMBER/monio/ci/get-ref-branch ./$PR_NUMBER/oops
 
       # - name: checkout monio
       #   uses: actions/checkout@v4
