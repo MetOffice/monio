@@ -34,6 +34,23 @@ monio::Monio::~Monio() {
   delete this_;
 }
 
+void monio::Monio::initialiseFile(const atlas::Grid& grid,
+                                  const std::string& filePath,
+                                  const util::DateTime& dateTime) {
+  FileData& fileData = createFileData(grid.name(), filePath, dateTime);
+  reader_.openFile(filePath);
+  reader_.readMetadata(fileData);
+  std::vector<std::string> meshVars =
+      fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+  reader_.readFullData(fileData, meshVars);
+  createLfricAtlasMap(fileData, grid);
+
+  reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+  createDateTimes(fileData,
+                  std::string(consts::kTimeVarName),
+                  std::string(consts::kTimeOriginName));
+}
+
 void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                             const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                             const std::string& filePath,
@@ -53,21 +70,9 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                                   fieldMetadata.jediName << "\"..." << std::endl;
             auto& functionSpace = globalField.functionspace();
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
-
             // Initialise file
             if (fileDataExists(grid.name()) == false) {
-              FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-              reader_.openFile(filePath);
-              reader_.readMetadata(fileData);
-              std::vector<std::string> meshVars =
-                  fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-              reader_.readFullData(fileData, meshVars);
-              createLfricAtlasMap(fileData, grid);
-
-              reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
-              createDateTimes(fileData,
-                              std::string(consts::kTimeVarName),
-                              std::string(consts::kTimeOriginName));
+              initialiseFile(grid.name(), filePath, dateTime);
             }
             FileData fileData = getFileData(grid.name());
             // Read fields into memory
@@ -226,28 +231,33 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   }
   if (filePath.length() != 0) {
     try {
+      auto& functionSpace = localFieldSet[0].functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+      FileData fileData = getFileData(grid.name());
+      cleanFileData(fileData);
       writer_.openFile(filePath);
-      for (const auto& localField : localFieldSet) {
-        atlas::Field globalField = utilsatlas::getGlobalField(localField);
-        auto& functionSpace = globalField.functionspace();
-        auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
-        FileData fileData = getFileData(grid.name());
-        cleanFileData(fileData);
+      for (const auto& fieldMetadata : fieldMetadataVec) {
+        auto& localField = localFieldSet[fieldMetadata.jediName];
+        atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          // std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-          // atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
-          //                                               globalFieldSet, lfricAtlasMap);
+          std::string writeName = isLfricFormat == true ? fieldMetadata.lfricWriteName :
+                                                          globalField.name();
+          atlasWriter_.populateFileDataWithField(fileData,
+                                                 globalField,
+                                                 fieldMetadata,
+                                                 writeName,
+                                                 isLfricFormat);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
+          fileData.clearData();  // Globalised field data no longer required
         }
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
-      utils::throwException("Monio::writeFieldSet()> An exception occurred: " +
-                              exceptionMessage);
+      utils::throwException("Monio::writeIncrements()> An exception occurred: " + exceptionMessage);
     }
   } else {
       oops::Log::info() << "Monio::writeIncrements()> No file path supplied. "
@@ -269,8 +279,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       for (const auto& localField : localFieldSet) {
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          std::shared_ptr<monio::DataContainerBase> dataContainer = nullptr;
-          atlasWriter_.populateFileDataWithField(fileData, globalField);
+          atlasWriter_.populateFileDataWithField(fileData, globalField, globalField.name());
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
           fileData.clearData();  // Globalised field data no longer required
@@ -280,8 +289,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
-      utils::throwException("Monio::writeFieldSet()> An exception occurred: " +
-                            exceptionMessage);
+      utils::throwException("Monio::writeFieldSet()> An exception occurred: " + exceptionMessage);
     }
   } else {
     oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "
@@ -397,7 +405,6 @@ void monio::Monio::cleanFileData(FileData& fileData) {
   fileData.getMetadata().clearGlobalAttributes();
   fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
   fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
-
   fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
   fileData.getData().deleteContainer(std::string(consts::kTileVarName));
 
@@ -415,7 +422,7 @@ void monio::Monio::cleanFileData(FileData& fileData) {
 }
 
 monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
-                    const atlas::idx_t mpiRankOwner) :
+                    const int mpiRankOwner) :
       mpiCommunicator_(mpiCommunicator),
       mpiRankOwner_(mpiRankOwner),
       reader_(mpiCommunicator, mpiRankOwner_),

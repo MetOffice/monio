@@ -156,6 +156,15 @@ std::string monio::Metadata::getDimensionName(const int dimValue) {
   return std::string(consts::kNotFoundError);
 }
 
+const std::string monio::Metadata::getDimensionName(const int dimValue) const {
+  for (auto it = dimensions_.begin(); it != dimensions_.end(); ++it) {
+    if (it->second == dimValue) {
+      return it->first;
+    }
+  }
+  return std::string(consts::kNotFoundError);
+}
+
 std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string& varName) {
   oops::Log::debug() << "Metadata::getVariable()> " << varName << std::endl;
   auto it = variables_.find(varName);
@@ -342,10 +351,7 @@ void monio::Metadata::deleteDimension(const std::string& dimName) {
   auto itDim = dimensions_.find(dimName);
   if (itDim != dimensions_.end()) {
     dimensions_.erase(dimName);
-  } else {
-    utils::throwException("Metadata::deleteDimension()> Dimension \"" +
-                               dimName + "\" not found...");
-  }
+  }  // Non-existant dimension is a legitimate use-case.
   for (const auto& varPair : variables_) {
     varPair.second->deleteDimension(dimName);
   }

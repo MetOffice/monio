@@ -27,7 +27,7 @@ namespace monio {
 class AtlasWriter {
  public:
   AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
-              const atlas::idx_t mpiRankOwner);
+              const int mpiRankOwner);
 
   AtlasWriter()                               = delete;  //!< Deleted default constructor
   AtlasWriter(AtlasWriter&&)                  = delete;  //!< Deleted move constructor
@@ -35,14 +35,23 @@ class AtlasWriter {
   AtlasWriter& operator=( AtlasWriter&&)      = delete;  //!< Deleted move assignment
   AtlasWriter& operator=(const AtlasWriter&)  = delete;  //!< Deleted copy assignment
 
+  // For writing of FieldSets with no metadata
   void populateFileDataWithField(FileData& fileData,
-                           const atlas::Field& field);
+                           const atlas::Field& field,
+                           const std::string& writeName);
+
+  // For writing LFRic data with some existing metadata
+  void populateFileDataWithField(FileData& fileData,
+                                 atlas::Field& field,
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& writeName,
+                           const bool isLfricFormat);
 
  private:
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<size_t>& lfricToAtlasMap,
-                                const size_t fieldSize);
+                                const std::string& fieldName);
 
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
@@ -50,12 +59,18 @@ class AtlasWriter {
 
 
   void populateMetadataWithField(Metadata& metadata,
-                           const atlas::Field& field);
+                           const atlas::Field& field,
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& varName);
+
+  void populateMetadataWithField(Metadata& metadata,
+                           const atlas::Field& field,
+                           const std::string& varName);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
-                       const size_t totalFieldSize);
+                       const std::string& fieldName);
 
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
@@ -68,6 +83,11 @@ class AtlasWriter {
   template<typename T> void populateDataVec(std::vector<T>& dataVec,
                                       const atlas::Field& field,
                                       const std::vector<int>& dimensions);
+
+  void addVariableDimensions(const atlas::Field& field,
+                             const Metadata& metadata,
+                             std::shared_ptr<monio::Variable> var);
+  void addGlobalAttributes(Metadata& metadata, const bool isLFRicFormat = true);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

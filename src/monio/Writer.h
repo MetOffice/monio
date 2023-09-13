@@ -26,11 +26,11 @@ namespace monio {
 class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
-                  const atlas::idx_t mpiRankOwner,
+                  const int mpiRankOwner,
                   const std::string& filePath);
 
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
-                  const atlas::idx_t mpiRankOwner);
+                  const int mpiRankOwner);
 
   Writer()                         = delete;  //!< Deleted default constructor
   Writer(Writer&&)                 = delete;  //!< Deleted move constructor

@@ -25,7 +25,7 @@
 #include "oops/util/Logger.h"
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
-                      const atlas::idx_t mpiRankOwner,
+                      const int mpiRankOwner,
                       const std::string& filePath):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
@@ -34,7 +34,7 @@ monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 monio::Reader::Reader(const eckit::mpi::Comm& mpiCommunicator,
-                      const atlas::idx_t mpiRankOwner):
+                      const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "Reader::Reader()" << std::endl;

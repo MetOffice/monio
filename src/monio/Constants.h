@@ -143,6 +143,16 @@ const std::string_view kTabSpace = "    ";
 const std::string_view kLevelsSearchTerm = "levels";
 const std::string_view kNotFoundError = "NOT_FOUND";
 
+const std::string_view kToBeDerived = "TO BE DERIVED";
+const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
+
+const std::string_view kProducedByName = "Produced_by";
+const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
+
+const std::string_view kDataFormatName = "Data_format";
+const std::string_view kDataFormatAtlas = "Atlas";
+const std::string_view kDataFormatLfric = "LFRic";
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /// Increment file metadata attributes
 /// Attribute names
@@ -183,7 +193,7 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-const atlas::idx_t kMPIRankOwner = 0;
+const int kMPIRankOwner = 0;
 
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;

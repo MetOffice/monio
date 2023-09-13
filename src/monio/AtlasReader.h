@@ -32,7 +32,7 @@ namespace monio {
 class AtlasReader {
  public:
   AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
-              const atlas::idx_t mpiRankOwner);
+              const int mpiRankOwner);
 
   AtlasReader()                               = delete;  //!< Deleted default constructor
   AtlasReader(AtlasReader&&)                  = delete;  //!< Deleted move constructor

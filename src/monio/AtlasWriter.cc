@@ -21,34 +21,24 @@
 #include "UtilsAtlas.h"
 #include "Writer.h"
 
-namespace {
-  template<typename T>
-  T productOfVector(const std::vector<T>& vectorToMultiply) {
-    T sum = 1;
-    std::for_each(begin(vectorToMultiply), end(vectorToMultiply), [&](T elem) {
-      sum *= elem;
-    });
-    return sum;
-  }
-}  // anonymous namespace
-
 monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
-                                    const atlas::idx_t mpiRankOwner):
+                                    const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
 }
 
 void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
-                                             const atlas::Field& field) {
-  oops::Log::debug() << "AtlasWriter::populateMetadataAndDataWithFieldSet()" << std::endl;
+                                             const atlas::Field& field,
+                                             const std::string& writeName) {
+  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     Metadata& metadata = fileData.getMetadata();
     Data& data = fileData.getData();
-    // Create dims
+    // Create dimensions
     std::vector<int> dimVec = field.shape();
     if (field.metadata().get<bool>("global") == false) {
-      dimVec[0] = utilsatlas::getSizeOwned(field);
+      dimVec[0] = utilsatlas::getHorizontalSize(field);
     }
     for (auto& dimSize : dimVec) {
       std::string dimName = metadata.getDimensionName(dimSize);
@@ -58,7 +48,8 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
         dimCount_++;
       }
     }
-    populateMetadataWithField(metadata, field);
+    // Create metadata
+    populateMetadataWithField(metadata, field, writeName);
     // Create lon and lat
     std::vector<atlas::PointLonLat> atlasLonLat = utilsatlas::getAtlasCoords(field);
     std::vector<std::shared_ptr<DataContainerBase>> coordContainers =
@@ -77,34 +68,76 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     metadata.addVariable(consts::kCoordVarNames[consts::eLatitude], latVar);
 
     populateDataWithField(data, field, dimVec);
-    // Global attrs
-    std::string producedByName = "Produced_by";
-    std::string producedByString = "MONIO: Met Office NetCDF I/O";
-
-    std::shared_ptr<monio::AttributeString> producedByAttr =
-            std::make_shared<AttributeString>(producedByName, producedByString);
-    fileData.getMetadata().addGlobalAttr(producedByName, producedByAttr);
+    addGlobalAttributes(metadata, false);
   }
 }
 
+void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
+                                                   atlas::Field& field,
+                                             const consts::FieldMetadata& fieldMetadata,
+                                             const std::string& writeName,
+                                             const bool isLfricFormat) {
+  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+    // Create dimensions
+    Metadata& metadata = fileData.getMetadata();
+    metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
+    metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
+    metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
+
+    atlas::Field formattedField = utilsatlas::getFormattedField(field, writeName,
+                                                                fieldMetadata.copyFirstLevel);
+    populateMetadataWithField(metadata, formattedField, fieldMetadata, writeName);
+    populateDataWithField(fileData.getData(), formattedField, lfricAtlasMap, writeName);
+
+    addGlobalAttributes(metadata, isLfricFormat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
-                                             const atlas::Field& field) {
+                                             const atlas::Field& field,
+                                             const consts::FieldMetadata& fieldMetadata,
+                                             const std::string& varName) {
   oops::Log::debug() << "AtlasWriter::populateMetadataWithField()" << std::endl;
-  std::string varName = field.name();
   int type = utilsatlas::atlasTypeToMonioEnum(field.datatype());
   std::shared_ptr<monio::Variable> var = std::make_shared<Variable>(varName, type);
-  std::vector<int> dimVec = field.shape();
-
-  // Check if Field is not global
-  if (field.metadata().get<bool>("global") == false) {
-    dimVec[0] = utilsatlas::getSizeOwned(field);  // If so, get the 'size owned' by the Fields
-  }
-  for (auto& dimSize : dimVec) {
-    std::string dimName = metadata.getDimensionName(dimSize);
-    if (dimName != consts::kNotFoundError) {  // Not used for 1-D fields.
-      var->addDimension(dimName, dimSize);
+  // Variable dimensions
+  addVariableDimensions(field, metadata, var);
+  // Variable attributes
+  for (int i = 0; i < consts::eNumberOfAttributeNames; ++i) {
+    std::string attributeName = std::string(consts::kIncrementAttributeNames[i]);
+    std::string attributeValue;
+    switch (i) {
+      case consts::eStandardName:
+        attributeValue = fieldMetadata.jediName;
+        break;
+      case consts::eLongName:
+        attributeValue = fieldMetadata.jediName + "_inc";
+        break;
+      case consts::eUnitsName:
+        attributeValue = fieldMetadata.units;
+        break;
+      default:
+        attributeValue = consts::kIncrementVariableValues[i];
     }
+    std::shared_ptr<AttributeBase> incAttr = std::make_shared<AttributeString>(attributeName,
+                                                                               attributeValue);
+    var->addAttribute(incAttr);
   }
+  metadata.addVariable(varName, var);
+}
+
+void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
+                                             const atlas::Field& field,
+                                             const std::string& varName) {
+  oops::Log::debug() << "AtlasWriter::populateMetadataWithField()" << std::endl;
+  int type = utilsatlas::atlasTypeToMonioEnum(field.datatype());
+  std::shared_ptr<monio::Variable> var = std::make_shared<Variable>(varName, type);
+  // Variable dimensions
+  addVariableDimensions(field, metadata, var);
   metadata.addVariable(varName, var);
 }
 
@@ -112,12 +145,11 @@ void monio::AtlasWriter::populateDataContainerWithField(
                                      std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                const atlas::Field& field,
                                const std::vector<size_t>& lfricToAtlasMap,
-                               const size_t fieldSize) {
+                               const std::string& fieldName) {
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-
+    int fieldSize = utilsatlas::getDataSize(field);
     switch (atlasType.kind()) {
       case atlasType.KIND_INT32: {
         if (dataContainer == nullptr) {
@@ -165,10 +197,11 @@ void monio::AtlasWriter::populateDataContainerWithField(
                                const atlas::Field& field,
                                const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
+  oops::Log::info() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-    int fieldSize = productOfVector(dimensions);
+    int fieldSize = utilsatlas::getDataSize(field);
     switch (atlasType.kind()) {
     case atlasType.KIND_INT32: {
       if (dataContainer == nullptr) {
@@ -213,10 +246,10 @@ void monio::AtlasWriter::populateDataContainerWithField(
 void monio::AtlasWriter::populateDataWithField(Data& data,
                                          const atlas::Field& field,
                                          const std::vector<size_t>& lfricToAtlasMap,
-                                         const size_t totalFieldSize) {
+                                         const std::string& fieldName) {
   oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, totalFieldSize);
+  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, fieldName);
   data.addContainer(dataContainer);
 }
 
@@ -234,14 +267,14 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const atlas::Field& field,
                                    const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
-  atlas::idx_t numLevels = field.levels();
+  int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
     utils::throwException("AtlasWriter::populateDataVec()> "
-                             "Data container is not configured for the expected data...");
+                          "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
   for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
-    for (atlas::idx_t j = 0; j < numLevels; ++j) {
+    for (int j = 0; j < numLevels; ++j) {
       int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
       dataVec[index] = fieldView(i, j);
     }
@@ -264,8 +297,8 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (atlas::idx_t i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
-    for (atlas::idx_t j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
+  for (int i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
+    for (int j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
       int index = j + (i * dimensions[consts::eVertical]);
       dataVec[index] = fieldView(i, j);
     }
@@ -281,3 +314,36 @@ template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dat
 template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
                                                  const atlas::Field& field,
                                                  const std::vector<int>& dimensions);
+
+void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
+                                               const Metadata& metadata,
+                                               std::shared_ptr<monio::Variable> var) {
+  std::vector<int> dimVec = field.shape();
+  if (field.metadata().get<bool>("global") == false) {
+    dimVec[0] = utilsatlas::getHorizontalSize(field);  // If so, get the 2D size of the Field
+  }
+  // Reversal of dims required for LFRic files. Currently applied to all output files.
+  std::reverse(dimVec.begin(), dimVec.end());
+  for (auto& dimSize : dimVec) {
+    std::string dimName = metadata.getDimensionName(dimSize);
+    if (dimName != consts::kNotFoundError) {  // Not used for 1-D fields.
+      var->addDimension(dimName, dimSize);
+    }
+  }
+}
+
+void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricFormat) {
+  // Initialise variables
+  std::string formatType = isLfricFormat == true ? std::string(consts::kDataFormatLfric) :
+                                                   std::string(consts::kDataFormatAtlas);
+  // Create attribute objects
+  std::shared_ptr<monio::AttributeString> producedByAttr =
+      std::make_shared<AttributeString>(std::string(consts::kProducedByName),
+                                        std::string(consts::kProducedByString));
+  std::shared_ptr<monio::AttributeString> formatAttr =
+      std::make_shared<AttributeString>(std::string(consts::kDataFormatName),
+                                        formatType);
+  // Add to metadata
+  metadata.addGlobalAttr(formatAttr->getName(), formatAttr);
+  metadata.addGlobalAttr(producedByAttr->getName(), producedByAttr);
+}
