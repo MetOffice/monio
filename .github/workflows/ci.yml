@@ -1,5 +1,5 @@
 ---
-name: CI
+name: UKMO_CI_Azure
 
 on:
   push:
@@ -11,36 +11,38 @@ jobs:
   build:
     runs-on: jedi-self-hosted-rg
     steps:
-      - name: checkout current repo
-        uses: actions/checkout@v3
+      - name: checkout current
+        uses: actions/checkout@v4
+        with:
+          path: bundle/monio
 
       - name: checkout jedicmake
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          path: ci/jedicmake
+          path: bundle/jedicmake
           repository: JCSDA-internal/jedi-cmake
           submodules: true
           token: ${{ secrets.GH_PAT }}
 
       - name: checkout oops
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          path: ci/oops
+          path: bundle/oops
           repository: JCSDA-internal/oops
           token: ${{ secrets.GH_PAT }}
       - name: matching branch checkout attempt oops ${{ github.head_ref }}
         if: github.event_name == 'pull_request'
-        run: ./ci/get-ref-branch ./ci/oops
+        run: ./ci/get-ref-branch ./bundle/oops
 
-      - name: checkout monio
-        uses: actions/checkout@v3
-        with:
-          path: ci/monio
-          repository: MetOffice/monio
-          token: ${{ secrets.GH_PAT }}
-      - name: matching branch checkout attempt monio ${{ github.head_ref }}
-        if: github.event_name == 'pull_request'
-        run: ./ci/get-ref-branch ./ci/monio
+      # - name: checkout monio
+      #   uses: actions/checkout@v4
+      #   with:
+      #     path: ci/monio
+      #     repository: MetOffice/monio
+      #     token: ${{ secrets.GH_PAT }}
+      # - name: matching branch checkout attempt monio ${{ github.head_ref }}
+      #   if: github.event_name == 'pull_request'
+      #   run: ./ci/get-ref-branch ./ci/monio
 
       - name: build and lint
         run: |
