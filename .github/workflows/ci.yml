@@ -11,17 +11,25 @@ jobs:
   build:
     runs-on: jedi-self-hosted-rg
     env:
-      PR_NUMBER: ${{ github.event.number }}
+      PR: ${{ github.event.number }}
+      REPO: ${{ github.event.repository.name }}
+      BUNDLE: ${{ github.event.number }}-bundle
+
     steps:
       - name: checkout current
         uses: actions/checkout@v4
         with:
-          path: $PR_NUMBER/monio
+          path: ${{ env.PR }}
+      - name: create bundle
+        run: |
+          mkdir -p ${{ env.BUNDLE }}/${{ env.REPO }}
+          cp -r ${{ env.PR }}/ci/* ${{ env.BUNDLE }}/
+          cp -r ${{ env.PR }}/* ${{ env.BUNDLE }}/${{ env.REPO }}
 
       - name: checkout jedicmake
         uses: actions/checkout@v4
         with:
-          path: "$PR_NUMBER/jedicmake"
+          path: ./${{ env.BUNDLE }}/jedicmake
           repository: JCSDA-internal/jedi-cmake
           submodules: true
           token: ${{ secrets.GH_PAT }}
@@ -29,28 +37,18 @@ jobs:
       - name: checkout oops
         uses: actions/checkout@v4
         with:
-          path: "$PR_NUMBER/oops"
+          path: ./${{ env.BUNDLE }}/oops
           repository: JCSDA-internal/oops
           token: ${{ secrets.GH_PAT }}
       - name: matching branch checkout attempt oops ${{ github.head_ref }}
         if: github.event_name == 'pull_request'
-        run: ./$PR_NUMBER/monio/ci/get-ref-branch ./$PR_NUMBER/oops
-
-      # - name: checkout monio
-      #   uses: actions/checkout@v4
-      #   with:
-      #     path: ci/monio
-      #     repository: MetOffice/monio
-      #     token: ${{ secrets.GH_PAT }}
-      # - name: matching branch checkout attempt monio ${{ github.head_ref }}
-      #   if: github.event_name == 'pull_request'
-      #   run: ./ci/get-ref-branch ./ci/monio
+        run: ./${{ env.BUNDLE }}/get-ref-branch ./${{ env.BUNDLE }}/oops
 
       - name: build and lint
         run: |
           az acr login --name ngmssboxjediacr
           docker run --rm \
-            --entrypoint=/usr/local/src/monio-ci/ci/build-and-test \
-            --workdir=/usr/local/src/monio-ci/ci \
-            --volume $PWD:/usr/local/src/monio-ci \
+            --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
+            --workdir=/usr/local/src/${REPO}/${BUNDLE} \
+            --volume $PWD/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9'
