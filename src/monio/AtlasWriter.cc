@@ -149,7 +149,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     atlas::array::DataType atlasType = field.datatype();
-    int fieldSize = utilsatlas::getDataSize(field);
+    int fieldSize = utilsatlas::getGlobalDataSize(field);
     switch (atlasType.kind()) {
       case atlasType.KIND_INT32: {
         if (dataContainer == nullptr) {
@@ -201,7 +201,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
-    int fieldSize = utilsatlas::getDataSize(field);
+    int fieldSize = utilsatlas::getGlobalDataSize(field);
     switch (atlasType.kind()) {
     case atlasType.KIND_INT32: {
       if (dataContainer == nullptr) {
@@ -334,14 +334,14 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
 
 void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricFormat) {
   // Initialise variables
-  std::string formatType = isLfricFormat == true ? std::string(consts::kDataFormatLfric) :
-                                                   std::string(consts::kDataFormatAtlas);
+  std::string formatType = isLfricFormat == true ? consts::kNamingConventions[consts::eLfricNaming] :
+                                                   consts::kNamingConventions[consts::eJediNaming];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> producedByAttr =
       std::make_shared<AttributeString>(std::string(consts::kProducedByName),
                                         std::string(consts::kProducedByString));
   std::shared_ptr<monio::AttributeString> formatAttr =
-      std::make_shared<AttributeString>(std::string(consts::kDataFormatName),
+      std::make_shared<AttributeString>(std::string(consts::kNamingConventionName),
                                         formatType);
   // Add to metadata
   metadata.addGlobalAttr(formatAttr->getName(), formatAttr);

@@ -212,7 +212,7 @@ int getHorizontalSize(const atlas::Field& field) {
   return size;
 }
 
-int getDataSize(const atlas::Field& field) {
+int getGlobalDataSize(const atlas::Field& field) {
   std::vector<int> dimVec = field.shape();
   int size = 1;
   for (const auto& dim : dimVec) {
@@ -220,7 +220,6 @@ int getDataSize(const atlas::Field& field) {
   }
   return size;
 }
-
 
 template<typename T>
 atlas::Field copySurfaceLevel(const atlas::Field& inputField,

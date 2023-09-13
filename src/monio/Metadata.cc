@@ -320,19 +320,20 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
   return globalAttrs_;
 }
 
-int monio::Metadata::getDataFormat() {
-  int dataFormatRet = consts::eLfricNaming;
+int monio::Metadata::getNamingConvention() {
+  int namingConvention = consts::eNotDefined;
   for (const auto& globalAttr : globalAttrs_) {
-    if (globalAttr.first == consts::kNamingConvention) {
+    if (globalAttr.first == consts::kNamingConventionName) {
       std::shared_ptr<monio::AttributeString> dataFormatAttr =
             std::dynamic_pointer_cast<monio::AttributeString>(globalAttr.second);
       std::string dataFormatValue = dataFormatAttr->getValue();
-      if (dataFormatValue == consts::kNamingJediName) {
-        dataFormatRet = consts::eJediNaming;
+      int pos = utils::findPosInVector(consts::kNamingConventions, dataFormatValue);
+      if (pos != -1) {  // Condition preserves use of consts::eNotDefined == 2 when not found
+        namingConvention = pos;
       }
     }
   }
-  return dataFormatRet;
+  return namingConvention;
 }
 
 void monio::Metadata::removeAllButTheseVariables(
@@ -369,12 +370,14 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
 }
 
 void monio::Metadata::clear() {
+  oops::Log::debug() << "Metadata::clear()" << std::endl;
   dimensions_.clear();
   variables_.clear();
   globalAttrs_.clear();
 }
 
 void monio::Metadata::clearGlobalAttributes() {
+  oops::Log::debug() << "Metadata::clearGlobalAttributes()" << std::endl;
   globalAttrs_.clear();
 }
 

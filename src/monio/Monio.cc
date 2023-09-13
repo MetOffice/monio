@@ -38,7 +38,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                                  const std::string& filePath,
                                  const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int dataFormat = consts::eLfricFormat;
+  int namingConvention = consts::eNotDefined;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData& fileData = createFileData(grid.name(), filePath, dateTime);
     reader_.openFile(filePath);
@@ -53,9 +53,9 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                     std::string(consts::kTimeVarName),
                     std::string(consts::kTimeOriginName));
 
-    dataFormat = fileData.getMetadata().getDataFormat();
+    namingConvention = fileData.getMetadata().getNamingConvention();
   }
-  return dataFormat;
+  return namingConvention;
 }
 
 void monio::Monio::readState(atlas::FieldSet& localFieldSet,
@@ -248,8 +248,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
+          // fieldMetadata.jediName should be same as globalField.name()
           std::string writeName = isLfricFormat == true ? fieldMetadata.lfricWriteName :
-                                                          globalField.name();
+                                                          fieldMetadata.jediName;
           atlasWriter_.populateFileDataWithField(fileData,
                                                  globalField,
                                                  fieldMetadata,
@@ -395,8 +396,7 @@ monio::FileData monio::Monio::getFileData(const std::string& gridName) {
   if (it != filesData_.end()) {
     return FileData(it->second);
   }
-  utils::throwException("Monio::getFileData()> FileData with grid name \"" +
-                           gridName + "\" not found...");
+  return FileData();  // This function is called by all PEs. A return is essential.
 }
 
 bool monio::Monio::fileDataExists(const std::string& gridName) const {
@@ -409,21 +409,23 @@ bool monio::Monio::fileDataExists(const std::string& gridName) const {
 }
 
 void monio::Monio::cleanFileData(FileData& fileData) {
-  fileData.getMetadata().clearGlobalAttributes();
-  fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
-  fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
-  fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
-  fileData.getData().deleteContainer(std::string(consts::kTileVarName));
+  oops::Log::debug() << "Monio::cleanFileData()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    fileData.getMetadata().clearGlobalAttributes();
+    fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
+    fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
+    fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
+    fileData.getData().deleteContainer(std::string(consts::kTileVarName));
+    // Reconcile Metadata with Data
+    std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();
+    std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
 
-  // Reconcile Metadata with Data
-  std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();
-  std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
-
-  for (const auto& metadataVarName : metadataVarNames) {
-    auto it = std::find(begin(dataContainerNames),
-                        end(dataContainerNames), metadataVarName);
-    if (it == std::end(dataContainerNames)) {
-      fileData.getMetadata().deleteVariable(metadataVarName);
+    for (const auto& metadataVarName : metadataVarNames) {
+      auto it = std::find(begin(dataContainerNames),
+                          end(dataContainerNames), metadataVarName);
+      if (it == std::end(dataContainerNames)) {
+        fileData.getMetadata().deleteVariable(metadataVarName);
+      }
     }
   }
 }
