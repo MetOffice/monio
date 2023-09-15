@@ -334,8 +334,9 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
 
 void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricFormat) {
   // Initialise variables
-  std::string formatType = isLfricFormat == true ? consts::kNamingConventions[consts::eLfricNaming] :
-                                                   consts::kNamingConventions[consts::eJediNaming];
+  std::string formatType =
+      isLfricFormat == true ? consts::kNamingConventions[consts::eLfricNaming] :
+                              consts::kNamingConventions[consts::eJediNaming];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> producedByAttr =
       std::make_shared<AttributeString>(std::string(consts::kProducedByName),

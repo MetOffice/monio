@@ -119,7 +119,7 @@ const std::string_view kIncrementVariables[eNumberOfIncrementVariables] {
 };
 
 // Needs to be a vector for use with call to templated search in Metadata::getNamingConvention
-const std::vector<std::string> kNamingConventions ({
+const std::vector<std::string> kNamingConventions({
   "LFRic",
   "JEDI"
 });

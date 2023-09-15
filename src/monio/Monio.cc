@@ -58,6 +58,24 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
   return namingConvention;
 }
 
+int monio::Monio::initialiseFile(const atlas::Grid& grid,
+                                 const std::string& filePath) {
+  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
+  int namingConvention = consts::eNotDefined;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    FileData& fileData = createFileData(grid.name(), filePath);
+    reader_.openFile(filePath);
+    reader_.readMetadata(fileData);
+    std::vector<std::string> meshVars =
+        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+    reader_.readFullData(fileData, meshVars);
+    createLfricAtlasMap(fileData, grid);
+
+    namingConvention = fileData.getMetadata().getNamingConvention();
+  }
+  return namingConvention;
+}
+
 void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                             const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                             const std::string& filePath,
@@ -78,8 +96,9 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             auto& functionSpace = globalField.functionspace();
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
             // Initialise file
+            int namingConvention = consts::eNotDefined;
             if (fileDataExists(grid.name()) == false) {
-              initialiseFile(grid.name(), filePath, dateTime);
+              namingConvention = initialiseFile(grid.name(), filePath, dateTime);
             }
             FileData fileData = getFileData(grid.name());
             // Read fields into memory
@@ -99,7 +118,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        writer_.closeFile();
+        reader_.closeFile();
         std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readState()> An exception has occurred: " + exceptionMessage);
       }
@@ -131,21 +150,22 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            if (fileDataExists(grid.name()) == false) {
-              FileData& fileData = createFileData(grid.name(), filePath);
-              reader_.openFile(filePath);
-              reader_.readMetadata(fileData);
-              std::vector<std::string> meshVars =
-                  fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-              reader_.readFullData(fileData, meshVars);
-              createLfricAtlasMap(fileData, grid);
-            }
+            int namingConvention = initialiseFile(grid.name(), filePath);
             FileData fileData = getFileData(grid.name());
             // Read fields into memory
-            reader_.readFullDatum(fileData, fieldMetadata.lfricReadName);
+            std::string readName;
+            switch (namingConvention) {
+              case consts::eLfricNaming : {
+                readName = fieldMetadata.lfricReadName;
+              }
+              case consts::eJediNaming : {
+                readName = fieldMetadata.jediName;
+              }
+            }
+            reader_.readFullDatum(fileData, readName);
             atlasReader_.populateFieldWithDataContainer(
                                        globalField,
-                                       fileData.getData().getContainer(fieldMetadata.lfricReadName),
+                                       fileData.getData().getContainer(readName),
                                        fileData.getLfricAtlasMap(),
                                        fieldMetadata.copyFirstLevel);
           }
@@ -155,7 +175,8 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        writer_.closeFile();
+        oops::Log::info() << " exception.what()> " <<  exception.what() << std::endl;
+        reader_.closeFile();
         std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readIncrements()> An exception has occurred: " +
                               exceptionMessage);
