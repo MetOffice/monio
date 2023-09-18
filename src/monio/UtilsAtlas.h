@@ -41,14 +41,6 @@ namespace utilsatlas {
   atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet);
 
   atlas::Field getGlobalField(const atlas::Field& field);
-  atlas::Field getWriteField(atlas::Field& inputField,
-                           const std::string& writeName,
-                           const bool copyFirstLevel);
-
-  template<typename T>
-  atlas::Field copySurfaceLevel(const atlas::Field& inputField,
-                                const atlas::FunctionSpace& functionSpace,
-                                const atlas::util::Config& atlasOptions);
 
   int getHorizontalSize(const atlas::Field& field);  // Just 2D size. Any field.
   int getGlobalDataSize(const atlas::Field& field);  // Full 3D size of data. Global fields only

@@ -85,8 +85,8 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
     metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
     metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
-    atlas::Field formattedField = utilsatlas::getWriteField(field, writeName,
-                                                                fieldMetadata.noFirstLevel);
+
+    atlas::Field formattedField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
     populateMetadataWithField(metadata, formattedField, fieldMetadata, writeName);
     populateDataWithField(fileData.getData(), formattedField, lfricAtlasMap, writeName);
     addGlobalAttributes(metadata, isLfricFormat);
@@ -312,6 +312,68 @@ template void monio::AtlasWriter::populateDataVec<float>(std::vector<float>& dat
 template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec,
                                                  const atlas::Field& field,
                                                  const std::vector<int>& dimensions);
+
+atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& inputField,
+                                         const std::string& writeName,
+                                         const bool copyFirstLevel) {
+  oops::Log::debug() << "AtlasWriter::getWriteField()" << std::endl;
+  atlas::FunctionSpace functionSpace = inputField.functionspace();
+  atlas::array::DataType atlasType = inputField.datatype();
+
+  // WARNING - This name-check is an LFRic-Lite specific convention...
+  if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
+    if (copyFirstLevel == true) {
+      atlas::util::Config atlasOptions = atlas::option::name(writeName) |
+                                         atlas::option::global(0) |
+                                         atlas::option::levels(inputField.levels() + 1);
+      switch (atlasType.kind()) {
+        case atlasType.KIND_REAL64: {
+          return copySurfaceLevel<double>(inputField, functionSpace, atlasOptions);
+        }
+        case atlasType.KIND_REAL32: {
+          return copySurfaceLevel<float>(inputField, functionSpace, atlasOptions);
+        }
+        case atlasType.KIND_INT32: {
+          return copySurfaceLevel<int>(inputField, functionSpace, atlasOptions);
+        }
+      }
+    } else {
+      inputField.metadata().set("name", writeName);
+    }
+  }
+  return inputField;
+}
+
+template<typename T>
+atlas::Field monio::AtlasWriter::copySurfaceLevel(const atlas::Field& inputField,
+                              const atlas::FunctionSpace& functionSpace,
+                              const atlas::util::Config& atlasOptions) {
+  oops::Log::debug() << "AtlasWriter::copySurfaceLevel()" << std::endl;
+  atlas::Field copiedField = functionSpace.createField<T>(atlasOptions);
+  auto copiedFieldView = atlas::array::make_view<T, 2>(copiedField);
+  auto inputFieldView = atlas::array::make_view<T, 2>(inputField);
+  std::vector<int> dimVec = inputField.shape();
+  for (int j = 0; j < dimVec[consts::eVertical]; ++j) {
+    for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+      copiedFieldView(i, j + 1) = inputFieldView(i, j);
+    }
+  }
+  // Copy surface level of input field
+  for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+    copiedFieldView(i, 0) = inputFieldView(i, 0);
+  }
+  return copiedField;
+}
+
+template atlas::Field monio::AtlasWriter::copySurfaceLevel<double>(const atlas::Field& inputField,
+                                                          const atlas::FunctionSpace& functionSpace,
+                                                          const atlas::util::Config& atlasOptions);
+template atlas::Field monio::AtlasWriter::copySurfaceLevel<float>(const atlas::Field& inputField,
+                                                          const atlas::FunctionSpace& functionSpace,
+                                                          const atlas::util::Config& atlasOptions);
+template atlas::Field monio::AtlasWriter::copySurfaceLevel<int>(const atlas::Field& inputField,
+                                                          const atlas::FunctionSpace& functionSpace,
+                                                          const atlas::util::Config& atlasOptions);
 
 void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
                                                const Metadata& metadata,

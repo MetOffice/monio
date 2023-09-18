@@ -20,6 +20,15 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
 }
 
+void monio::AtlasReader::populateFieldWithFileData(atlas::Field& field,
+                                             const FileData& fileData,
+                                             const consts::FieldMetadata& fieldMetadata) {
+  populateFieldWithDataContainer(field,
+                                 fileData.getData().getContainer(fieldMetadata.lfricReadName),
+                                 fileData.getLfricAtlasMap(),
+                                 fieldMetadata.noFirstLevel);
+}
+
 void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer,
                                       const std::vector<size_t>& lfricToAtlasMap,

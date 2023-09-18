@@ -106,11 +106,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                                     fieldMetadata.lfricReadName,
                                     dateTime,
                                     std::string(consts::kTimeDimName));
-            atlasReader_.populateFieldWithDataContainer(
-                                       globalField,
-                                       fileData.getData().getContainer(fieldMetadata.lfricReadName),
-                                       fileData.getLfricAtlasMap(),
-                                       fieldMetadata.noFirstLevel);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -170,10 +166,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             }
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);
-            atlasReader_.populateFieldWithDataContainer(globalField,
-                                                        fileData.getData().getContainer(readName),
-                                                        fileData.getLfricAtlasMap(),
-                                                        fieldMetadata.noFirstLevel);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
