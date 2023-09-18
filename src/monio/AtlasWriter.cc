@@ -85,12 +85,10 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
     metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
     metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
-
-    atlas::Field formattedField = utilsatlas::getFormattedField(field, writeName,
-                                                                fieldMetadata.copyFirstLevel);
+    atlas::Field formattedField = utilsatlas::getWriteField(field, writeName,
+                                                                fieldMetadata.noFirstLevel);
     populateMetadataWithField(metadata, formattedField, fieldMetadata, writeName);
     populateDataWithField(fileData.getData(), formattedField, lfricAtlasMap, writeName);
-
     addGlobalAttributes(metadata, isLfricFormat);
   }
 }

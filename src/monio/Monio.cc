@@ -110,7 +110,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                                        globalField,
                                        fileData.getData().getContainer(fieldMetadata.lfricReadName),
                                        fileData.getLfricAtlasMap(),
-                                       fieldMetadata.copyFirstLevel);
+                                       fieldMetadata.noFirstLevel);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -152,22 +152,28 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             // Initialise file
             int namingConvention = initialiseFile(grid.name(), filePath);
             FileData fileData = getFileData(grid.name());
-            // Read fields into memory
+            // Configure read name
             std::string readName;
             switch (namingConvention) {
-              case consts::eLfricNaming : {
+              case consts::eLfricNaming: {
                 readName = fieldMetadata.lfricReadName;
+                break;
               }
-              case consts::eJediNaming : {
+              case consts::eJediNaming: {
                 readName = fieldMetadata.jediName;
+                break;
+              }
+              default: {
+                  utils::throwException("Monio::readIncrements()> "
+                                        "File naming convention not defined...");
               }
             }
+            // Read fields into memory
             reader_.readFullDatum(fileData, readName);
-            atlasReader_.populateFieldWithDataContainer(
-                                       globalField,
-                                       fileData.getData().getContainer(readName),
-                                       fileData.getLfricAtlasMap(),
-                                       fieldMetadata.copyFirstLevel);
+            atlasReader_.populateFieldWithDataContainer(globalField,
+                                                        fileData.getData().getContainer(readName),
+                                                        fileData.getLfricAtlasMap(),
+                                                        fieldMetadata.noFirstLevel);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -264,14 +270,20 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       FileData fileData = getFileData(grid.name());
       cleanFileData(fileData);
       writer_.openFile(filePath);
-
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          // fieldMetadata.jediName should be same as globalField.name()
-          std::string writeName = isLfricFormat == true ? fieldMetadata.lfricWriteName :
-                                                          fieldMetadata.jediName;
+          // Configure write name
+          std::string writeName;
+          if (isLfricFormat == false) {
+            writeName = fieldMetadata.lfricWriteName;
+          } else if (isLfricFormat == true && fieldMetadata.jediName == globalField.name()) {
+            writeName = fieldMetadata.jediName;
+          } else {
+            utils::throwException("Monio::writeIncrements()> "
+                                  "Field metadata configuration error...");
+          }
           atlasWriter_.populateFileDataWithField(fileData,
                                                  globalField,
                                                  fieldMetadata,

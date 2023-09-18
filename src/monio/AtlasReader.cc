@@ -88,11 +88,11 @@ template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
                                        const std::vector<T>& dataVec,
                                        const std::vector<size_t>& lfricToAtlasMap,
-                                       const bool copyFirstLevel) {
+                                       const bool noFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   int numLevels = field.levels();
-  if (copyFirstLevel == true) {
+  if (noFirstLevel == true) {
     numLevels -= 1;
   }
   for (int j = 0; j < numLevels; ++j) {
@@ -101,8 +101,8 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
-        utils::throwException("Calculated index exceeds size of data for field \""
-                                 + field.name() + "\".");
+          utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
+                                "data for field \"" + field.name() + "\".");
       }
     }
   }
@@ -138,7 +138,8 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
-        utils::throwException("Calculated index exceeds size of data.");
+        utils::throwException("AtlasReader::populateField()> "
+                              "Calculated index exceeds size of data.");
       }
     }
   }

@@ -79,8 +79,7 @@ void monio::Writer::writeData(const FileData& fileData) {
                                                                 fileData.getData().getContainers();
     for (const auto& dataContainerPair : dataContainerMap) {
       std::string varName = dataContainerPair.first;
-      // Checks variable exists in metadata
-      fileData.getMetadata().getVariable(varName);
+      fileData.getMetadata().getVariable(varName);  // Checks variable exists in metadata
       std::shared_ptr<DataContainerBase> dataContainer = dataContainerPair.second;
       int dataType = dataContainerPair.second->getType();
       switch (dataType) {

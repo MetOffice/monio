@@ -38,7 +38,7 @@ std::vector<atlas::PointLonLat> getLfricCoords(
         coordVectorArray[coordCount] = coordData;
         coordCount++;
       } else {
-        utils::throwException("AtlasProcessor::getLfricCoords()> "
+        utils::throwException("utilsatlas::getLfricCoords()> "
             "Data type not coded for...");
       }
     }
@@ -49,7 +49,7 @@ std::vector<atlas::PointLonLat> getLfricCoords(
       lfricCoords.push_back(atlas::PointLonLat(*lonIt, *latIt));
     }
   } else {
-      utils::throwException("AtlasProcessor::getLfricCoords()> "
+      utils::throwException("utilsatlas::getLfricCoords()> "
           "Incorrect number of coordinate axes...");
   }
   return lfricCoords;
@@ -100,7 +100,7 @@ std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& a
   std::vector<size_t> lfricAtlasMap;
   // Essential check to ensure grid is configured to accommodate the data
   if (atlasCoords.size() != lfricCoords.size()) {
-    utils::throwException("AtlasProcessor::createLfricAtlasMap()> "
+    utils::throwException("utilsatlas::createLfricAtlasMap()> "
       "Configured grid is not compatible with input file...");
   }
   lfricAtlasMap.reserve(atlasCoords.size());
@@ -127,27 +127,18 @@ std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& a
 
 atlas::Field getGlobalField(const atlas::Field& field) {
   if (field.metadata().get<bool>("global") == false) {
+    atlas::array::DataType atlasType = field.datatype();
     atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
                                        atlas::option::levels(field.levels()) |
+                                       atlas::option::datatype(atlasType) |
                                        atlas::option::global(0);
-
-    atlas::array::DataType atlasType = field.datatype();
-    const auto& functionSpace = field.functionspace();
-    atlas::Field globalField;
-    switch (atlasType.kind()) {
-      case atlasType.KIND_REAL64:
-        globalField = functionSpace.createField<double>(atlasOptions);
-        break;
-      case atlasType.KIND_REAL32:
-        globalField = functionSpace.createField<float>(atlasOptions);
-        break;
-      case atlasType.KIND_INT32:
-        globalField = functionSpace.createField<int>(atlasOptions);
-        break;
-      default:
-        utils::throwException("AtlasProcessor::getGlobalFieldSet())> "
-                                "Data type not coded for...");
+    if (atlasType != atlasType.KIND_REAL64 &&
+        atlasType != atlasType.KIND_REAL32 &&
+        atlasType != atlasType.KIND_INT32) {
+        utils::throwException("utilsatlas::getGlobalFieldSet())> Data type not coded for...");
     }
+    const auto& functionSpace = field.functionspace();
+    atlas::Field globalField = functionSpace.createField(atlasOptions);
     field.haloExchange();
     functionSpace.gather(field, globalField);
     return globalField;
@@ -156,10 +147,9 @@ atlas::Field getGlobalField(const atlas::Field& field) {
   }
 }
 
-atlas::Field getFormattedField(atlas::Field& inputField,
-                         const std::string& writeName,
-                         const bool copyFirstLevel) {
-  oops::Log::debug() << "AtlasWriter::processField()" << std::endl;
+atlas::Field getWriteField(atlas::Field& inputField,
+                     const std::string& writeName,
+                     const bool copyFirstLevel) {
   atlas::FunctionSpace functionSpace = inputField.functionspace();
   atlas::array::DataType atlasType = inputField.datatype();
 
@@ -195,7 +185,7 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
     }
     return globalFieldSet;
   } else {
-    utils::throwException("AtlasProcessor::getGlobalFieldSet()> FieldSet has zero fields...");
+    utils::throwException("utilsatlas::getGlobalFieldSet()> FieldSet has zero fields...");
   }
 }
 
@@ -225,8 +215,10 @@ template<typename T>
 atlas::Field copySurfaceLevel(const atlas::Field& inputField,
                               const atlas::FunctionSpace& functionSpace,
                               const atlas::util::Config& atlasOptions) {
-  oops::Log::debug() << "AtlasWriter::copySurfaceLevel()" << std::endl;
   atlas::Field copiedField = functionSpace.createField<T>(atlasOptions);
+
+  inputField.datatype().kind();
+
   auto copiedFieldView = atlas::array::make_view<T, 2>(copiedField);
   auto inputFieldView = atlas::array::make_view<T, 2>(inputField);
   std::vector<int> dimVec = inputField.shape();
@@ -264,7 +256,7 @@ int atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
     return consts::eDouble;
   }
   default:
-    utils::throwException("AtlasWriter::fromFieldSet()> Data type not coded for...");
+    utils::throwException("utilsatlas::atlasTypeToMonioEnum()> Data type not coded for...");
   }
 }
 }  // namespace utilsatlas

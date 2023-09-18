@@ -22,7 +22,7 @@ struct FieldMetadata {
   std::string jediName;
   std::string units;
   int numberOfLevels;
-  bool copyFirstLevel;
+  bool noFirstLevel;
 };
 
 enum eAtlasLonLat {
@@ -89,7 +89,7 @@ enum eFieldMetadata {
   eJediName,
   eUnits,
   eNumberOfLevels,
-  eCopyFirstLevel
+  eNoFirstLevel
 };
 
 const std::string_view kDataTypeNames[eNumberOfDataTypes] = {

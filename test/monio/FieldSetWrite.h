@@ -57,7 +57,7 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldMetadataVec) {
     atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName);
-    if (fieldMetadata.copyFirstLevel == true) {
+    if (fieldMetadata.noFirstLevel == true) {
       atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels + 1);
     } else {
       atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels);
@@ -115,7 +115,7 @@ void initParams(atlas::FieldSet& fieldSet,
     fieldMetadata.units = utils::strNoWhiteSpace(stringVec[consts::eUnits]);
     fieldMetadata.numberOfLevels =
                     std::stoi(utils::strNoWhiteSpace(stringVec[consts::eNumberOfLevels]));
-    fieldMetadata.copyFirstLevel = utils::strToBool(stringVec[consts::eCopyFirstLevel]);
+    fieldMetadata.noFirstLevel = utils::strToBool(stringVec[consts::eNoFirstLevel]);
 
     fieldMetadataVec.push_back(fieldMetadata);
   }
