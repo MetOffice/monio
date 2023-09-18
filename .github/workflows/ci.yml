@@ -1,9 +1,7 @@
 ---
-name: UKMO_CI_Azure
+name: UKMO-CI-Azure
 
 on:
-  push:
-    branches: [master]
   pull_request:
     branches: [develop]
 
