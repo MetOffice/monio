@@ -85,8 +85,8 @@ class AtlasWriter {
                                       const std::vector<int>& dimensions);
 
   atlas::Field getWriteField(atlas::Field& inputField,
-                           const std::string& writeName,
-                           const bool copyFirstLevel);
+                       const std::string& writeName,
+                       const bool noFirstLevel);
 
   template<typename T>
   atlas::Field copySurfaceLevel(const atlas::Field& inputField,
@@ -95,7 +95,8 @@ class AtlasWriter {
 
   void addVariableDimensions(const atlas::Field& field,
                              const Metadata& metadata,
-                             std::shared_ptr<monio::Variable> var);
+                                   std::shared_ptr<monio::Variable> var);
+
   void addGlobalAttributes(Metadata& metadata, const bool isLFRicFormat = true);
 
   const eckit::mpi::Comm& mpiCommunicator_;

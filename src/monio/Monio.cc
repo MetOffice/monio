@@ -160,8 +160,8 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
                 break;
               }
               default: {
-                  utils::throwException("Monio::readIncrements()> "
-                                        "File naming convention not defined...");
+                utils::throwException("Monio::readIncrements()> "
+                                      "File naming convention not defined...");
               }
             }
             // Read fields into memory

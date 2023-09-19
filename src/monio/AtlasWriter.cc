@@ -313,35 +313,41 @@ template void monio::AtlasWriter::populateDataVec<int>(std::vector<int>& dataVec
                                                  const atlas::Field& field,
                                                  const std::vector<int>& dimensions);
 
-atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& inputField,
+atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
                                          const std::string& writeName,
-                                         const bool copyFirstLevel) {
+                                         const bool noFirstLevel) {
   oops::Log::debug() << "AtlasWriter::getWriteField()" << std::endl;
-  atlas::FunctionSpace functionSpace = inputField.functionspace();
-  atlas::array::DataType atlasType = inputField.datatype();
+  atlas::FunctionSpace functionSpace = field.functionspace();
+  atlas::array::DataType atlasType = field.datatype();
+
+  if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+    utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
+  }
 
   // WARNING - This name-check is an LFRic-Lite specific convention...
   if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
-    if (copyFirstLevel == true) {
+    if (noFirstLevel == true) {
       atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
-                                         atlas::option::levels(inputField.levels() + 1);
+                                         atlas::option::levels(consts::kVerticalFullSize);
       switch (atlasType.kind()) {
         case atlasType.KIND_REAL64: {
-          return copySurfaceLevel<double>(inputField, functionSpace, atlasOptions);
+          return copySurfaceLevel<double>(field, functionSpace, atlasOptions);
         }
         case atlasType.KIND_REAL32: {
-          return copySurfaceLevel<float>(inputField, functionSpace, atlasOptions);
+          return copySurfaceLevel<float>(field, functionSpace, atlasOptions);
         }
         case atlasType.KIND_INT32: {
-          return copySurfaceLevel<int>(inputField, functionSpace, atlasOptions);
+          return copySurfaceLevel<int>(field, functionSpace, atlasOptions);
         }
       }
     } else {
-      inputField.metadata().set("name", writeName);
+      field.metadata().set("name", writeName);
     }
+  } else {
+    utils::throwException("AtlasWriter::getWriteField()> Field write name misconfiguration...");
   }
-  return inputField;
+  return field;
 }
 
 template<typename T>

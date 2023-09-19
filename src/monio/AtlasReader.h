@@ -61,6 +61,8 @@ class AtlasReader {
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec);
 
+  atlas::Field getReadField(atlas::Field& inputField, const bool noFirstLevel);
+
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;
 };

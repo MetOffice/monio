@@ -23,6 +23,7 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
 void monio::AtlasReader::populateFieldWithFileData(atlas::Field& field,
                                              const FileData& fileData,
                                              const consts::FieldMetadata& fieldMetadata) {
+  atlas::Field formattedField = getReadField(field, fieldMetadata.noFirstLevel);
   populateFieldWithDataContainer(field,
                                  fileData.getData().getContainer(fieldMetadata.lfricReadName),
                                  fileData.getLfricAtlasMap(),
@@ -160,3 +161,26 @@ template void monio::AtlasReader::populateField<float>(atlas::Field& field,
                                                        const std::vector<float>& dataVec);
 template void monio::AtlasReader::populateField<int>(atlas::Field& field,
                                                      const std::vector<int>& dataVec);
+
+atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
+                                              const bool noFirstLevel) {
+  if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
+    utils::throwException("AtlasReader::getReadField()> Field levels misconfiguration...");
+  }
+  if (noFirstLevel == true) {
+    atlas::array::DataType atlasType = field.datatype();
+    if (atlasType != atlasType.KIND_REAL64 &&
+        atlasType != atlasType.KIND_REAL32 &&
+        atlasType != atlasType.KIND_INT32) {
+        utils::throwException("AtlasReader::getReadField())> Data type not coded for...");
+    }
+    atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
+                                       atlas::option::levels(consts::kVerticalHalfSize) |
+                                       atlas::option::datatype(atlasType) |
+                                       atlas::option::global(0);
+    const auto& functionSpace = field.functionspace();
+    return functionSpace.createField(atlasOptions);
+  } else {
+    return field;
+  }
+}
