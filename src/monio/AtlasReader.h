@@ -42,7 +42,8 @@ class AtlasReader {
 
   void populateFieldWithFileData(atlas::Field& field,
                            const FileData& fileData,
-                           const consts::FieldMetadata& fieldMetadata);
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& readName);
 
  private:
   void populateFieldWithDataContainer(atlas::Field& field,

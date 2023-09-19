@@ -22,10 +22,12 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
 
 void monio::AtlasReader::populateFieldWithFileData(atlas::Field& field,
                                              const FileData& fileData,
-                                             const consts::FieldMetadata& fieldMetadata) {
+                                             const consts::FieldMetadata& fieldMetadata,
+                                             const std::string& readName) {
+  oops::Log::debug() << "AtlasReader::populateFieldWithFileData()" << std::endl;
   atlas::Field formattedField = getReadField(field, fieldMetadata.noFirstLevel);
   populateFieldWithDataContainer(formattedField,
-                                 fileData.getData().getContainer(fieldMetadata.lfricReadName),
+                                 fileData.getData().getContainer(readName),
                                  fileData.getLfricAtlasMap(),
                                  fieldMetadata.noFirstLevel);
 }
@@ -101,24 +103,31 @@ void monio::AtlasReader::populateField(atlas::Field& field,
                                  const bool noFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
+  // Erroneous case for field with noFirstLevel == true should have been adjusted by getReadField()
+  // to have 70 and not 71 levels.
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
+  // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
+  // read data still has enough to fill 71.
   } else if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
     for (int j = 1; j < consts::kVerticalFullSize; ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
+        // Bounds checking
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j - 1) = dataVec[index];
         } else {
-            utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
-                                  "data for field \"" + field.name() + "\".");
+          utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
+                                "data for field \"" + field.name() + "\".");
         }
       }
     }
+  // Valid case for fields noFirstLevel == false. Field is filled with all available data.
   } else {
     for (int j = 0; j < field.levels(); ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
+        // Bounds checking
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j) = dataVec[index];
         } else {

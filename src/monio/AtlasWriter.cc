@@ -320,6 +320,7 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
   atlas::FunctionSpace functionSpace = field.functionspace();
   atlas::array::DataType atlasType = field.datatype();
 
+  // Erroneous case. For noFirstLevel == true field should only have 70 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }

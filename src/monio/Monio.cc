@@ -106,7 +106,8 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                                     fieldMetadata.lfricReadName,
                                     dateTime,
                                     std::string(consts::kTimeDimName));
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata,
+                                                   fieldMetadata.lfricReadName);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -166,7 +167,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             }
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -269,9 +270,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
-          if (isLfricFormat == false) {
+          if (isLfricFormat == true) {
             writeName = fieldMetadata.lfricWriteName;
-          } else if (isLfricFormat == true && fieldMetadata.jediName == globalField.name()) {
+          } else if (isLfricFormat == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
           } else {
             utils::throwException("Monio::writeIncrements()> "
