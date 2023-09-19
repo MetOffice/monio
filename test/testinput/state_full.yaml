@@ -1,10 +1,10 @@
 parameters:
   fieldMetadata:
-    exner:                    exner,                    exner_levels_minus_one, exner_levels_minus_one, 1,    70, true
+    exner:                    exner,                    exner_levels_minus_one, exner_levels_minus_one, 1,    70, false
     grid_surface_temperature: grid_surface_temperature, skin_temperature,       skin_temperature,       K,    1,  false
-    theta:                    theta,                    potential_temperature,  potential_temperature,  K,    71, false
-    u_in_w3:                  u_in_w3,                  eastward_wind,          eastward_wind,          ms-1, 70, true
-    v_in_w3:                  v_in_w3,                  northward_wind,         northward_wind,         ms-1, 70, true
+    theta:                    theta,                    potential_temperature,  potential_temperature,  K,    71, true
+    u_in_w3:                  u_in_w3,                  eastward_wind,          eastward_wind,          ms-1, 70, false
+    v_in_w3:                  v_in_w3,                  northward_wind,         northward_wind,         ms-1, 70, false
   gridName: CS-LFR-224
   partitionerType: cubedsphere
   meshType: cubedsphere_dual
