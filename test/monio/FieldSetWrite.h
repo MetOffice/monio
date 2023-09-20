@@ -56,12 +56,9 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldMetadataVec) {
-    atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName);
-    if (fieldMetadata.noFirstLevel == true) {
-      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels + 1);
-    } else {
-      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels);
-    }
+    // No error checking on metadata. This is handled by calls to Monio
+    atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName) |
+                                       atlas::option::levels(fieldMetadata.numberOfLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
   }
   return fieldSet;
@@ -70,6 +67,7 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
 /// Writes FieldSet to file.
 void write(const atlas::FieldSet& fieldSet, const std::string& outputFilePath) {
   oops::Log::info() << "monio::test::write()" << std::endl;
+  // No further formatting required. Write directly to file
   Monio::get().writeFieldSet(fieldSet, outputFilePath);
 }
 
@@ -132,8 +130,8 @@ void main() {
   util::DateTime dateTime;
   std::string inputFilePath;
   std::string outputFilePath;
-  initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
 
+  initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
   readInput(fieldSet, fieldMetadataVec, dateTime, inputFilePath);
   write(fieldSet, outputFilePath);
 }

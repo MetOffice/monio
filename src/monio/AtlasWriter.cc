@@ -320,14 +320,13 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
   atlas::FunctionSpace functionSpace = field.functionspace();
   atlas::array::DataType atlasType = field.datatype();
 
-  // Erroneous case. For noFirstLevel == true field should only have 70 levels
+  // Erroneous case. For noFirstLevel == true field should have 70 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }
-
   // WARNING - This name-check is an LFRic-Lite specific convention...
   if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
-    if (noFirstLevel == true) {
+    if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
       atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
                                          atlas::option::levels(consts::kVerticalFullSize);

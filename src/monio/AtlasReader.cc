@@ -103,8 +103,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
                                  const bool noFirstLevel) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  // Erroneous case for field with noFirstLevel == true should have been adjusted by getReadField()
-  // to have 70 and not 71 levels.
+  // Field with noFirstLevel == true should have been adjusted to have 70 levels.
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
   // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
@@ -185,10 +184,11 @@ template void monio::AtlasReader::populateField<int>(atlas::Field& field,
 
 atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
                                               const bool noFirstLevel) {
+  // Erroneous case. For noFirstLevel == true field should have 71 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
     utils::throwException("AtlasReader::getReadField()> Field levels misconfiguration...");
   }
-  if (noFirstLevel == true) {
+  if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     atlas::array::DataType atlasType = field.datatype();
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&

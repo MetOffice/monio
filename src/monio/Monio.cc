@@ -152,18 +152,15 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             // Configure read name
             std::string readName;
             switch (namingConvention) {
-              case consts::eLfricNaming: {
+              case consts::eLfricNaming:
                 readName = fieldMetadata.lfricReadName;
                 break;
-              }
-              case consts::eJediNaming: {
+              case consts::eJediNaming:
                 readName = fieldMetadata.jediName;
                 break;
-              }
-              default: {
+              default:
                 utils::throwException("Monio::readIncrements()> "
                                       "File naming convention not defined...");
-              }
             }
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);

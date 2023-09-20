@@ -56,12 +56,9 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldMetadataVec) {
-    atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName);
-    if (fieldMetadata.noFirstLevel == true) {
-      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels + 1);
-    } else {
-      atlasOptions = atlasOptions | atlas::option::levels(fieldMetadata.numberOfLevels);
-    }
+    // No error checking on metadata. This is handled by calls to Monio
+    atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName) |
+                                       atlas::option::levels(fieldMetadata.numberOfLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
   }
   return fieldSet;
@@ -142,10 +139,9 @@ void main() {
   util::DateTime dateTime;
   std::string inputFilePath;
   std::string outputFilePath;
+
   initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
-
   readInput(fieldSet, fieldMetadataVec, dateTime, inputFilePath);
-
   write(outputFilePath);
   readOutput(outputFilePath);
 }

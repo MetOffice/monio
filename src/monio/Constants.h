@@ -196,6 +196,7 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
 
 const int kMPIRankOwner = 0;
 
+const int kVerticakSingle = 1;
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;
 
