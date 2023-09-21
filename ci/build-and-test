@@ -20,21 +20,23 @@ trap finally EXIT
 
 cd "${WORKD}"
 
-rm -f "${HERE}/bundle"
-ln -s '..' "${HERE}/bundle"
+GENERATOR=Unix\ Makefiles
+if command -v ninja; then GENERATOR=Ninja; fi
 
 # -- Configure
-cmake -B . -S "${HERE}" -DCMAKE_BUILD_TYPE=Debug -DMPI_ARGS="--oversubscribe"
+(   set -x;
+    cmake -B . -S "${HERE}" -G "$GENERATOR" \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DMPI_ARGS="--oversubscribe"
 
 
 # -- Build
-# VERBOSE=1 make -j "${NPROC}"
-cmake --build . -j "${NPROC}"
+    cmake --build . -j "${NPROC}"
 
 
 # -- Test
-# cpplint --version
-env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-    ctest -j "$NPROC" -V -R "monio_coding_norms"
+    env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+    ctest -j "$NPROC" -R "coding_norms" --output-on-failure
+)
 
 exit
