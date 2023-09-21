@@ -148,6 +148,8 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
 
             // Initialise file
             int namingConvention = initialiseFile(grid.name(), filePath);
+            // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
+            // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName;
