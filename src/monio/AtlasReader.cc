@@ -25,8 +25,8 @@ void monio::AtlasReader::populateFieldWithFileData(atlas::Field& field,
                                              const consts::FieldMetadata& fieldMetadata,
                                              const std::string& readName) {
   oops::Log::debug() << "AtlasReader::populateFieldWithFileData()" << std::endl;
-  atlas::Field formattedField = getReadField(field, fieldMetadata.noFirstLevel);
-  populateFieldWithDataContainer(formattedField,
+  atlas::Field readField = getReadField(field, fieldMetadata.noFirstLevel);
+  populateFieldWithDataContainer(readField,
                                  fileData.getData().getContainer(readName),
                                  fileData.getLfricAtlasMap(),
                                  fieldMetadata.noFirstLevel);
@@ -184,10 +184,7 @@ template void monio::AtlasReader::populateField<int>(atlas::Field& field,
 
 atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
                                               const bool noFirstLevel) {
-  // Erroneous case. For noFirstLevel == true field should have 71 levels
-  if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
-    utils::throwException("AtlasReader::getReadField()> Field levels misconfiguration...");
-  }
+  // Check to ensure field has not been initialised with 71 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     atlas::array::DataType atlasType = field.datatype();
     if (atlasType != atlasType.KIND_REAL64 &&
@@ -202,6 +199,6 @@ atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
     const auto& functionSpace = field.functionspace();
     return functionSpace.createField(atlasOptions);
   } else {
-    return field;
+    return field;  // Case when field is initialised correctly.
   }
 }
