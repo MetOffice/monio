@@ -34,18 +34,18 @@ class Monio {
   Monio& operator=(const Monio&) = delete;  //!< Deleted copy assignment
 
 
-  void initialiseFile(const atlas::Grid& grid,
-                      const std::string& filePath,
-                      const util::DateTime& dateTime);  // Public, whilst called from LFRic-Lite
+  int initialiseFile(const atlas::Grid& grid,
+                     const std::string& filePath,
+                     const util::DateTime& dateTime);  // Public, whilst called from LFRic-Lite
 
   void readState(atlas::FieldSet& localFieldSet,
-                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                const std::string& filePath,
-                const util::DateTime& dateTime);
+           const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+           const std::string& filePath,
+           const util::DateTime& dateTime);
 
   void readIncrements(atlas::FieldSet& localFieldSet,
-               const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-               const std::string& filePath);
+                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                const std::string& filePath);
 
   void writeState(const atlas::FieldSet& localFieldSet,
                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
@@ -54,7 +54,7 @@ class Monio {
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                        const std::string& filePath,
-                       const bool isLfricFormat = true);
+                       const bool isLfricNaming = true);
 
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string& filePath);
@@ -69,6 +69,9 @@ class Monio {
 
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath);
+
+  int initialiseFile(const atlas::Grid& grid,
+                     const std::string& filePath);  // Public, whilst called from LFRic-Lite
 
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
 

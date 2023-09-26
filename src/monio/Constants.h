@@ -22,7 +22,7 @@ struct FieldMetadata {
   std::string jediName;
   std::string units;
   int numberOfLevels;
-  bool copyFirstLevel;
+  bool noFirstLevel;
 };
 
 enum eAtlasLonLat {
@@ -30,9 +30,10 @@ enum eAtlasLonLat {
   eLatitude
 };
 
-enum eFileNamingConventions {
+enum eNamingConventions {
   eLfricNaming,
-  eJediNaming
+  eJediNaming,
+  eNotDefined
 };
 
 enum eDataTypes {  // Used in Reader and File
@@ -81,13 +82,14 @@ enum eIncrementVariables {
   eNumberOfIncrementVariables
 };
 
-enum eVariableMetadata {
+// Paired with struct FieldMetadata, above
+enum eFieldMetadata {
   eLfricReadName,
   eLfricWriteName,
   eJediName,
   eUnits,
   eNumberOfLevels,
-  eCopyFirstLevel
+  eNoFirstLevel
 };
 
 const std::string_view kDataTypeNames[eNumberOfDataTypes] = {
@@ -116,6 +118,12 @@ const std::string_view kIncrementVariables[eNumberOfIncrementVariables] {
   "mass_content_of_cloud_ice_in_atmosphere_layer",
 };
 
+// Needs to be a vector for use with call to templated search in Metadata::getNamingConvention
+const std::vector<std::string> kNamingConventions({
+  "LFRic",
+  "JEDI"
+});
+
 const std::string_view kTimeDimName = "time_counter";
 const std::string_view kTimeVarName = "time_instant";
 const std::string_view kTimeOriginName = "time_origin";
@@ -135,10 +143,6 @@ const std::string_view kLfricLatVarName = "Mesh2d_face_x";
 const std::string_view kLongitudeVarName = "longitude";
 const std::string_view kLatitudeVarName = "latitude";
 
-const std::string_view kNamingConvention = "naming_convention";
-const std::string_view kNamingJediName = "JEDI";
-const std::string_view kNamingLfricName = "LFRic";
-
 const std::string_view kTabSpace = "    ";
 const std::string_view kLevelsSearchTerm = "levels";
 const std::string_view kNotFoundError = "NOT_FOUND";
@@ -146,12 +150,9 @@ const std::string_view kNotFoundError = "NOT_FOUND";
 const std::string_view kToBeDerived = "TO BE DERIVED";
 const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
 
-const std::string_view kProducedByName = "Produced_by";
+const std::string_view kProducedByName = "produced_by";
 const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
-
-const std::string_view kDataFormatName = "Data_format";
-const std::string_view kDataFormatAtlas = "Atlas";
-const std::string_view kDataFormatLfric = "LFRic";
+const std::string_view kNamingConventionName = "naming_convention";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /// Increment file metadata attributes
@@ -175,7 +176,7 @@ const std::string_view kMeshValue = "Mesh2d";
 const std::string_view kLocationValue = "face";
 const std::string_view kOnlineOperationValue = "instant";  // Not needed?
 const std::string_view kIntervalOperationValue = "3600 s";  // Not needed?
-const std::string_view kntervalWriteValue = "3600 s";  // Not needed?
+const std::string_view kIntervalWriteValue = "3600 s";  // Not needed?
 const std::string_view kCellMethodsValue = "time: point";  // Not needed?
 const std::string_view kCoordinatesValue = "Mesh2d_face_y Mesh2d_face_x";
 
@@ -187,7 +188,7 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
   kLocationValue,
   kOnlineOperationValue,
   kIntervalOperationValue,
-  kntervalWriteValue,
+  kIntervalWriteValue,
   kCellMethodsValue,
   kCoordinatesValue
 };
@@ -195,6 +196,7 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
 
 const int kMPIRankOwner = 0;
 
+const int kVerticakSingle = 1;
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;
 

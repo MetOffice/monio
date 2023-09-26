@@ -45,7 +45,7 @@ class AtlasWriter {
                                  atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& writeName,
-                           const bool isLfricFormat);
+                           const bool isLfricNaming);
 
  private:
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
@@ -84,10 +84,20 @@ class AtlasWriter {
                                       const atlas::Field& field,
                                       const std::vector<int>& dimensions);
 
+  atlas::Field getWriteField(atlas::Field& inputField,
+                       const std::string& writeName,
+                       const bool noFirstLevel);
+
+  template<typename T>
+  atlas::Field copySurfaceLevel(const atlas::Field& inputField,
+                                const atlas::FunctionSpace& functionSpace,
+                                const atlas::util::Config& atlasOptions);
+
   void addVariableDimensions(const atlas::Field& field,
                              const Metadata& metadata,
-                             std::shared_ptr<monio::Variable> var);
-  void addGlobalAttributes(Metadata& metadata, const bool isLFRicFormat = true);
+                                   std::shared_ptr<monio::Variable> var);
+
+  void addGlobalAttributes(Metadata& metadata, const bool isLfricNaming = true);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

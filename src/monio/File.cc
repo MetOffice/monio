@@ -67,8 +67,7 @@ void monio::File::readMetadata(Metadata& metadata) {
     readAttributes(metadata);  // Global attributes
     metadata.print();
   } else {
-    utils::throwException(
-        "File::readMetadata()> Write file accessed for reading...");
+    utils::throwException("File::readMetadata()> Write file accessed for reading...");
   }
 }
 
@@ -133,6 +132,7 @@ void monio::File::readVariables(Metadata& metadata,
 }
 
 void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
+  oops::Log::debug() << "File::readVariable()" << std::endl;
   netCDF::NcType varType = ncVar.getType();
   std::string varName = ncVar.getName();
   std::shared_ptr<monio::Variable> var = nullptr;
@@ -207,7 +207,7 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
 }
 
 void monio::File::readAttributes(Metadata& metadata) {
-  oops::Log::debug() << "File::readVariables()" << std::endl;
+  oops::Log::debug() << "File::readAttributes()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     std::multimap<std::string, netCDF::NcGroupAtt> ncAttrMap = getFile().getAtts();
     for (auto const& ncAttrPair : ncAttrMap) {
@@ -253,7 +253,7 @@ void monio::File::readAttributes(Metadata& metadata) {
 template<typename T>
 void monio::File::readSingleDatum(const std::string& varName,
                                   std::vector<T>& dataVec) {
-  oops::Log::debug() << "File::readData()" << std::endl;
+  oops::Log::debug() << "File::readSingleDatum()" << std::endl;
   if (fileMode_ == netCDF::NcFile::read) {
     auto var = getFile().getVar(varName);
     var.getVar(dataVec.data());

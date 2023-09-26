@@ -40,6 +40,12 @@ class AtlasReader {
   AtlasReader& operator=( AtlasReader&&)      = delete;  //!< Deleted move assignment
   AtlasReader& operator=(const AtlasReader&)  = delete;  //!< Deleted copy assignment
 
+  void populateFieldWithFileData(atlas::Field& field,
+                           const FileData& fileData,
+                           const consts::FieldMetadata& fieldMetadata,
+                           const std::string& readName);
+
+ private:
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const std::vector<size_t>& lfricToAtlasMap,
@@ -48,7 +54,6 @@ class AtlasReader {
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
- private:
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec,
                                     const std::vector<size_t>& lfricToAtlasMap,
@@ -56,6 +61,8 @@ class AtlasReader {
 
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec);
+
+  atlas::Field getReadField(atlas::Field& inputField, const bool noFirstLevel);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

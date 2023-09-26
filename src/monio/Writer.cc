@@ -37,7 +37,7 @@ monio::Writer::Writer(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 void monio::Writer::openFile(const std::string& filePath) {
-  oops::Log::debug() << "Writer::openFile()" << std::endl;
+  oops::Log::debug() << "Writer::openFile() \"" << filePath << "\"..." << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (filePath.size() != 0) {
       try {
@@ -79,8 +79,7 @@ void monio::Writer::writeData(const FileData& fileData) {
                                                                 fileData.getData().getContainers();
     for (const auto& dataContainerPair : dataContainerMap) {
       std::string varName = dataContainerPair.first;
-      // Checks variable exists in metadata
-      fileData.getMetadata().getVariable(varName);
+      fileData.getMetadata().getVariable(varName);  // Checks variable exists in metadata
       std::shared_ptr<DataContainerBase> dataContainer = dataContainerPair.second;
       int dataType = dataContainerPair.second->getType();
       switch (dataType) {
