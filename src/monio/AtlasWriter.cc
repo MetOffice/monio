@@ -76,7 +76,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
                                                    atlas::Field& field,
                                              const consts::FieldMetadata& fieldMetadata,
                                              const std::string& writeName,
-                                             const bool isLfricFormat) {
+                                             const bool isLfricNaming) {
   oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
@@ -89,7 +89,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     atlas::Field formattedField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
     populateMetadataWithField(metadata, formattedField, fieldMetadata, writeName);
     populateDataWithField(fileData.getData(), formattedField, lfricAtlasMap, writeName);
-    addGlobalAttributes(metadata, isLfricFormat);
+    addGlobalAttributes(metadata, isLfricNaming);
   }
 }
 
@@ -398,10 +398,10 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
   }
 }
 
-void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricFormat) {
+void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricNaming) {
   // Initialise variables
-  std::string formatType =
-      isLfricFormat == true ? consts::kNamingConventions[consts::eLfricNaming] :
+  std::string namingConvention =
+      isLfricNaming == true ? consts::kNamingConventions[consts::eLfricNaming] :
                               consts::kNamingConventions[consts::eJediNaming];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> producedByAttr =
@@ -409,7 +409,7 @@ void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLf
                                         std::string(consts::kProducedByString));
   std::shared_ptr<monio::AttributeString> formatAttr =
       std::make_shared<AttributeString>(std::string(consts::kNamingConventionName),
-                                        formatType);
+                                        namingConvention);
   // Add to metadata
   metadata.addGlobalAttr(formatAttr->getName(), formatAttr);
   metadata.addGlobalAttr(producedByAttr->getName(), producedByAttr);

@@ -251,7 +251,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
 void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                    const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                                    const std::string& filePath,
-                                   const bool isLfricFormat) {
+                                   const bool isLfricNaming) {
   oops::Log::debug() << "Monio::writeIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::writeIncrements()> localFieldSet has zero fields...");
@@ -269,9 +269,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
-          if (isLfricFormat == true) {
+          if (isLfricNaming == true) {
             writeName = fieldMetadata.lfricWriteName;
-          } else if (isLfricFormat == false && fieldMetadata.jediName == globalField.name()) {
+          } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
           } else {
             utils::throwException("Monio::writeIncrements()> "
@@ -281,7 +281,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                                  globalField,
                                                  fieldMetadata,
                                                  writeName,
-                                                 isLfricFormat);
+                                                 isLfricNaming);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
           fileData.clearData();  // Globalised field data no longer required

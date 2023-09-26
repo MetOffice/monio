@@ -54,7 +54,7 @@ class Monio {
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                        const std::string& filePath,
-                       const bool isLfricFormat = true);
+                       const bool isLfricNaming = true);
 
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string& filePath);
