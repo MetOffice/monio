@@ -43,12 +43,15 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
     FileData& fileData = createFileData(grid.name(), filePath, dateTime);
     reader_.openFile(filePath);
     reader_.readMetadata(fileData);
+    // Read data
     std::vector<std::string> meshVars =
         fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
     reader_.readFullData(fileData, meshVars);
-    createLfricAtlasMap(fileData, grid);
-
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
     reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+    // Process read data
+    createLfricAtlasMap(fileData, grid);
     createDateTimes(fileData,
                     std::string(consts::kTimeVarName),
                     std::string(consts::kTimeOriginName));
@@ -69,6 +72,8 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
     std::vector<std::string> meshVars =
         fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
     reader_.readFullData(fileData, meshVars);
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
     createLfricAtlasMap(fileData, grid);
 
     namingConvention = fileData.getMetadata().getNamingConvention();

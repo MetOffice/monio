@@ -404,13 +404,13 @@ void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLf
       isLfricNaming == true ? consts::kNamingConventions[consts::eLfricNaming] :
                               consts::kNamingConventions[consts::eJediNaming];
   // Create attribute objects
+  std::shared_ptr<monio::AttributeString> namingAttr =
+      std::make_shared<AttributeString>(std::string(consts::kNamingConventionName),
+                                        namingConvention);
   std::shared_ptr<monio::AttributeString> producedByAttr =
       std::make_shared<AttributeString>(std::string(consts::kProducedByName),
                                         std::string(consts::kProducedByString));
-  std::shared_ptr<monio::AttributeString> formatAttr =
-      std::make_shared<AttributeString>(std::string(consts::kNamingConventionName),
-                                        namingConvention);
   // Add to metadata
-  metadata.addGlobalAttr(formatAttr->getName(), formatAttr);
+  metadata.addGlobalAttr(namingAttr->getName(), namingAttr);
   metadata.addGlobalAttr(producedByAttr->getName(), producedByAttr);
 }
