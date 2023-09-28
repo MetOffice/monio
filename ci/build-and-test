@@ -24,7 +24,7 @@ trap finally ERR EXIT
 
 cd "${WORKD}"
 
-# If using JCSDA Docker container
+# -- Activate spack env if using JCSDA Docker container 
 if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
@@ -39,11 +39,11 @@ cmake --build . -j "${NPROC}"
 
 # -- Test
 env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-    ctest -j"${NPROC}" --test-dir './monio' -V
+ctest -j"${NPROC}" --test-dir './monio' -V
 
 # env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-#     ctest -j"${NPROC}" --test-dir './monio' || \
+# ctest -j"${NPROC}" --test-dir './monio' || \
 # env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-#     ctest --test-dir './monio' --rerun-failed -V
+# ctest --test-dir './monio' --rerun-failed -V
 
 exit
