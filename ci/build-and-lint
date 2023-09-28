@@ -29,6 +29,8 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
 
+exit 
+
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
     -DCMAKE_BUILD_TYPE=Debug \
