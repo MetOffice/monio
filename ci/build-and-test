@@ -32,6 +32,7 @@ fi
 ls -l ../../
 echo "CURRENT WORKING PATH: $(pwd)"
 echo "HERE PATH: ${HERE}"
+ls -l "${HERE}"
 
 exit 
 
