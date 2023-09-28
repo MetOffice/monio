@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# (C) Crown Copyright 2023, the Met Office. All rights reserved.
+#
+set -euxo pipefail
+
+finally() {
+    trap '' ERR
+    trap '' EXIT
+    if [[ -d "${WORKD:-}" ]]; then
+        cd /
+        rm -fr "${WORKD}"
+    fi
+}
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+THIS="$(basename "$0")"
+NPROC=${NPROC:-$(nproc)}
+WORKD="$(mktemp -d "${THIS}-XXXXXX" -t)"
+GENERATOR=Unix\ Makefiles
+if command -v ninja &>/dev/null; then GENERATOR=Ninja; fi
+
+trap finally ERR EXIT
+
+cd "${WORKD}"
+
+# -- If using JCSDA Docker container activate spack env
+if [[ -f /opt/spack-environment/activate.sh ]]; then
+    source /opt/spack-environment/activate.sh
+fi
+
+# -- Configure
+cmake -B . -S "${HERE}" -G "${GENERATOR}" \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DMPI_ARGS="--oversubscribe"
+
+# -- Build
+cmake --build . -j "${NPROC}"
+
+# -- Test
+ctest -j"${NPROC}" --test-dir './monio' -R 'conding_norms'
+
+exit
