@@ -39,10 +39,10 @@ cmake --build . -j "${NPROC}"
 
 # -- Test
 env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-    ctest -j"${NPROC}" --test-dir './monio'
+    ctest -j"${NPROC}" --test-dir './monio' -V
 
 # env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-#     ctest -j"${NPROC}" --test-dir './monio' --output-on-failure ||\
+#     ctest -j"${NPROC}" --test-dir './monio' || \
 # env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
 #     ctest --test-dir './monio' --rerun-failed -V
 
