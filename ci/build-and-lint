@@ -29,6 +29,7 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
 
+echo "HERE is $HERE"
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
     -DCMAKE_BUILD_TYPE=Debug \
@@ -39,6 +40,6 @@ cmake --build . -j "${NPROC}"
 
 # -- Test
 env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-ctest -j"${NPROC}" --test-dir './monio' -R 'conding_norms'
+ctest -j"${NPROC}" --test-dir './monio' -R 'coding_norms' -V
 
 exit
