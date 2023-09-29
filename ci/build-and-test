@@ -30,18 +30,10 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
 fi
 
 ls -l /var/tmp
+du -hd 2 /var/tmp
 ls -l /var/tmp/model-interface-data
 
-# ls -l ../../
-# echo "CURRENT WORKING PATH: $(pwd)"
-# echo "HERE PATH: ${HERE}"
-
-# ls -l "${HERE}/../"
-# ls -l "${HERE}/../../"
-# ls -l "${HERE}/../../../"
-# ls -l "${HERE}/../../../../"
-
-exit 
+export LFRICLITE_DATA_REP_DIR=/var/tmp/model-interface-data/lfric-lite/Data
 
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
