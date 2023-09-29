@@ -9,15 +9,11 @@ env:
   REPO: ${{ github.event.repository.name }}
   BUNDLE: pr-${{ github.event.number }}
 
-jobs:
+jobs:  
   build1:
-    name: gnu 11.3.1 (UKMO)
     if: github.repository_owner == 'MetOffice'
+    name: gnu 11.3.1 (UKMO)    
     runs-on: jedi-self-hosted-rg
-
-    # env:
-    #   REPO: ${{ github.event.repository.name }}
-    #   BUNDLE: pr-${{ github.event.number }}
 
     steps:
       - name: pre-submit cleanup
@@ -62,13 +58,10 @@ jobs:
           && rm -fr ${{ github.workspace }}/${{ env.BUNDLE }}
 
   build2:
-    name: gnu 9.4.0 (JCSDA)
-    if: github.repository_owner == 'MetOffice'
+    if: |
+      github.repository_owner == 'MetOffice' && '! github.event.pull_request.draft'
+    name: gnu 9.4.0 (JCSDA)    
     runs-on: ubuntu-latest
-
-    # env:
-    #   REPO: ${{ github.event.repository.name }}
-    #   BUNDLE: pr-${{ github.event.number }}
 
     steps:
       - name: checkout current
