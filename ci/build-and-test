@@ -29,16 +29,14 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
 
-ls -l /var/tmp
-du -hd 2 /var/tmp
-ls -l /var/tmp/model-interface-data
+# ls -l /var/tmp
+# du -hd 2 /var/tmp
+# ls -l /var/tmp/model-interface-data
 
 export LFRICLITE_DATA_REP_DIR=/var/tmp/model-interface-data/lfric-lite/Data
 
 ls -l "${LFRICLITE_DATA_REP_DIR}"
 
-
-exit
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
     -DCMAKE_BUILD_TYPE=Debug \
