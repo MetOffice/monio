@@ -58,8 +58,7 @@ jobs:
           && rm -fr ${{ github.workspace }}/${{ env.BUNDLE }}
 
   build2:
-    if: |
-      github.repository_owner == 'MetOffice' && '! github.event.pull_request.draft'
+    if: '! github.event.pull_request.draft'
     name: gnu 9.4.0 (JCSDA)    
     runs-on: ubuntu-latest
 
