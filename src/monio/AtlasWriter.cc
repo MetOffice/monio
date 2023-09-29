@@ -319,7 +319,11 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
   oops::Log::debug() << "AtlasWriter::getWriteField()" << std::endl;
   atlas::FunctionSpace functionSpace = field.functionspace();
   atlas::array::DataType atlasType = field.datatype();
-
+  if (atlasType != atlasType.KIND_REAL64 &&
+      atlasType != atlasType.KIND_REAL32 &&
+      atlasType != atlasType.KIND_INT32) {
+      utils::throwException("AtlasWriter::getWriteField())> Data type not coded for...");
+  }
   // Erroneous case. For noFirstLevel == true field should have 70 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
