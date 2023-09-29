@@ -59,7 +59,7 @@ jobs:
             --volume ${PWD}/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${{ runner.tool_cache }}/model-interface-data:/var/tmp/model-interface-data \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9' \
-          && rm -fr ${{github.workspace}}/${{env.BUNDLE}}
+          && rm -fr ${{ github.workspace }}/${{ env.BUNDLE }}
 
   build2:
     name: gnu 9.4.0 (JCSDA)

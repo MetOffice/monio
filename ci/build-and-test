@@ -19,6 +19,7 @@ NPROC=${NPROC:-$(nproc)}
 WORKD="$(mktemp -d "${THIS}-XXXXXX" -t)"
 GENERATOR=Unix\ Makefiles
 if command -v ninja &>/dev/null; then GENERATOR=Ninja; fi
+export LFRICLITE_DATA_REP_DIR=/var/tmp/model-interface-data/lfric-lite/Data
 
 trap finally ERR EXIT
 
@@ -29,11 +30,6 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
 
-# ls -l /var/tmp
-# du -hd 2 /var/tmp
-# ls -l /var/tmp/model-interface-data
-
-export LFRICLITE_DATA_REP_DIR=/var/tmp/model-interface-data/lfric-lite/Data
 
 ls -l "${LFRICLITE_DATA_REP_DIR}"
 
@@ -47,11 +43,8 @@ cmake --build . -j "${NPROC}"
 
 # -- Test
 env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-ctest -j"${NPROC}" --test-dir './monio' -V
-
-# env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-# ctest -j"${NPROC}" --test-dir './monio' || \
-# env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-# ctest --test-dir './monio' --rerun-failed -V
+ctest -j"${NPROC}" --test-dir './monio' || \
+env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+ctest --test-dir './monio' --rerun-failed -V
 
 exit
