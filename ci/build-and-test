@@ -29,14 +29,17 @@ if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
 
-ls -l ../../
-echo "CURRENT WORKING PATH: $(pwd)"
-echo "HERE PATH: ${HERE}"
+ls -l /var/tmp
+ls -l /var/tmp/model-interface-data
 
-ls -l "${HERE}/../"
-ls -l "${HERE}/../../"
-ls -l "${HERE}/../../../"
-ls -l "${HERE}/../../../../"
+# ls -l ../../
+# echo "CURRENT WORKING PATH: $(pwd)"
+# echo "HERE PATH: ${HERE}"
+
+# ls -l "${HERE}/../"
+# ls -l "${HERE}/../../"
+# ls -l "${HERE}/../../../"
+# ls -l "${HERE}/../../../../"
 
 exit 
 
