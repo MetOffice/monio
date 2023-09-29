@@ -57,7 +57,7 @@ jobs:
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${PWD}/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
-            --volume ${{ runner.temp }}/model-interface-data:/var/tmp/model-interface-data \
+            --volume ${{ runner }}/model-interface-data:/var/tmp/model-interface-data \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9' \
           && rm -fr ${{github.workspace}}/${{env.BUNDLE}}
 

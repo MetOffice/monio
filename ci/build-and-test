@@ -35,6 +35,10 @@ ls -l /var/tmp/model-interface-data
 
 export LFRICLITE_DATA_REP_DIR=/var/tmp/model-interface-data/lfric-lite/Data
 
+ls -l "${LFRICLITE_DATA_REP_DIR}"
+
+
+exit
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
     -DCMAKE_BUILD_TYPE=Debug \
