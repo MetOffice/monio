@@ -50,7 +50,7 @@ jobs:
         run: |
           az acr login --name ngmssboxjediacr
           echo "${{ secrets.MOBB_DATA }}"
-          (cd ${PWD}/${BUNDLE} && ln -sf ln -s ${{ secrets.MOBB_DATA }})
+          (cd ${PWD}/${BUNDLE} && ln -sf ${{ secrets.MOBB_DATA }})
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
