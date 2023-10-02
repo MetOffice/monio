@@ -50,16 +50,15 @@ jobs:
         env:
           MOBB_DATA: ${{ github.workspace }}/${{ env.BUNDLE }}/MOBB_DATA
         run: |
-          az acr login --name ngmssboxjediacr
-          
+          az acr login --name ngmssboxjediacr          
           ln -sfT /testdata/model-interface-data ${MOBB_DATA}
-          export LFRICLITE_DATA_REP_DIR="${MOBB_DATA}/lfric-lite/Data"
-
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${PWD}/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9'
+          && cd ${{ github.workspace }} \
+          && rm -fr ${{ env.BUNDLE }}
 
   build2:
     if: '! github.event.pull_request.draft'
