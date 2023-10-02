@@ -24,6 +24,7 @@ BASE="${HERE%/*}"
 TESTDIR="${BASE##*/}"
 
 ls -l "${HERE}/"
+ls -l "${HERE}/MOBB_DATA/"
 
 export LFRICLITE_DATA_REP_DIR="${HERE}/MOBB_DATA/lfric-lite/Data"
 ls -l "${LFRICLITE_DATA_REP_DIR}"
