@@ -22,7 +22,7 @@ GENERATOR=Unix\ Makefiles
 if command -v ninja &>/dev/null; then GENERATOR=Ninja; fi
 BASE="${HERE%/*}"
 TESTDIR="${BASE##*/}"
-export LFRICLITE_DATA_REP_DIR="${HERE}/lfric-lite/Data"
+export LFRICLITE_DATA_REP_DIR="${HERE}/MOBB_DATA/lfric-lite/Data"
 
 trap finally ERR EXIT
 
