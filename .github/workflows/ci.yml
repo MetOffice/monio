@@ -49,13 +49,16 @@ jobs:
       - name: build and test
         run: |
           az acr login --name ngmssboxjediacr
+          echo "${{ secrets.MOBB_DATA }}"
+          (cd ${PWD}/${BUNDLE} && ln -sf ln -s ${{ secrets.MOBB_DATA }})
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${PWD}/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${{ runner.tool_cache }}/model-interface-data:/var/tmp/model-interface-data \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9' \
-          && rm -fr ${{ github.workspace }}/${{ env.BUNDLE }}
+          && cd ${{ github.workspace }} \
+          && rm -fr ${{ env.BUNDLE }}
 
   build2:
     if: '! github.event.pull_request.draft'
