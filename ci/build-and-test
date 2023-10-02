@@ -23,26 +23,17 @@ if command -v ninja &>/dev/null; then GENERATOR=Ninja; fi
 BASE="${HERE%/*}"
 TESTDIR="${BASE##*/}"
 
-# ls -l "${HERE}/"
-ls -l /var/tmp/MOBB_DATA/
-
-# ls -l "${HERE}/MOBB_DATA/"
-
-
 export LFRICLITE_DATA_REP_DIR="/var/tmp/MOBB_DATA/lfric-lite/Data"
 ls -l "${LFRICLITE_DATA_REP_DIR}"
 
 
 trap finally ERR EXIT
-exit
 cd "${WORKD}"
 
 # -- Activate spack env if using JCSDA Docker container 
 if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
 fi
-
-
 
 # -- Configure
 cmake -B . -S "${HERE}" -G "${GENERATOR}" \
