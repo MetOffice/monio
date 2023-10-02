@@ -57,6 +57,7 @@ jobs:
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
             --volume ${PWD}/${BUNDLE}:/usr/local/src/${REPO}/${BUNDLE} \
+            --volume ${MOBB_DATA}:/var/tmp/MOBB_DATA \
             'ngmssboxjediacr.azurecr.io/jedibase:alma9'
           # && cd ${{ github.workspace }} \
           # && rm -fr ${{ env.BUNDLE }}
