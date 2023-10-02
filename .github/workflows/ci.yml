@@ -15,19 +15,7 @@ jobs:
     name: gnu 11.3.1 (UKMO)    
     runs-on: jedi-self-hosted-rg
 
-    steps:
-    
-    #   - name: view secrets context
-    #     shell: bash
-    #     run: echo "$SECRETS_CONTEXT"
-    #     env:
-    #       SECRETS_CONTEXT: ${{ toJson(secrets) }}
-    #   - name: view vars context
-    #     shell: bash
-    #     run: echo "$VARS_CONTEXT"
-    #     env:
-    #       VARS_CONTEXT: ${{ toJson(vars) }}
-
+    steps:          
       - name: pre-submit cleanup
         run: |
           ls -la ./
@@ -59,10 +47,11 @@ jobs:
         run: ./${{ env.BUNDLE }}/get-ref-branch ./${{ env.BUNDLE }}/oops
 
       - name: build and test
+        env:
+          MOBB_DATA: ${{ github.workspace }}/${{ env.BUNDLE }}/MOBB_DATA
         run: |
-          az acr login --name ngmssboxjediacr
-          
-          ln -sfT /testdata/model-interface-data ${PWD}/${BUNDLE}/MOBB_DATA
+          az acr login --name ngmssboxjediacr          
+          ln -sfT /testdata/model-interface-data ${MOBB_DATA}
 
           # docker run --rm \
           #   --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
