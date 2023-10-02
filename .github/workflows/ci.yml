@@ -62,7 +62,7 @@ jobs:
         run: |
           az acr login --name ngmssboxjediacr
           
-          (cd ${PWD}/${BUNDLE} && ln -sfT /testdata/model-interface-data)
+          ln -sfT /testdata/model-interface-data ${PWD}/${BUNDLE}/MOBB_DATA
 
           # docker run --rm \
           #   --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
