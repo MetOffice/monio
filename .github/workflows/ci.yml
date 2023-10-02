@@ -59,11 +59,11 @@ jobs:
 
       - name: build and test
         env: 
-          MOBB_DATA: ${{ secrets.MOBB_DATA }}  
+          MOBB_DATA: ${{ envs.MOBB_DATA }}  
         run: |
           az acr login --name ngmssboxjediacr
-          # echo "${{ secrets.MOBB_DATA }}"
-          # (cd ${PWD}/${BUNDLE} && ln -sf ${MOBB_DATA})
+          echo "${{ envs.MOBB_DATA }}"
+          (cd ${PWD}/${BUNDLE} && ln -sf ${MOBB_DATA})
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
