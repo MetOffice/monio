@@ -21,6 +21,11 @@ jobs:
         run: echo "$SECRETS_CONTEXT"
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
+      - name: view vars context
+      shell: bash
+      run: echo "$VARS_CONTEXT"
+      env:
+        VARS_CONTEXT: ${{ toJson(vars) }}
 
       - name: pre-submit cleanup
         run: |
