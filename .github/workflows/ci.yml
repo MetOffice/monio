@@ -48,11 +48,11 @@ jobs:
 
       - name: build and test
         env:
-          MOBB_DATA: ${{ github.workspace }}/${{ env.BUNDLE }}/MOBB_DATA
+          MOBB_DATA: ${{ github.workspace }}/MOBB_DATA
         run: |
           az acr login --name ngmssboxjediacr          
           ln -sfT /testdata/model-interface-data ${MOBB_DATA}
-          ls -l ${MOBB_DATA}/
+          # ls -l ${MOBB_DATA}/
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \
