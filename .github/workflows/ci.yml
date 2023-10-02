@@ -7,7 +7,7 @@ on:
 
 env:
   REPO: ${{ github.event.repository.name }}
-  BUNDLE: pr-${{ github.event.number }}
+  BUNDLE: pr-${{ github.event.number }}  
 
 jobs:  
   build1:
@@ -47,10 +47,12 @@ jobs:
         run: ./${{ env.BUNDLE }}/get-ref-branch ./${{ env.BUNDLE }}/oops
 
       - name: build and test
+        env: 
+          MOBB_DATA: ${{ secrets.MOBB_DATA }}  
         run: |
           az acr login --name ngmssboxjediacr
-          echo "${{ secrets.MOBB_DATA }}"
-          (cd ${PWD}/${BUNDLE} && ln -sf ${{ secrets.MOBB_DATA }})
+          # echo "${{ secrets.MOBB_DATA }}"
+          # (cd ${PWD}/${BUNDLE} && ln -sf ${MOBB_DATA})
           docker run --rm \
             --entrypoint=/usr/local/src/${REPO}/${BUNDLE}/build-and-test \
             --workdir=/usr/local/src/${REPO}/${BUNDLE} \

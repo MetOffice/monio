@@ -28,6 +28,8 @@ trap finally ERR EXIT
 
 cd "${WORKD}"
 
+ls -l "${MOBB_DATA}"
+
 # -- Activate spack env if using JCSDA Docker container 
 if [[ -f /opt/spack-environment/activate.sh ]]; then
     source /opt/spack-environment/activate.sh
