@@ -15,7 +15,8 @@ jobs:
     name: gnu 11.3.1 (UKMO)    
     runs-on: jedi-self-hosted-rg
 
-    # steps:
+    steps:
+    
     #   - name: view secrets context
     #     shell: bash
     #     run: echo "$SECRETS_CONTEXT"
