@@ -96,23 +96,25 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           auto& localField = localFieldSet[fieldMetadata.jediName];
           atlas::Field globalField = utilsatlas::getGlobalField(localField);
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
-            oops::Log::debug() << "Monio::readState() processing data for> \"" <<
-                                  fieldMetadata.jediName << "\"..." << std::endl;
             auto& functionSpace = globalField.functionspace();
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+
             // Initialise file
-            int namingConvention = consts::eNotDefined;
-            if (fileDataExists(grid.name()) == false) {
-              namingConvention = initialiseFile(grid.name(), filePath, dateTime);
-            }
+            int namingConvention = initialiseFile(grid.name(), filePath, dateTime);
+            // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
+            // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
+            // Configure read name
+            std::string readName = fieldMetadata.lfricReadName;
+            if (namingConvention == consts::eJediNaming) {
+              readName = fieldMetadata.jediName;
+            }
+            oops::Log::debug() << "Monio::readState() processing data for> \"" <<
+                                  readName << "\"..." << std::endl;
             // Read fields into memory
-            reader_.readDatumAtTime(fileData,
-                                    fieldMetadata.lfricReadName,
-                                    dateTime,
+            reader_.readDatumAtTime(fileData, readName, dateTime,
                                     std::string(consts::kTimeDimName));
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata,
-                                                   fieldMetadata.lfricReadName);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -146,8 +148,6 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
           auto& localField = localFieldSet[fieldMetadata.jediName];
           atlas::Field globalField = utilsatlas::getGlobalField(localField);
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
-            oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
-                                  fieldMetadata.jediName << "\"..." << std::endl;
             auto& functionSpace = globalField.functionspace();
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
@@ -157,18 +157,12 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
-            std::string readName;
-            switch (namingConvention) {
-              case consts::eLfricNaming:
-                readName = fieldMetadata.lfricReadName;
-                break;
-              case consts::eJediNaming:
-                readName = fieldMetadata.jediName;
-                break;
-              default:
-                utils::throwException("Monio::readIncrements()> "
-                                      "File naming convention not defined...");
+            std::string readName = fieldMetadata.lfricReadName;
+            if (namingConvention == consts::eJediNaming) {
+              readName = fieldMetadata.jediName;
             }
+            oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
+                                  readName << "\"..." << std::endl;
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);
             atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName);
