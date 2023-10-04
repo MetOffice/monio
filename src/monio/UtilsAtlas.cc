@@ -196,5 +196,28 @@ int atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
     utils::throwException("utilsatlas::atlasTypeToMonioEnum()> Data type not coded for...");
   }
 }
+
+bool compareFieldSets(const atlas::FieldSet& aSet, const atlas::FieldSet& bSet) {
+  for (auto& a : aSet) {
+    if (compareFields(a, bSet[a.name()]) == false) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool compareFields(const atlas::Field& a, const atlas::Field& b) {
+  const auto aView = atlas::array::make_view<const double, 2>(a);
+  const auto bView = atlas::array::make_view<const double, 2>(b);
+  std::vector<int> dimVec = a.shape();
+  for (int j = 0; j < dimVec[consts::eVertical]; ++j) {
+    for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+      if (aView(i, j) != bView(i, j)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 }  // namespace utilsatlas
 }  // namespace monio

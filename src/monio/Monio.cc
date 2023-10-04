@@ -189,57 +189,50 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
 
 void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                               const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                              const std::string& filePath) {
+                              const std::string& filePath,
+                              const bool isLfricNaming) {
   oops::Log::debug() << "Monio::writeState()" << std::endl;
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::writeState()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
     try {
+      auto& functionSpace = localFieldSet[0].functionspace();
+      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+      FileData fileData = getFileData(grid.name());
+      cleanFileData(fileData);
+      writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
-          oops::Log::debug() << "Monio::writeState() processing data for> \"" <<
-                                fieldMetadata.jediName << "\"..." << std::endl;
-          auto& functionSpace = globalField.functionspace();
-          auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
-
-          FileData fileData = getFileData(grid.name());
-          std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-
-          fileData.getMetadata().clearGlobalAttributes();
-          fileData.getMetadata().deleteDimension(std::string(consts::kTimeDimName));
-          fileData.getMetadata().deleteDimension(std::string(consts::kTileDimName));
-
-          fileData.getData().deleteContainer(std::string(consts::kTimeVarName));
-          fileData.getData().deleteContainer(std::string(consts::kTileVarName));
-
-          // Reconcile Metadata with Data
-          std::vector<std::string> metadataVarNames = fileData.getMetadata().getVariableNames();
-          std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
-
-          for (const auto& metadataVarName : metadataVarNames) {
-            auto it = std::find(begin(dataContainerNames),
-                                end(dataContainerNames), metadataVarName);
-            if (it == std::end(dataContainerNames)) {
-              fileData.getMetadata().deleteVariable(metadataVarName);
-            }
+          // Configure write name
+          std::string writeName;
+          if (isLfricNaming == true) {
+            writeName = fieldMetadata.lfricWriteName;
+          } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
+            writeName = fieldMetadata.jediName;
+          } else {
+            utils::throwException("Monio::writeState()> Field metadata configuration error...");
           }
+          oops::Log::debug() << "Monio::writeState() processing data for> \"" <<
+                                  writeName << "\"..." << std::endl;
 
-          // Add data and metadata for increments in fieldSet
-          // atlasWriter_.populateFileDataWithLfricFieldSet(fileData, fieldMetadataVec,
-          //                                                globalFieldSet, lfricAtlasMap);
-          writer_.openFile(filePath);
+          atlasWriter_.populateFileDataWithField(fileData,
+                                                 globalField,
+                                                 fieldMetadata,
+                                                 writeName,
+                                                 isLfricNaming);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
+          fileData.clearData();  // Globalised field data no longer required
         }
       }
+      writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
-      utils::throwException("Monio::writeState()> An exception has occurred: " +
-                            exceptionMessage);
+      utils::throwException("Monio::writeState()> An exception has occurred: " + exceptionMessage);
     }
   } else {
     oops::Log::info() << "Monio::writeState()> No file path supplied. "
@@ -276,6 +269,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
             utils::throwException("Monio::writeIncrements()> "
                                   "Field metadata configuration error...");
           }
+          oops::Log::debug() << "Monio::writeIncrements() processing data for> \"" <<
+                                writeName << "\"..." << std::endl;
+
           atlasWriter_.populateFileDataWithField(fileData,
                                                  globalField,
                                                  fieldMetadata,

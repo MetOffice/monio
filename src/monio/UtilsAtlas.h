@@ -46,5 +46,8 @@ namespace utilsatlas {
   int getGlobalDataSize(const atlas::Field& field);  // Full 3D size of data. Global fields only
 
   int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
+
+  bool compareFieldSets(const atlas::FieldSet& aSet, const atlas::FieldSet& bSet);
+  bool compareFields(const atlas::Field& a, const atlas::Field& b);
 }  // namespace utilsatlas
 }  // namespace monio
