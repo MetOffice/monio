@@ -40,6 +40,7 @@ class Writer {
 
   void openFile(const std::string& filePath);
   void closeFile();
+  bool isOpen();
 
   void writeMetadatum(const Metadata& metadata);
   void writeDatum(const FileData& fileData);

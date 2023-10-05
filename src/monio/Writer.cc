@@ -53,9 +53,15 @@ void monio::Writer::openFile(const std::string& filePath) {
 void monio::Writer::closeFile() {
   oops::Log::debug() << "Writer::closeFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    file_->close();
-    file_.release();
+    if (isOpen() == true) {
+      getFile().close();
+      file_.release();
+    }
   }
+}
+
+bool monio::Writer::isOpen() {
+  return file_ != nullptr;
 }
 
 void monio::Writer::writeMetadatum(const Metadata& metadata) {
@@ -112,7 +118,7 @@ void monio::Writer::writeData(const FileData& fileData) {
 
 monio::File& monio::Writer::getFile() {
   oops::Log::debug() << "Writer::getFile()" << std::endl;
-  if (file_ == nullptr) {
+  if (isOpen() == false) {
     utils::throwException("Writer::getFile()> File has not been initialised...");
   }
   return *file_;

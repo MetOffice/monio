@@ -80,6 +80,8 @@ void readOutput(atlas::FieldSet& fieldSet,
   oops::Log::info() << "monio::test::readOutput()" << std::endl;
   oops::Log::info() << "filePath> " << filePath << std::endl;
 
+  // Since Atlas Fields do not contain a time dimension, the output file adopts the same format as
+  // an increment file. For this reason it is read as such.
   Monio::get().readIncrements(fieldSet, fieldMetadataVec, filePath);
 }
 

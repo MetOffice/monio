@@ -57,8 +57,15 @@ void monio::Reader::openFile(const std::string& filePath) {
 void monio::Reader::closeFile() {
   oops::Log::debug() << "Reader::closeFile()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    file_->close();
+    if (isOpen() == true) {
+      getFile().close();
+      file_.release();
+    }
   }
+}
+
+bool monio::Reader::isOpen() {
+  return file_ != nullptr;
 }
 
 void monio::Reader::readMetadata(FileData& fileData) {
@@ -219,7 +226,7 @@ void monio::Reader::readFullDatum(FileData& fileData,
 
 monio::File& monio::Reader::getFile() {
   oops::Log::debug() << "Reader::getFile()" << std::endl;
-  if (file_ == nullptr) {
+  if (isOpen() == false) {
     utils::throwException("Reader::getFile()> File has not been initialised...");
   }
   return *file_;

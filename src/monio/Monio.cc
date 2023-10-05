@@ -46,6 +46,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
     // Read data
     std::vector<std::string> meshVars =
         fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+    reader_.openFile(filePath);
     reader_.readFullData(fileData, meshVars);
     reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
     reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
@@ -297,7 +298,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
 void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
                                  const std::string& filePath) {
   oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
-
   if (localFieldSet.size() == 0) {
     utils::throwException("Monio::writeFieldSet()> localFieldSet has zero fields...");
   }
@@ -324,6 +324,12 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
     oops::Log::info() << "Monio::writeFieldSet()> No file path supplied. "
                          "NetCDF writing will not take place..." << std::endl;
   }
+}
+
+void monio::Monio::closeFiles() {
+  oops::Log::debug() << "Monio::closeFiles()" << std::endl;
+  reader_.closeFile();
+  writer_.closeFile();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
