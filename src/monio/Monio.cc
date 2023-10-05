@@ -210,7 +210,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
           // Configure write name
           std::string writeName;
           if (isLfricNaming == true) {
-            writeName = fieldMetadata.lfricWriteName;
+            writeName = fieldMetadata.lfricReadName;
           } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
           } else {

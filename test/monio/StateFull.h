@@ -57,9 +57,12 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldMetadataVec) {
+    // To mimic JEDI's behaviour fields full or half fields are initialised with 70 levels
+    int numLevels = fieldMetadata.numberOfLevels == consts::kVerticalFullSize ?
+                    consts::kVerticalHalfSize : fieldMetadata.numberOfLevels;
     // No error checking on metadata. This is handled by calls to Monio
     atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName) |
-                                       atlas::option::levels(fieldMetadata.numberOfLevels);
+                                       atlas::option::levels(numLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
   }
   return fieldSet;
