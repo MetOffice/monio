@@ -156,7 +156,8 @@ void main() {
   std::string inputFilePath;
   std::string outputFilePath;
 
-  initParams(firstFieldSet, secondFieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
+  initParams(firstFieldSet, secondFieldSet, fieldMetadataVec,
+             dateTime, inputFilePath, outputFilePath);
   readInput(firstFieldSet, fieldMetadataVec, dateTime, inputFilePath);
   write(firstFieldSet, fieldMetadataVec, outputFilePath);
   readOutput(secondFieldSet, fieldMetadataVec, outputFilePath);
