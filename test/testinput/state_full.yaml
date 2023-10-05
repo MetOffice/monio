@@ -11,4 +11,4 @@ parameters:
   meshType: cubedsphere_dual
   dateTime: 2021-06-01T23:00:00Z
   inputFilePath: Data/lfricdiag/lfric_bg_for_hofx_C224.nc
-  outputFilePath: DataOut/test_monio_read_write_output.nc
+  outputFilePath: DataOut/test_monio_state_full_output.nc
