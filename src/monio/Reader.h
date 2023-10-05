@@ -40,6 +40,7 @@ class Reader {
 
   void openFile(const std::string& filePath);
   void closeFile();
+  bool isOpen();
 
   void readMetadata(FileData& fileData);
 

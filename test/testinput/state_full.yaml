@@ -1,13 +1,14 @@
 parameters:
   fieldMetadata:
-    exner:                    exner,                    exner_levels_minus_one, exner_levels_minus_one, 1,    70, false
-    grid_surface_temperature: grid_surface_temperature, skin_temperature,       skin_temperature,       K,    1,  false
-    theta:                    theta,                    potential_temperature,  potential_temperature,  K,    71, true
-    u_in_w3:                  u_in_w3,                  eastward_wind,          eastward_wind,          ms-1, 70, false
-    v_in_w3:                  v_in_w3,                  northward_wind,         northward_wind,         ms-1, 70, false
+    exner:                    exner,                    exner,                    exner_levels_minus_one, 1,    70, false
+    grid_surface_temperature: grid_surface_temperature, grid_surface_temperature, skin_temperature,       K,    1,  false
+    pressure_in_wth:          pressure_in_wth,          pressure_in_wth,          air_presssure,          Pa,   71, false
+    theta:                    theta,                    theta,                    potential_temperature,  K,    71, true
+    u_in_w3:                  u_in_w3,                  u_in_w3,                  eastward_wind,          ms-1, 70, false
+    v_in_w3:                  v_in_w3,                  v_in_w3,                  northward_wind,         ms-1, 70, false
   gridName: CS-LFR-224
   partitionerType: cubedsphere
   meshType: cubedsphere_dual
   dateTime: 2021-06-01T23:00:00Z
   inputFilePath: Data/lfricdiag/lfric_bg_for_hofx_C224.nc
-  outputFilePath: DataOut/test_monio_read_write_output.nc
+  outputFilePath: DataOut/test_monio_state_full_output.nc

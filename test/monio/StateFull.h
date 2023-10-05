@@ -26,6 +26,7 @@
 #include "monio/Constants.h"
 #include "monio/Monio.h"
 #include "monio/Utils.h"
+#include "monio/UtilsAtlas.h"
 
 #include "oops/../test/TestEnvironment.h"
 #include "oops/runs/Test.h"
@@ -56,44 +57,62 @@ atlas::FieldSet createFieldSet(const atlas::functionspace::CubedSphereNodeColumn
   oops::Log::debug() << "monio::test::createFieldSet()" << std::endl;
   atlas::FieldSet fieldSet;
   for (const auto& fieldMetadata : fieldMetadataVec) {
+    // To mimic JEDI's behaviour fields full or half fields are initialised with 70 levels
+    int numLevels = fieldMetadata.numberOfLevels == consts::kVerticalFullSize ?
+                    consts::kVerticalHalfSize : fieldMetadata.numberOfLevels;
     // No error checking on metadata. This is handled by calls to Monio
     atlas::util::Config atlasOptions = atlas::option::name(fieldMetadata.jediName) |
-                                       atlas::option::levels(fieldMetadata.numberOfLevels);
+                                       atlas::option::levels(numLevels);
     fieldSet.add(functionSpace.createField<double>(atlasOptions));
   }
   return fieldSet;
 }
 
-void compare() {
+void compare(atlas::FieldSet& firstFieldSet, atlas::FieldSet& secondFieldSet) {
   oops::Log::info() << "monio::test::compare()" << std::endl;
+
+  if (utilsatlas::compareFieldSets(firstFieldSet, secondFieldSet) == false) {
+    utils::throwException("FieldSets do not match...");
+  }
 }
 
 /// Reads
-void readOutput(const std::string& outputFilePath) {
+void readOutput(atlas::FieldSet& fieldSet,
+                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                const std::string& filePath) {
   oops::Log::info() << "monio::test::readOutput()" << std::endl;
-  oops::Log::info() << "outputFilePath> " << outputFilePath << std::endl;
+  oops::Log::info() << "filePath> " << filePath << std::endl;
+
+  // Since Atlas Fields do not contain a time dimension, the output file adopts the same format as
+  // an increment file. For this reason it is read as such.
+  Monio::get().readIncrements(fieldSet, fieldMetadataVec, filePath);
 }
 
 /// Writes FieldSet to file.
-void write(const std::string& outputFilePath) {
+void write(const atlas::FieldSet& fieldSet,
+           const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+           const std::string& filePath) {
   oops::Log::info() << "monio::test::write()" << std::endl;
-  oops::Log::info() << "outputFilePath> " << outputFilePath << std::endl;
+  oops::Log::info() << "filePath> " << filePath << std::endl;
+
+  Monio::get().writeState(fieldSet, fieldMetadataVec, filePath);
 }
 
 /// Reads data from file and populates the FieldSet
 void readInput(atlas::FieldSet& fieldSet,
                const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                const util::DateTime& dateTime,
-               const std::string& inputFilePath) {
+               const std::string& filePath) {
   oops::Log::info() << "monio::test::readInput()" << std::endl;
-  oops::Log::info() << "inputFilePath> " << inputFilePath << std::endl;
+  oops::Log::info() << "filePath> " << filePath << std::endl;
   oops::Log::info() << "dateTime> " << dateTime << std::endl;
 
-  Monio::get().readState(fieldSet, fieldMetadataVec, inputFilePath, dateTime);
+  Monio::get().readState(fieldSet, fieldMetadataVec, filePath, dateTime);
 }
 
 /// Sets up the objects required to mimic an operational call to Monio::Read via readInput
-void initParams(atlas::FieldSet& fieldSet,
+void initParams(atlas::FieldSet& firstFieldSet,
+                atlas::FieldSet& secondFieldSet,
                 std::vector<consts::FieldMetadata>& fieldMetadataVec,
                 util::DateTime& dateTime,
                 std::string& inputFilePath,
@@ -126,7 +145,8 @@ void initParams(atlas::FieldSet& fieldSet,
 
     fieldMetadataVec.push_back(fieldMetadata);
   }
-  fieldSet = createFieldSet(functionSpace, fieldMetadataVec);
+  firstFieldSet = createFieldSet(functionSpace, fieldMetadataVec);
+  secondFieldSet = createFieldSet(functionSpace, fieldMetadataVec);
   // Others
   dateTime = util::DateTime(paramConfig.getString("dateTime"));
   inputFilePath = paramConfig.getString("inputFilePath");
@@ -134,16 +154,19 @@ void initParams(atlas::FieldSet& fieldSet,
 }
 
 void main() {
-  atlas::FieldSet fieldSet;
+  atlas::FieldSet firstFieldSet;
+  atlas::FieldSet secondFieldSet;
   std::vector<consts::FieldMetadata> fieldMetadataVec;
   util::DateTime dateTime;
   std::string inputFilePath;
   std::string outputFilePath;
 
-  initParams(fieldSet, fieldMetadataVec, dateTime, inputFilePath, outputFilePath);
-  readInput(fieldSet, fieldMetadataVec, dateTime, inputFilePath);
-  write(outputFilePath);
-  readOutput(outputFilePath);
+  initParams(firstFieldSet, secondFieldSet, fieldMetadataVec,
+             dateTime, inputFilePath, outputFilePath);
+  readInput(firstFieldSet, fieldMetadataVec, dateTime, inputFilePath);
+  write(firstFieldSet, fieldMetadataVec, outputFilePath);
+  readOutput(secondFieldSet, fieldMetadataVec, outputFilePath);
+  compare(firstFieldSet, secondFieldSet);
 }
 
 class StateFull : public oops::Test{

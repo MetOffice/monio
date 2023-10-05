@@ -37,6 +37,7 @@ monio::File::File(const std::string& filePath,
   } catch (netCDF::exceptions::NcException& exception) {
     std::string message = "An exception occurred in File> ";
     message.append(exception.what());
+    close();
     utils::throwException(message);
   }
 }
@@ -67,6 +68,7 @@ void monio::File::readMetadata(Metadata& metadata) {
     readAttributes(metadata);  // Global attributes
     metadata.print();
   } else {
+    close();
     utils::throwException("File::readMetadata()> Write file accessed for reading...");
   }
 }
@@ -80,8 +82,8 @@ void monio::File::readMetadata(Metadata& metadata,
     readAttributes(metadata);  // Global attributes
     metadata.print();
   } else {
-    utils::throwException(
-        "File::readMetadata()> Write file accessed for reading...");
+    close();
+    utils::throwException("File::readMetadata()> Write file accessed for reading...");
   }
 }
 
@@ -94,8 +96,8 @@ void monio::File::readDimensions(Metadata& metadata) {
       metadata.addDimension(ncDimPair.first, value);
     }
   } else {
-    utils::throwException(
-        "File::readDimensions()> Write file accessed for reading...");
+    close();
+    utils::throwException("File::readDimensions()> Write file accessed for reading...");
   }
 }
 
@@ -109,6 +111,7 @@ void monio::File::readVariables(Metadata& metadata) {
       readVariable(metadata, ncVar);
     }
   } else {
+    close();
     utils::throwException("File::readVariables()> Write file accessed for reading...");
   }
 }
@@ -127,6 +130,7 @@ void monio::File::readVariables(Metadata& metadata,
       }
     }
   } else {
+    close();
     utils::throwException("File::readVariables()> Write file accessed for reading...");
   }
 }
@@ -150,14 +154,17 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
       var = std::make_shared<Variable>(varName, consts::eInt);
       break;
     }
-    default:
+    default: {
+      close();
       utils::throwException("File::readVariable()> Variable data type " +
-                                  varType.getName() + " not coded for.");
+                            varType.getName() + " not coded for.");
+    }
   }
   std::vector<netCDF::NcDim> ncVarDims = ncVar.getDims();
   for (auto const& ncVarDim : ncVarDims) {
     std::string varDimName = ncVarDim.getName();
     if (metadata.isDimDefined(varDimName) == false) {
+      close();
       utils::throwException("File::readVariable()> Variable dimension \"" +
                                varDimName + "\" not defined.");
     }
@@ -198,9 +205,11 @@ void monio::File::readVariable(Metadata& metadata, netCDF::NcVar ncVar) {
         var->addAttribute(varAttr);
         break;
       }
-      default:
-        utils::throwException("File::readVariable()> Variable attribute data type \""
-                                    + ncVarAttrType.getName() + "\" not coded for.");
+      default: {
+        close();
+        utils::throwException("File::readVariable()> Variable attribute data type \"" +
+                              ncVarAttrType.getName() + "\" not coded for.");
+      }
     }
   }
   metadata.addVariable(var->getName(), var);
@@ -238,9 +247,11 @@ void monio::File::readAttributes(Metadata& metadata) {
           globAttr = std::make_shared<AttributeDouble>(ncAttr.getName(), dblValue);
           break;
         }
-        default:
-          utils::throwException("File::readAttributes()> Global attribute data type \""
-                                   + attrType.getName() + "\" not coded for.");
+        default: {
+          close();
+          utils::throwException("File::readAttributes()> Global attribute data type \"" +
+                                attrType.getName() + "\" not coded for.");
+        }
       }
       metadata.addGlobalAttr(globAttr->getName(), globAttr);
     }
@@ -258,6 +269,7 @@ void monio::File::readSingleDatum(const std::string& varName,
     auto var = getFile().getVar(varName);
     var.getVar(dataVec.data());
   } else {
+    close();
     utils::throwException("File::readSingleDatum()> Write file accessed for reading...");
   }
 }
@@ -279,6 +291,7 @@ void monio::File::readFieldDatum(const std::string& fieldName,
     auto var = getFile().getVar(fieldName);
     var.getVar(startVec, countVec, dataVec.data());
   } else {
+    close();
     utils::throwException("File::readFieldDatum()> Write file accessed for reading...");
   }
 }
@@ -305,8 +318,8 @@ void monio::File::writeMetadata(const Metadata& metadata) {
     writeVariables(metadata);
     writeAttributes(metadata);
   } else {
-    utils::throwException(
-        "File::writeMetadata()> Read file accessed for writing...");
+    close();
+    utils::throwException("File::writeMetadata()> Read file accessed for writing...");
   }
 }
 
@@ -321,6 +334,7 @@ void monio::File::writeDimensions(const Metadata& metadata) {
       }
     }
   } else {
+    close();
     utils::throwException("File::writeDimensions()> Read file accessed for writing...");
   }
 }
@@ -362,14 +376,17 @@ void monio::File::writeVariables(const Metadata& metadata) {
               ncVar.putAtt(varAttrStr->getName(), varAttrStr->getValue());
               break;
             }
-            default:
+            default: {
+              close();
               utils::throwException("File::writeVariables()> "
                   "Variable attribute data type not coded for...");
+            }
           }
         }
       }
     }
   } else {
+    close();
     utils::throwException("File::writeVariables()> Read file accessed for writing...");
   }
 }
@@ -406,13 +423,16 @@ void monio::File::writeAttributes(const Metadata& metadata) {
             getFile().putAtt(globAttrName, globAttrStr->getValue());
             break;
           }
-          default:
+          default: {
+            close();
             utils::throwException("File::writeAttributes()> "
                 "Variable attribute data type not coded for...");
+          }
         }
       }
     }
   } else {
+    close();
     utils::throwException("File::writeAttributes()> Read file accessed for writing...");
   }
 }
@@ -424,6 +444,7 @@ void monio::File::writeSingleDatum(const std::string &varName, const std::vector
     auto var = getFile().getVar(varName);
     var.putVar(dataVec.data());
   } else {
+    close();
     utils::throwException("File::writeSingleDatum()> Read file accessed for writing...");
   }
 }
@@ -462,8 +483,8 @@ bool monio::File::isWrite() {
 }
 
 netCDF::NcFile& monio::File::getFile() {
-  if (dataFile_ == nullptr)
+  if (dataFile_ == nullptr) {
     utils::throwException("File::getFile()> Data file has not been initialised...");
-
+  }
   return *dataFile_;
 }
