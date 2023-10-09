@@ -21,8 +21,9 @@
 #include "Writer.h"
 
 namespace monio {
-/// \brief This class provides functions for several of the main use-cases of MONIO in the MO/JEDI
-/// context. These are available via a global, singleton instance of this class.
+/// \brief Provides functions for the main use-cases of MONIO in the MO/JEDI context. Including two
+///        that are written for use in debugging and testing only. All are available via a global,
+///        singleton instance of this class.
 class Monio {
  public:
   /// \brief The main singleton getter for Monio.
@@ -108,7 +109,9 @@ class Monio {
   /// \brief Removes unnecessary meta/data from data read from file during initialisation.
   void cleanFileData(FileData& fileData);
 
-  /// \brief The pointer to a single instance of this class (as part of the singleton pattern).
+  /// \brief Necessary use of a standard pointer to a single instance of this class (as part of the
+  ///        singleton pattern). Previous use of a smart pointer appeared to cause errors in HDF5
+  ///        upon destruction.
   static Monio* this_;
 
   /// \brief A reference to the MPI communicator passed in at construction.
@@ -127,7 +130,7 @@ class Monio {
   AtlasWriter atlasWriter_;
 
   /// \brief Store of read file meta/data used for writing. Keyed by grid name for storage of data
-  /// at different resolutions.
+  ///        at different resolutions.
   std::map<std::string, monio::FileData> filesData_;
 };
 }  // namespace monio
