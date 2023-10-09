@@ -21,9 +21,11 @@
 #include "Writer.h"
 
 namespace monio {
+/// \brief This class provides functions for several of the main use-cases of MONIO in the MO/JEDI
+/// context. These are available via a global, singleton instance of this class.
 class Monio {
  public:
-  /// \brief The main singleton getter for Monio
+  /// \brief The main singleton getter for Monio.
   static Monio& get();
 
   ~Monio();
