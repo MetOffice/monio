@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <string>
@@ -104,7 +104,7 @@ const std::string_view kDataTypeNames[eNumberOfDataTypes] = {
   "std::string"
 };
 
-// Used with MetadataLookup class - the following are Atlas names of increment variables
+/// \brief Used with MetadataLookup class - the following are Atlas names of increment variables
 const std::string_view kIncrementVariables[eNumberOfIncrementVariables] {
   "eastward_wind",
   "northward_wind",
@@ -116,7 +116,7 @@ const std::string_view kIncrementVariables[eNumberOfIncrementVariables] {
   "mass_content_of_cloud_ice_in_atmosphere_layer",
 };
 
-// Needs to be a vector for use with call to templated search in Metadata::getNamingConvention
+/// \brief Needs to be a vector for use with call to search in Metadata::getNamingConvention
 const std::vector<std::string> kNamingConventions({
   "LFRic",
   "JEDI"

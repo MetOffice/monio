@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <string>
@@ -13,7 +13,7 @@
 #include "AttributeBase.h"
 
 namespace monio {
-/// \brief Concrete class for integer attributes of a NetCDF file
+/// \brief Concrete class for integer attributes of a NetCDF file.
 class AttributeInt : public AttributeBase {
  public:
   AttributeInt(const std::string& name, const int value);
