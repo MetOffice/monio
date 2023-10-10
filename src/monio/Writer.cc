@@ -64,13 +64,6 @@ bool monio::Writer::isOpen() {
   return file_ != nullptr;
 }
 
-void monio::Writer::writeMetadatum(const Metadata& metadata) {
-  oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    getFile().writeMetadata(metadata);
-  }
-}
-
 void monio::Writer::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {

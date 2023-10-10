@@ -43,26 +43,32 @@ class Reader {
   bool isOpen();
 
   void readMetadata(FileData& fileData);
-
+  /// \brief Reads reading complete data for a set of variables defined in metadata.
   void readAllData(FileData& fileData);
+  /// \brief Reads complete data for a set of variables.
   void readFullData(FileData& fileData,
                     const std::vector<std::string>& varNames);
+  /// \brief Reads a complete data for a single variable.
   void readFullDatum(FileData& fileData, const std::string& varName);
 
+  /// \brief Reads data for a single variable on a specific date. Makes call to derive time step.
   void readDatumAtTime(FileData& fileData,
                       const std::string& variableName,
                       const util::DateTime& dateToRead,
                       const std::string& timeDimName);
 
+  /// \brief Reads data for a single variable at a particular time step.
   void readDatumAtTime(FileData& fileData,
                       const std::string& variableName,
                       const size_t timeStep,
                       const std::string& timeDimName);
 
+  /// \brief Copies of coordinate data from the set of populated data containers.
   std::vector<std::shared_ptr<DataContainerBase>> getCoordData(FileData& fileData,
                                                   const std::vector<std::string>& coordNames);
 
  private:
+  /// \brief Converts a date-time into a time step.
   size_t findTimeStep(const FileData& fileData, const util::DateTime& dateTime);
 
   File& getFile();

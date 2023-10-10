@@ -42,9 +42,6 @@ class Writer {
   void closeFile();
   bool isOpen();
 
-  void writeMetadatum(const Metadata& metadata);
-  void writeDatum(const FileData& fileData);
-
   void writeMetadata(const Metadata& metadata);
   void writeData(const FileData& fileData);
 

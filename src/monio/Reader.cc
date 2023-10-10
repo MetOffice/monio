@@ -233,8 +233,8 @@ monio::File& monio::Reader::getFile() {
 }
 
 std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordData(
-                                                       FileData& fileData,
-                                                   const std::vector<std::string>& coordNames) {
+                                                             FileData& fileData,
+                                                       const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordData()" << std::endl;
   if (coordNames.size() == 2) {
     std::vector<std::shared_ptr<monio::DataContainerBase>> coordContainers;
