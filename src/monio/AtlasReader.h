@@ -57,8 +57,8 @@ class AtlasReader {
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const bool copyFirstLevel = false);
 
-  /// \brief Not currently used, but could be. Derives container type, makes the call to populate a field
-  ///        with data where data order isn't relevant.
+  /// \brief Not currently used, but could be. Derives container type, makes the call to populate a
+  ///        field with data where data order isn't relevant.
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 
