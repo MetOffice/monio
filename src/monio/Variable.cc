@@ -37,14 +37,6 @@ const size_t monio::Variable::getTotalSize() const {
   return totalSize;
 }
 
-std::vector<int> monio::Variable::getDimensionsVec() {
-  std::vector<int> dimensionsVec;
-  for (const auto& dim : dimensions_) {
-    dimensionsVec.push_back(dim.second);
-  }
-  return dimensionsVec;
-}
-
 std::vector<std::pair<std::string, size_t>>& monio::Variable::getDimensionsMap() {
   return dimensions_;
 }
@@ -85,8 +77,6 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       value = attrStr->getValue();
       return value;
     } else {
-      // Used specifically to retrieve LFRic's "standard_type" variable attributes as the closest
-      // approximation to a JEDI variable name. These are stored as AttributeString.
       Monio::get().closeFiles();
       utils::throwException("Variable::getAttribute()> "
           "Variable attribute data type not coded for...");
@@ -118,7 +108,7 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
     Monio::get().closeFiles();
-    utils::throwException("Variable::addAttribute()>  multiple definitions of \"" +
+    utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
                           attrName + "\"...");
   }
 }
@@ -142,31 +132,4 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
     utils::throwException("Variable::deleteAttribute()> Attribute \"" +
                           attrName + "\" does not exist...");
   }
-}
-
-size_t monio::Variable::getDimension(const std::string& dimName) {
-  auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
-      [&](const std::pair<std::string, size_t>& element) {
-        return element.first == dimName;
-      });
-  if (it != dimensions_.end()) {
-    return it->second;
-  } else {
-    Monio::get().closeFiles();
-    utils::throwException("Variable::getDimension()> Dimension \"" +
-                                  dimName + "\" does not exist...");
-  }
-}
-
-size_t monio::Variable::findDimensionSize(const std::string& dimSearchTerm) {
-  size_t dimSize = 1;
-  for (auto it = dimensions_.begin(); it != dimensions_.end(); ++it) {
-    std::string name = it->first;
-    size_t index = name.find(dimSearchTerm);
-    if (index != std::string::npos) {
-      dimSize = it->second;
-      break;
-    }
-  }
-  return dimSize;
 }
