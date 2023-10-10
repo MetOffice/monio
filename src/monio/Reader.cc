@@ -92,7 +92,7 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readDatumAtTime()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (fileData.getData().isPresent(varName) == false) {
+    if (fileData.getData().isContainerPresent(varName) == false) {
       std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
       int dataType = variable->getType();
 

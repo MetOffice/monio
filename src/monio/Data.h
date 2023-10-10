@@ -37,6 +37,8 @@ class Data {
 
   std::vector<std::string> getDataContainerNames() const;
 
+  /// \brief Clears data for memory-efficiency. Written data can be dropped before writing
+  ///        subsequent variables.
   void clear();
 
  private:
