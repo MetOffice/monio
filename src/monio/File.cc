@@ -48,14 +48,13 @@ monio::File::~File() {
 
 void monio::File::close() {
   oops::Log::debug() << "File::close() ";
-  if (dataFile_->isNull() == false) {
-    if (fileMode_ == netCDF::NcFile::read) {
-      oops::Log::debug() << "read" << std::endl;
-    } else {
-      oops::Log::debug() << "write" << std::endl;
-    }
-    dataFile_->close();
+  if (fileMode_ == netCDF::NcFile::read) {
+    oops::Log::debug() << "read" << std::endl;
+  } else {
+    oops::Log::debug() << "write" << std::endl;
   }
+  getFile().close();
+  dataFile_.release();
 }
 // Reading functions //////////////////////////////////////////////////////////////////////////////
 

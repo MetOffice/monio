@@ -44,8 +44,9 @@ class FileData {
   Data data_;
   Metadata metadata_;
 
+  /// \brief Mapping between Atlas and LFRic coordinate/data order, if applicable.
   std::vector<size_t> lfricAtlasMap_;
-  /// \brief Stores date-times from read file, if present.
+  /// \brief Date-times from read file, if present.
   std::vector<util::DateTime> dateTimes_;
 };
 }  // namespace monio
