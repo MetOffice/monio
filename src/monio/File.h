@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <netcdf>
@@ -17,7 +17,7 @@
 #include "Metadata.h"
 
 namespace monio {
-/// \brief Uses Unidata's C++ NetCDF library and holds handle to NetCDF file for reading or writing
+/// \brief Uses Unidata's C++ NetCDF library and holds handle to NetCDF file for reading or writing.
 class File {
  public:
   File(const std::string& filePath, const netCDF::NcFile::FileMode fileMode);
@@ -30,14 +30,16 @@ class File {
   File& operator=(const File&) = delete;  //!< Deleted copy assignment
 
   void close();
-
+  /// \brief Read all metadata.
   void readMetadata(Metadata& metadata);
+  /// \brief Read dimensions, attributes, and a subset of variables metadata.
   void readMetadata(Metadata& metadata,
               const std::vector<std::string>& varNames);
 
+  /// \brief Read a complete variable.
   template<typename T> void readSingleDatum(const std::string& varName,
                                             std::vector<T>& dataVec);
-
+  /// \brief Read a subset of a variable. Usually at different positions in a time series.
   template<typename T> void readFieldDatum(const std::string& fieldName,
                                            const std::vector<size_t>& startVec,
                                            const std::vector<size_t>& countVec,
@@ -47,15 +49,6 @@ class File {
 
   template<typename T> void writeSingleDatum(const std::string& varName,
                                              const std::vector<T>& dataVec);
-
-  std::string& getPath();
-  netCDF::NcFile::FileMode& getFileMode();
-
-  bool isRead();
-  bool isWrite();
-
-  void setPath(const std::string filePath);
-  void setFileMode(const netCDF::NcFile::FileMode fileMode);
 
  private:
   netCDF::NcFile& getFile();
