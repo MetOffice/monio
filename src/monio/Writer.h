@@ -22,7 +22,7 @@
 #include "Metadata.h"
 
 namespace monio {
-/// \brief Top-level class uses FileData and its contents to write to a NetCDF file
+/// \brief Top-level class uses instances of FileData and their contents to write to a NetCDF file.
 class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,

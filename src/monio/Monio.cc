@@ -61,7 +61,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath, dateTime);
+            int namingConvention = initialiseFile(grid.name(), filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
@@ -294,27 +294,27 @@ void monio::Monio::closeFiles() {
 
 int monio::Monio::initialiseFile(const atlas::Grid& grid,
                                  const std::string& filePath,
-                                 const util::DateTime& dateTime) {
+                                 bool doCreateDateTimes) {
   oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
   int namingConvention = consts::eNotDefined;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath, dateTime);
+    FileData& fileData = createFileData(grid.name(), filePath);
     reader_.openFile(filePath);
     reader_.readMetadata(fileData);
     // Read data
     std::vector<std::string> meshVars =
         fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-    reader_.openFile(filePath);
     reader_.readFullData(fileData, meshVars);
     reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
     reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
-    reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
     // Process read data
     createLfricAtlasMap(fileData, grid);
-    createDateTimes(fileData,
-                    std::string(consts::kTimeVarName),
-                    std::string(consts::kTimeOriginName));
-
+    if (doCreateDateTimes == true) {
+      reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+      createDateTimes(fileData,
+                      std::string(consts::kTimeVarName),
+                      std::string(consts::kTimeOriginName));
+    }
     namingConvention = fileData.getMetadata().getNamingConvention();
   }
   return namingConvention;
@@ -334,19 +334,6 @@ monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
 }
 
 monio::FileData& monio::Monio::createFileData(const std::string& gridName,
-                                              const std::string& filePath,
-                                              const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::createFileData()" << std::endl;
-  auto it = filesData_.find(gridName);
-  if (it != filesData_.end()) {
-    filesData_.erase(gridName);
-  }
-  // Overwrite existing data
-  filesData_.insert({gridName, FileData(dateTime)});
-  return filesData_.at(gridName);
-}
-
-monio::FileData& monio::Monio::createFileData(const std::string& gridName,
                                               const std::string& filePath) {
   oops::Log::debug() << "Monio::createFileData()" << std::endl;
   auto it = filesData_.find(gridName);
@@ -357,26 +344,6 @@ monio::FileData& monio::Monio::createFileData(const std::string& gridName,
   // Overwrite existing data
   filesData_.insert({gridName, FileData()});
   return filesData_.at(gridName);
-}
-
-int monio::Monio::initialiseFile(const atlas::Grid& grid,
-                                 const std::string& filePath) {
-  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int namingConvention = consts::eNotDefined;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath);
-    reader_.openFile(filePath);
-    reader_.readMetadata(fileData);
-    std::vector<std::string> meshVars =
-        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-    reader_.readFullData(fileData, meshVars);
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
-    createLfricAtlasMap(fileData, grid);
-
-    namingConvention = fileData.getMetadata().getNamingConvention();
-  }
-  return namingConvention;
 }
 
 void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid) {

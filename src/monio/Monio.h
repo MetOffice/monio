@@ -73,27 +73,17 @@ class Monio {
   ///        it's called from LFRic-Lite.
   int initialiseFile(const atlas::Grid& grid,
                      const std::string& filePath,
-                     const util::DateTime& dateTime);
+                     bool doCreateDateTimes = false);
 
  private:
   /// \brief Private class constructor to prevent instantiation outside of the singleton.
   Monio(const eckit::mpi::Comm& mpiCommunicator,
         const int mpiRankOwner);
 
-  /// \brief Creates and returns an instance of FileData from a state file for a given grid
-  ///        resolution.
-  FileData& createFileData(const std::string& gridName,
-                           const std::string& filePath,
-                           const util::DateTime& dateTime);
-
   /// \brief Creates and returns an instance of FileData from an increment file for a given grid
   ///        resolution.
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath);
-
-  /// \brief A call to open and initialise an increment file for reading.
-  int initialiseFile(const atlas::Grid& grid,
-                     const std::string& filePath);  // Public, whilst called from LFRic-Lite
 
   /// \brief Creates and stores a map between Atlas and LFRic horizontal ordering.
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);

@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <map>
@@ -16,11 +16,12 @@
 #include "DataContainerBase.h"
 
 namespace monio {
-/// \brief Holds data read from or to be written to a NetCDF file
+/// \brief Holds data read from or to be written to a NetCDF file stored as data containers.
 class Data {
  public:
   Data();
 
+  /// \brief Custom equality operator is a friend for access to private class members.
   friend bool operator==(const Data& lhs, const Data& rhs);
 
   void addContainer(std::shared_ptr<DataContainerBase> container);
