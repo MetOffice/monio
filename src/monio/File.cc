@@ -13,7 +13,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include "atlas/parallel/mpi/mpi.h"
 #include "oops/util/Logger.h"
 
 #include "AttributeBase.h"

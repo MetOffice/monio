@@ -16,8 +16,6 @@
 
 #include "Metadata.h"
 
-#include "atlas/field.h"
-
 namespace monio {
 /// \brief Uses Unidata's C++ NetCDF library and holds handle to NetCDF file for reading or writing
 class File {

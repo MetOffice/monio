@@ -12,8 +12,6 @@
 #include <string_view>
 #include <vector>
 
-#include "atlas/mesh/Mesh.h"
-
 namespace monio {
 namespace consts {
 struct FieldMetadata {
