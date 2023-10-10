@@ -29,8 +29,8 @@
 #include "eckit/mpi/Comm.h"
 
 namespace monio {
-/// \brief Encapsulates the dependency upon Atlas. Includes functions to populate Atlas fields with
-///        data read from files.
+/// \brief Used during file reading. Encapsulates the dependency upon Atlas. Includes functions to
+///        populate Atlas fields with data read from files.
 class AtlasReader {
  public:
   AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
@@ -43,20 +43,22 @@ class AtlasReader {
   AtlasReader& operator=(const AtlasReader&)  = delete;  //!< Deleted copy assignment
 
   /// \brief  Provides the entry point to the class by calling relevant, private functions.
+  ///         Including a call to get a field formatted for reading.
   void populateFieldWithFileData(atlas::Field& field,
                            const FileData& fileData,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& readName);
 
  private:
-  /// \brief Called from the entry point with a field formatted for reading.
+  /// \brief Called from the entry point. Derives container type, makes the call to populate a field
+  ///        with data.
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const bool copyFirstLevel = false);
 
-  /// \brief Not currently used, but can be used for populating fields where data order isn't
-  ///        relevant.
+  /// \brief Not currently used, but could be. Derives container type, makes the call to populate a field
+  ///        with data where data order isn't relevant.
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer);
 

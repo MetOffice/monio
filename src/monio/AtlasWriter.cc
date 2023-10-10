@@ -1,12 +1,11 @@
-﻿
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+﻿/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "AtlasWriter.h"
 
 #include "atlas/grid/Iterator.h"
@@ -27,6 +26,27 @@ monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
+}
+
+void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
+                                                   atlas::Field& field,
+                                             const consts::FieldMetadata& fieldMetadata,
+                                             const std::string& writeName,
+                                             const bool isLfricNaming) {
+  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
+    // Create dimensions
+    Metadata& metadata = fileData.getMetadata();
+    metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
+    metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
+    metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
+
+    atlas::Field writeField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
+    populateMetadataWithField(metadata, writeField, fieldMetadata, writeName);
+    populateDataWithField(fileData.getData(), writeField, lfricAtlasMap, writeName);
+    addGlobalAttributes(metadata, isLfricNaming);
+  }
 }
 
 void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
@@ -70,27 +90,6 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
 
     populateDataWithField(data, field, dimVec);
     addGlobalAttributes(metadata, false);
-  }
-}
-
-void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
-                                                   atlas::Field& field,
-                                             const consts::FieldMetadata& fieldMetadata,
-                                             const std::string& writeName,
-                                             const bool isLfricNaming) {
-  oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
-    // Create dimensions
-    Metadata& metadata = fileData.getMetadata();
-    metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
-    metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
-    metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
-
-    atlas::Field formattedField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
-    populateMetadataWithField(metadata, formattedField, fieldMetadata, writeName);
-    populateDataWithField(fileData.getData(), formattedField, lfricAtlasMap, writeName);
-    addGlobalAttributes(metadata, isLfricNaming);
   }
 }
 
@@ -138,6 +137,25 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
   // Variable dimensions
   addVariableDimensions(field, metadata, var);
   metadata.addVariable(varName, var);
+}
+
+void monio::AtlasWriter::populateDataWithField(Data& data,
+                                         const atlas::Field& field,
+                                         const std::vector<size_t>& lfricToAtlasMap,
+                                         const std::string& fieldName) {
+  oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
+  std::shared_ptr<DataContainerBase> dataContainer = nullptr;
+  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, fieldName);
+  data.addContainer(dataContainer);
+}
+
+void monio::AtlasWriter::populateDataWithField(Data& data,
+                                         const atlas::Field& field,
+                                         const std::vector<int> dimensions) {
+  oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
+  std::shared_ptr<DataContainerBase> dataContainer = nullptr;
+  populateDataContainerWithField(dataContainer, field, dimensions);
+  data.addContainer(dataContainer);
 }
 
 void monio::AtlasWriter::populateDataContainerWithField(
@@ -243,25 +261,6 @@ void monio::AtlasWriter::populateDataContainerWithField(
       }
     }
   }
-}
-
-void monio::AtlasWriter::populateDataWithField(Data& data,
-                                         const atlas::Field& field,
-                                         const std::vector<size_t>& lfricToAtlasMap,
-                                         const std::string& fieldName) {
-  oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
-  std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-  populateDataContainerWithField(dataContainer, field, lfricToAtlasMap, fieldName);
-  data.addContainer(dataContainer);
-}
-
-void monio::AtlasWriter::populateDataWithField(Data& data,
-                                         const atlas::Field& field,
-                                         const std::vector<int> dimensions) {
-  oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
-  std::shared_ptr<DataContainerBase> dataContainer = nullptr;
-  populateDataContainerWithField(dataContainer, field, dimensions);
-  data.addContainer(dataContainer);
 }
 
 template<typename T>
