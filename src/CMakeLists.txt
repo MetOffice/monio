@@ -1,10 +1,10 @@
 ###############################################################################
 # MONIO - Met Office NetCDF Input Output                                      #
 #                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
+# (C) Crown Copyright 2023, Met Office. All rights reserved.                  #
 #                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
+# This software is licensed under the terms of the 3-Clause BSD License       #
+# which can be obtained from https://opensource.org/license/bsd-3-clause/.    #
 ###############################################################################
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
