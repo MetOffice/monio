@@ -24,6 +24,7 @@ class AttributeString : public AttributeBase {
   AttributeString& operator=(AttributeString&&)      = delete;  //!< Deleted copy assignment
   AttributeString& operator=(const AttributeString&) = delete;  //!< Deleted copy assignment
 
+  /// \brief Implemented by contract from base class.
   const std::string& getName() const;
   const std::string& getValue() const;
 

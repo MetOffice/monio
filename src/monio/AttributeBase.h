@@ -23,7 +23,9 @@ class AttributeBase {
   AttributeBase& operator=(AttributeBase&&)       = delete;  //!< Deleted move assignment
   AttributeBase& operator=(const AttributeBase&)  = delete;  //!< Deleted copy assignment
 
+  /// \brief Returns value indicating the derived type.
   const int getType() const;
+  /// \brief Pure virtual function to prevent this class being instantiated directly.
   virtual const std::string& getName() const = 0;
 
  protected:

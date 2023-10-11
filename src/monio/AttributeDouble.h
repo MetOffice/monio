@@ -24,6 +24,7 @@ class AttributeDouble : public AttributeBase {
   AttributeDouble& operator=(AttributeDouble&&)      = delete;  //!< Deleted move assignment
   AttributeDouble& operator=(const AttributeDouble&) = delete;  //!< Deleted copy assignment
 
+  /// \brief Implemented by contract from base class.
   const std::string& getName() const;
   const double getValue() const;
 

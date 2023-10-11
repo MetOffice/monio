@@ -24,6 +24,7 @@ class AttributeInt : public AttributeBase {
   AttributeInt& operator=(AttributeInt&&)      = delete;  //!< Deleted move assignment
   AttributeInt& operator=(const AttributeInt&) = delete;  //!< Deleted copy assignment
 
+  /// \brief Implemented by contract from base class.
   const std::string& getName() const;
   const int getValue() const;
 
