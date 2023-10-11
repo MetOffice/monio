@@ -300,8 +300,8 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const std::vector<int>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataVec()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  for (int i = 0; i < dimensions[consts::eHorizontal]; ++i) {  // Horizontal dimension
-    for (int j = 0; j < dimensions[consts::eVertical]; ++j) {  // Levels dimension
+  for (int i = 0; i < dimensions[consts::eHorizontal]; ++i) {
+    for (int j = 0; j < dimensions[consts::eVertical]; ++j) {
       int index = j + (i * dimensions[consts::eVertical]);
       dataVec[index] = fieldView(i, j);
     }
