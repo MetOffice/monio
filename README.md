@@ -17,7 +17,7 @@ MONIO provides a `Monio` singleton class specifically for reading and writing st
 
 ### Dependencies
 
-MONIO is a CMake project. However, it is configured to make use of ECMWF's ECBuild (https://github.com/ecmwf/ecbuild). The `CMakeLists.txt` file will need to modified to avoid this if a dependency on ECBuild is to be avoided.
+MONIO is a CMake project. However, it is configured to make use of ECMWF's ECBuild (https://github.com/ecmwf/ecbuild). The `CMakeLists.txt` file will need to modified if a dependency on ECBuild is to be avoided.
 
 At its core, MONIO uses and depends upon Unidata's NetCDF-C++ (https://github.com/Unidata/netcdf-cxx4) library. This carries its own dependencies on Unidata's NetCDF-C (https://github.com/Unidata/netcdf-c) and the HDF Group's HDF5 (https://github.com/HDFGroup/hdf5) libraries, as well as some other supporting libraries.
 
@@ -29,7 +29,18 @@ As it is intended to run within an operational, meteorological DA context, MONIO
 
 ### Compilation
 
-MONIO is an ecbuild
+After satisfying the dependencies outlined above, MONIO was built and tested using the Make and Ninja build systems, and the GCC and Intel compilers.
+
+## How to Use
+
+MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once the `Monio.h` is included in a header file it can be used directly.
+
+### Reading State Files
+
+```monio::Monio::readState(atlas::FieldSet& localFieldSet,
+                           const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                           const std::string& filePath,
+                           const util::DateTime& dateTime)```
 
 ## Issues
 
