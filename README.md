@@ -33,9 +33,10 @@ After satisfying the dependencies outlined above, MONIO was built and tested usi
 
 ## How to Use
 
-MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once the `Monio.h` is included in a header file it can be used directly.
+MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once the `Monio.h` is included in a header file it can be used directly. In the following scenarios, `FieldSet`s use an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`.
 
 ### Reading State Files
+
 
 ```
 monio::Monio::readState(atlas::FieldSet& localFieldSet,
