@@ -81,7 +81,7 @@ Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written
 
 ### Writing A FieldSet
 
-For debugging, it is may occasionally be useful to output a `FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
+For debugging, it may occasionally be useful to output a `FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
 
 ```
 monio::Monio::get().writeFieldSet(localFieldSet, filePath);
