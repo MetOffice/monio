@@ -37,7 +37,7 @@ MONIO has been written to address the known use cases defined within the MO-JEDI
 
 In the following scenarios, the only common parameter is an `atlas::FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured as a `"cubedsphere_dual"`. Passing an `atlas::FieldSet` of a different configuration can prevent MONIO from functioning correctly.
 
-Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to an `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If an `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. This may be an intended use-case. However, if an instance of `consts::FieldMetadata` does not correspond to a `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
+Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to an `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If an `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. This may be an intended use-case. However, if an instance of `consts::FieldMetadata` does not correspond to an `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
 
 ### Reading State Files
 
@@ -47,7 +47,7 @@ Reading of an LFRic-compatible, time-dependent, background file can be carried o
 monio::Monio::get().readState(localFieldSet, fieldMetadataVec, filePath, dateTime);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the timeseries data are required for.
+Where `localFieldSet` is the `atlas::FieldSet` to be populated with data from the file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the timeseries data are required for.
 
 ### Reading Increment Files
 
@@ -57,7 +57,7 @@ Reading of an LFRic-compatible, time-independent, increment file can be carried 
 monio::Monio::get().readIncrements(localFieldSet, fieldMetadataVec, filePath);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, and `filePath` is a `std::string` defining a valid path to the file to be read.
+Where `localFieldSet` is the `atlas::FieldSet` to be populated with data from the file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, and `filePath` is a `std::string` defining a valid path to the file to be read.
 
 ### Writing Increment Files
 
