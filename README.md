@@ -37,17 +37,18 @@ MONIO has been written to address the known use cases defined within the MO-JEDI
 
 In the following scenarios, one common parameter is a `FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`. 
 
-Most of the functions in `Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to a `Field` in the `FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If a `Field` in the `FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` does not correspond to a `Field` in the `FieldSet`, an exeption will be generated and program execution will cease.
+Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to a `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If a `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` does not correspond to a `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
 
 ### Reading State Files
 
+Reading of an LFRic time-dependent, background file can be carried out with the following call:
 
 ```
-monio::Monio::readState(atlas::FieldSet& localFieldSet,
-                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                        const std::string& filePath,
-                        const util::DateTime& dateTime)
+monio::Monio::readState(localFieldSet, fieldMetadataVec, filePath, dateTime);
 ```
+
+Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the timeseries data are required for.
+
 ## Issues
 
 Any questions or issues can be reported to philip.underwood@metoffice.gov.uk.
