@@ -35,7 +35,7 @@ After satisfying the dependencies outlined above, MONIO was built and tested usi
 
 MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once `Monio.h` is included in a source file it can be used directly. 
 
-In the following scenarios, one common parameter is a `FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`. Passing a `FieldSet` of a different configuration may cause issues that prevent MONIO from functioning correctly.
+In the following scenarios, one common parameter is a `atlas::FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`. Passing a `atlas::FieldSet` of a different configuration may cause issues that prevent MONIO from functioning correctly.
 
 Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to a `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If a `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` does not correspond to a `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
 
@@ -67,7 +67,7 @@ Writing of an LFRic-compatible, time-independent, increment file can be carried 
 monio::Monio::get().writeIncrements(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricWriteName`. This is the only difference this function has with `Monio::writeState` (below).
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricWriteName`. This is the only difference this function has with `Monio::writeState` (below).
 
 ### Writing State Files
 
@@ -77,7 +77,7 @@ _This method is intended for use with tests only_. Writing of an LFRic-compatibl
 monio::Monio::get().writeState(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricReadName`. This is the only difference this function has with `Monio::writeIncrements` (above).
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricReadName`. This is the only difference this function has with `Monio::writeIncrements` (above).
 
 ### Writing A FieldSet
 
@@ -87,7 +87,7 @@ For debugging, it is may occasionally be useful to output a `FieldSet` from any 
 monio::Monio::get().writeFieldSet(localFieldSet, filePath);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated, and `filePath` is a `std::string` defining a valid path to the intended output file.
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, and `filePath` is a `std::string` defining a valid path to the intended output file.
 
 ## Issues
 
