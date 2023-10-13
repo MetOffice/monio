@@ -67,7 +67,7 @@ Writing of an LFRic-compatible, time-independent, increment file can be carried 
 monio::Monio::get().writeIncrements(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricWriteName`. This is the only difference this function has with `Monio::writeState` (below).
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricWriteName` by default. The LFRic name is the only difference this function has with `Monio::writeState` (below).
 
 ### Writing State Files
 
@@ -77,7 +77,7 @@ _This method is intended for use with tests only_. Writing of an LFRic-compatibl
 monio::Monio::get().writeState(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricReadName`. This is the only difference this function has with `Monio::writeIncrements` (above).
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the intended output file, and optionally, `isLFRicNaming` is a `bool` defining whether or not the variables should use LFRic or JEDI names. If this parameter is not defined, the variables will take the corresponding `FieldMetadata.lfricReadName` by default. The LFRic name is the only difference this function has with `Monio::writeIncrements` (above).
 
 ### Writing A FieldSet
 
