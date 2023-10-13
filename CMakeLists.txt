@@ -27,7 +27,6 @@ ecbuild_declare_project()
 set(MONIO_LINKER_LANGUAGE CXX)
 
 ## Dependencies
-find_package(jedicmake REQUIRED)
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
 find_package(NetCDF COMPONENTS CXX)
@@ -36,8 +35,6 @@ find_package(atlas 0.20.2 REQUIRED)
 find_package(oops 1.0.0 REQUIRED)
 
 ## Export package info
-#list(APPEND MPI HDF5 NetCDF atlas oops)
-
 set(MONIO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
                        ${CMAKE_CURRENT_BINARY_DIR}/src
                        ${oops_SOURCE_DIR}/src)
