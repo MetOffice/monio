@@ -37,7 +37,7 @@ MONIO has been written to address the known use cases defined within the MO-JEDI
 
 In the following scenarios, one common parameter is a `FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`. 
 
-Most of the functions in `Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The instances of `consts::FieldMetadata` in this `std::vector` that must correspond to the `FieldSet`. Each `Field` is extracted by the value of `jediName` for each instance of `consts::FieldMetadata` in the `std::vector`. If there are `Field`s in the `FieldSet` for which there is no `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` is put in the `std::vector` that does not correspond to a `Field` in the `FieldSet`, an exeption will be generated and program execution will cease.
+Most of the functions in `Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to a `Field` in the `FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If a `Field` in the `FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` does not correspond to a `Field` in the `FieldSet`, an exeption will be generated and program execution will cease.
 
 ### Reading State Files
 
