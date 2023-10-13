@@ -37,11 +37,12 @@ MONIO has been written to address the known use cases defined within the MO-JEDI
 
 ### Reading State Files
 
-```monio::Monio::readState(atlas::FieldSet& localFieldSet,
-                           const std::vector<consts::FieldMetadata>& fieldMetadataVec,
-                           const std::string& filePath,
-                           const util::DateTime& dateTime)```
-
+```
+monio::Monio::readState(atlas::FieldSet& localFieldSet,
+                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
+                        const std::string& filePath,
+                        const util::DateTime& dateTime)
+```
 ## Issues
 
 Any questions or issues can be reported to philip.underwood@metoffice.gov.uk.
