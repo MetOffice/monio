@@ -35,9 +35,9 @@ After satisfying the dependencies outlined above, MONIO was built and tested usi
 
 MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once `Monio.h` is included in a source file it can be used directly. 
 
-In the following scenarios, the only common parameter is an `atlas::FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured as a `"cubedsphere_dual"`. Passing a `atlas::FieldSet` of a different configuration can prevent MONIO from functioning correctly.
+In the following scenarios, the only common parameter is an `atlas::FieldSet` that uses an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured as a `"cubedsphere_dual"`. Passing an `atlas::FieldSet` of a different configuration can prevent MONIO from functioning correctly.
 
-Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to a `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If a `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` does not correspond to a `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
+Most of the functions in `monio::Monio` also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ `std::vector` of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. The struct instances in this vector must correspond to an `atlas::Field` in the `atlas::FieldSet`. They are accessed by the value of `FieldMetadata.jediName`. If an `atlas::Field` in the `atlas::FieldSet` has no corresponding instance of `consts::FieldMetadata`, they will not be processed. This may be an intended use-case. However, if an instance of `consts::FieldMetadata` does not correspond to a `atlas::Field` in the `atlas::FieldSet`, an exeption will be generated and program execution will cease.
 
 ### Reading State Files
 
