@@ -33,7 +33,7 @@ After satisfying the dependencies outlined above, MONIO was built and tested usi
 
 ## How to Use
 
-MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once the `Monio.h` is included in a header file it can be used directly. In the following scenarios, `FieldSet`s use an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`.
+MONIO has been written to address the known use cases defined within the MO-JEDI context. These are captured in the public functons defined in the `Monio` singleton class. Once the `Monio.h` is included in a header file it can be used directly. In the following scenarios, `FieldSet`s use an `atlas::CubedSphereGrid` and an `atlas::Mesh` configured to a `"cubedsphere_dual"`. Most of them also take a reference to a `std::vector<consts::FieldMetadata>`. This is a standard C++ vector of `consts::FieldMetadata` structs defined in MONIO's `Constants.h` file. It is the instances of `consts::FieldMetadata` in this `std::vector` that must correspond to the `FieldSet`. Each `Field` is extracted by the value of `jediName` for each instance of `consts::FieldMetadata` in the `std::vector`. If there are `Field`s in the `FieldSet` for which there is no `consts::FieldMetadata`, they will not be processed. If an instance of `consts::FieldMetadata` is put in the `std::vector` that does not correspond to a `Field` in the `FieldSet`, an exeption will be generated and program execution will cease.
 
 ### Reading State Files
 
