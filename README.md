@@ -41,13 +41,23 @@ Most of the functions in `monio::Monio` also take a reference to a `std::vector<
 
 ### Reading State Files
 
-Reading of an LFRic time-dependent, background file can be carried out with the following call:
+Reading of an LFRic-compatible, time-dependent, background file can be carried out with the following call:
 
 ```
-monio::Monio::readState(localFieldSet, fieldMetadataVec, filePath, dateTime);
+monio::Monio::get().readState(localFieldSet, fieldMetadataVec, filePath, dateTime);
 ```
 
 Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the timeseries data are required for.
+
+### Reading Increment Files
+
+Reading of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
+
+```
+monio::Monio::get().readIncrements(localFieldSet, fieldMetadataVec, filePath);
+```
+
+Where `localFieldSet` is the `atlas::FieldSet` to be populated, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, and `filePath` is a `std::string` defining a valid path to the file to be read.
 
 ## Issues
 
