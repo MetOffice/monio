@@ -47,7 +47,7 @@ Reading of an LFRic-compatible, time-dependent, background file can be carried o
 monio::Monio::get().readState(localFieldSet, fieldMetadataVec, filePath, dateTime);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` to be populated with data from the file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the timeseries data are required for.
+Where `localFieldSet` is the `atlas::FieldSet` to be populated with data from the file, `fieldMetadataVec` is the `std::vector<consts::FieldMetadata>`, `filePath` is a `std::string` defining a valid path to the file to be read, and `dateTime` is an instance of `util::DateTime` indicating what position in the time series data are required for.
 
 ### Reading Increment Files
 
