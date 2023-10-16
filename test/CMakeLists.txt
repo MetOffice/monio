@@ -12,7 +12,13 @@ message(STATUS "PROJECT_BINARY_DIR: ${PROJECT_BINARY_DIR}")
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 
-file( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/DataOut )
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                        ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py
+                        ${CMAKE_BINARY_DIR}/bin/monio_cpplint.py)
+
+ecbuild_add_resources(TARGET       monio_test_scripts
+                      SOURCES_PACK ${monio_test_input}
+                                   ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py)
 
 if(NOT DEFINED MONIO_TESTFILES_DIR)
   if(DEFINED ENV{MONIO_TESTFILES_DIR})
@@ -20,13 +26,13 @@ if(NOT DEFINED MONIO_TESTFILES_DIR)
   elseif(DEFINED ENV{LFRICLITE_DATA_REP_DIR})  # back compat
     set(MONIO_TESTFILES_DIR "$ENV{LFRICLITE_DATA_REP_DIR}")
   elseif(DEFINED MOBB_DATA)
-    set(MONIO_TESTFILES_DIR "${MOBB_DATA}/monio" )
+    set(MONIO_TESTFILES_DIR "${MOBB_DATA}/monio")
   elseif(DEFINED ENV{MOBB_DATA})
-    set(MONIO_TESTFILES_DIR "$ENV{MOBB_DATA}/monio" )
+    set(MONIO_TESTFILES_DIR "$ENV{MOBB_DATA}/monio")
   endif()
 endif()
 if(IS_DIRECTORY "${MONIO_TESTFILES_DIR}/Data")
-  set(MONIO_TESTFILES_DIR "${MONIO_TESTFILES_DIR}/Data" )
+  set(MONIO_TESTFILES_DIR "${MONIO_TESTFILES_DIR}/Data")
 endif()
 if(IS_DIRECTORY "${MONIO_TESTFILES_DIR}")
   message(STATUS "MONIO_TESTFILES_DIR=${MONIO_TESTFILES_DIR}")
@@ -40,9 +46,11 @@ if(IS_DIRECTORY "${MONIO_TESTFILES_DIR}")
     SYMBOLIC
   )
 else()
-  message(FATAL_ERROR "MONIO_TESTFILES_DIR=${MONIO_TESTFILES_DIR}: no such directory")
+  message(WARNING "MONIO_TESTFILES_DIR=${MONIO_TESTFILES_DIR}: no such directory")
+  return()
 endif()
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/DataOut)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testinput)
 list(APPEND monio_testinput
   testinput/fieldset_write.yaml
@@ -55,14 +63,6 @@ foreach(FILENAME ${monio_testinput})
                            ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
                            ${CMAKE_CURRENT_BINARY_DIR}/${FILENAME})
 endforeach(FILENAME)
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                        ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py
-                        ${CMAKE_BINARY_DIR}/bin/monio_cpplint.py)
-
-ecbuild_add_resources(TARGET       monio_test_scripts
-                      SOURCES_PACK ${monio_test_input}
-                                   ${PROJECT_SOURCE_DIR}/test/utils/cpplint.py)
 
 ecbuild_add_test(TARGET monio_coding_norms
                  TYPE SCRIPT
@@ -88,4 +88,3 @@ ecbuild_add_test(TARGET  test_monio_state_full
                  ARGS    "testinput/state_full.yaml"
                  LIBS    monio
                  MPI     4)
-
