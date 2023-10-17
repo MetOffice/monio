@@ -1,10 +1,10 @@
 /******************************************************************************
 * MONIO - Met Office NetCDF Input Output                                      *
 *                                                                             *
-* (C) Crown Copyright 2023 Met Office                                         *
+* (C) Crown Copyright 2023, Met Office. All rights reserved.                  *
 *                                                                             *
-* This software is licensed under the terms of the Apache Licence Version 2.0 *
-* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+* This software is licensed under the terms of the 3-Clause BSD License       *
+* which can be obtained from https://opensource.org/license/bsd-3-clause/.    *
 ******************************************************************************/
 #pragma once
 
@@ -74,13 +74,15 @@ class AtlasWriter {
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
 
-  /// \brief With LFRic metadata, derives the container type and makes the call to populate it.
+  /// \brief Derives the container type and makes the call to populate it. Used where metadata are
+  ///        provided and data are written in LFRic order.
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const std::string& fieldName);
 
-  /// \brief Without metadata, derives the container type and makes the call to populate it.
+  /// \brief Derives the container type and makes the call to populate it. Used where metadat are
+  ///        created as part of the writing process and data are written in Atlas order.
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<int>& dimensions);
