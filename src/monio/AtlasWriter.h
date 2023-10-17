@@ -52,28 +52,28 @@ class AtlasWriter {
                            const std::string& writeName);
 
  private:
-  /// \brief Creates additionally required metadata for Field. Called from populateFileDataWithField
+  /// \brief Creates additionally required metadata for field. Called from populateFileDataWithField
   ///        where LFRic metadata are provided.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& varName);
 
-  /// \brief Creates all metadata for Field. Called from populateFileDataWithField where metadata
+  /// \brief Creates all metadata for field. Called from populateFileDataWithField where metadata
   ///        are created.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const std::string& varName);
 
-  /// \brief Adds populated DataContainer to Data. Called from populateFileDataWithField where LFRic
-  ///        metadata are provided.
+  /// \brief Adds populated data container to instance of data. Called from
+  ///        populateFileDataWithField where LFRic metadata are provided.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
                        const std::string& fieldName);
 
-  /// \brief Adds populated DataContainer to Data. Called from populateFileDataWithField where
-  ///        metadata are created.
+  /// \brief Adds populated data container to instance of data. Called from
+  ///        populateFileDataWithField where metadata are created.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
@@ -85,7 +85,7 @@ class AtlasWriter {
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const std::string& fieldName);
 
-  /// \brief Derives the container type and makes the call to populate it. Used where metadat are
+  /// \brief Derives the container type and makes the call to populate it. Used where metadata are
   ///        created as part of the writing process and data are written in Atlas order.
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,

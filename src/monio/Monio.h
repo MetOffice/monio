@@ -62,7 +62,7 @@ class Monio {
                   const std::string& filePath,
                   const bool isLfricNaming = true);
 
-  /// \brief Writes an instance of our field sets to file. Intended debugging and testing only.
+  /// \brief Writes an field set to file. Intended debugging and testing only.
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string& filePath);
 
