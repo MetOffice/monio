@@ -43,7 +43,7 @@ class Reader {
   bool isOpen();
 
   void readMetadata(FileData& fileData);
-  /// \brief Reads reading complete data for a set of variables defined in metadata.
+  /// \brief Reads complete data for a set of variables defined in metadata.
   void readAllData(FileData& fileData);
   /// \brief Reads complete data for a set of variables.
   void readFullData(FileData& fileData,
