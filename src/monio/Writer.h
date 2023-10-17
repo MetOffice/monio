@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <map>
@@ -22,7 +22,7 @@
 #include "Metadata.h"
 
 namespace monio {
-/// \brief Top-level class uses FileData and its contents to write to a NetCDF file
+/// \brief Top-level class uses instances of FileData and their contents to write to a NetCDF file.
 class Writer {
  public:
   explicit Writer(const eckit::mpi::Comm& mpiCommunicator,
@@ -41,9 +41,6 @@ class Writer {
   void openFile(const std::string& filePath);
   void closeFile();
   bool isOpen();
-
-  void writeMetadatum(const Metadata& metadata);
-  void writeDatum(const FileData& fileData);
 
   void writeMetadata(const Metadata& metadata);
   void writeData(const FileData& fileData);

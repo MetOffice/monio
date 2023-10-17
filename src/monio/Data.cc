@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Data.h"
 
 #include <stdexcept>
@@ -116,18 +116,18 @@ void monio::Data::deleteContainer(const std::string& name) {
   }  // Non-existant container is a legitimate use-case.
 }
 
-void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& varNames) {
+void monio::Data::removeAllButTheseContainers(const std::vector<std::string>& names) {
   oops::Log::debug() << "Data::removeAllButTheseContainers()" << std::endl;
   std::vector<std::string> containerKeys = utils::extractKeys(dataContainers_);
   for (const std::string& containerKey : containerKeys) {
-    if (utils::findInVector(varNames, containerKey) == false) {
+    if (utils::findInVector(names, containerKey) == false) {
       deleteContainer(containerKey);
     }
   }
 }
 
-bool monio::Data::isPresent(const std::string& name) const {
-  oops::Log::debug() << "Data::isPresent()" << std::endl;
+bool monio::Data::isContainerPresent(const std::string& name) const {
+  oops::Log::debug() << "Data::isContainerPresent()" << std::endl;
   auto it = dataContainers_.find(name);
   if (it != dataContainers_.end()) {
     return true;
@@ -166,5 +166,6 @@ std::vector<std::string> monio::Data::getDataContainerNames() const {
 }
 
 void monio::Data::clear() {
+  oops::Log::debug() << "Data::clear()" << std::endl;
   dataContainers_.clear();
 }

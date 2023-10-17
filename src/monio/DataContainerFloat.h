@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <string>
@@ -14,7 +14,7 @@
 #include "DataContainerBase.h"
 
 namespace monio {
-/// \brief Concrete class for single precision numerical data of a NetCDF file
+/// \brief Concrete class for single precision numerical data of a NetCDF file.
 class DataContainerFloat : public DataContainerBase {
  public:
   explicit DataContainerFloat(const std::string& name);
@@ -25,12 +25,12 @@ class DataContainerFloat : public DataContainerBase {
   DataContainerFloat& operator=(DataContainerFloat&&)      = delete;  //!< Deleted move assignment
   DataContainerFloat& operator=(const DataContainerFloat&) = delete;  //!< Deleted copy assignment
 
+  /// \brief Implemented by contract from base class.
   const std::string& getName() const;
 
   std::vector<float>& getData();
   const std::vector<float>& getData() const;
 
-  const float* getDataPointer();
   const float& getDatum(const size_t index);
 
   void setData(const std::vector<float> dataVector);

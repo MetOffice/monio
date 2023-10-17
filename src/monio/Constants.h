@@ -1,21 +1,24 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "atlas/mesh/Mesh.h"
-
 namespace monio {
 namespace consts {
+/// Structs ////////////////////////////////////////////////////////////////////////////////////////
+
+/// \brief This struct is used for interfacing with the Monio singleton and its intended use-cases
+///        within the MO/JEDI context. MO model interfaces should include this class and build a
+///        vector of these structs along with the field sets associated with reading and writing.
 struct FieldMetadata {
   std::string lfricReadName;
   std::string lfricWriteName;
@@ -25,37 +28,38 @@ struct FieldMetadata {
   bool noFirstLevel;
 };
 
+/// Enums //////////////////////////////////////////////////////////////////////////////////////////
+
+/// \brief Paired with struct FieldMetadata, above.
+enum eFieldMetadata {
+  eLfricReadName,
+  eLfricWriteName,
+  eJediName,
+  eUnits,
+  eNumberOfLevels,
+  eNoFirstLevel
+};
+
+/// \brief For indexing spatial coordinates and associated data structures, e.g. kLfricCoordVarNames
 enum eAtlasLonLat {
   eLongitude,
   eLatitude
 };
 
+/// \brief For indexing spatial coordinates of fields generically without reference to the globe.
+enum eDimensions {
+  eHorizontal,
+  eVertical
+};
+
+/// \brief For indicating the naming convention adopted by input files, where applicable.
 enum eNamingConventions {
   eLfricNaming,
   eJediNaming,
   eNotDefined
 };
 
-enum eDataTypes {  // Used in Reader and File
-  eByte,
-  eChar,
-  eShort,
-  eInt,
-  eFloat,
-  eDouble,
-  eUByte,
-  eUShort,
-  eUInt,
-  eUInt64,
-  eString,
-  eNumberOfDataTypes
-};
-
-enum eDimensions {
-  eHorizontal,
-  eVertical
-};
-
+/// \brief Used for populating output files with the correct metadata associated with variable data.
 enum eAttributeNames {
   eStandardName,
   eLongName,
@@ -70,28 +74,56 @@ enum eAttributeNames {
   eNumberOfAttributeNames
 };
 
-enum eIncrementVariables {
-  eEastwardWind,
-  eNorthwardWind,
-  eExnerPressure,
-  eDryDensity,
-  ePotentialTemperature,
-  eSpecificHumidity,
-  eCloudWaterMass,
-  eCloudIceMass,
-  eNumberOfIncrementVariables
+/// \brief Adopted from the NetCDF library. Used here to indicate data types in MONIO where a
+///        dependency on the NetCDF library should be avoided. Also indexes kDataTypeNames.
+enum eDataTypes {
+  eByte,
+  eChar,
+  eShort,
+  eInt,
+  eFloat,
+  eDouble,
+  eUByte,
+  eUShort,
+  eUInt,
+  eUInt64,
+  eString,
+  eNumberOfDataTypes
 };
 
-// Paired with struct FieldMetadata, above
-enum eFieldMetadata {
-  eLfricReadName,
-  eLfricWriteName,
-  eJediName,
-  eUnits,
-  eNumberOfLevels,
-  eNoFirstLevel
-};
+/// String/Views ///////////////////////////////////////////////////////////////////////////////////
 
+const std::string_view kTimeDimName = "time_counter";
+const std::string_view kTimeVarName = "time_instant";
+const std::string_view kTimeOriginName = "time_origin";
+
+const std::string_view kTileDimName = "surface_tiles";
+const std::string_view kTileVarName = "tile_fraction";
+
+const std::string_view kHorizontalName = "nMesh2d_face";
+const std::string_view kVerticalFullName = "full_levels";
+const std::string_view kVerticalHalfName = "half_levels";
+
+const std::string_view kLfricMeshTerm = "Mesh2d";
+const std::string_view kLfricLonVarName = "Mesh2d_face_y";
+const std::string_view kLfricLatVarName = "Mesh2d_face_x";
+
+const std::string_view kLongitudeVarName = "longitude";
+const std::string_view kLatitudeVarName = "latitude";
+
+const std::string_view kTabSpace = "    ";
+const std::string_view kNotFoundError = "NOT_FOUND";
+
+const std::string_view kToBeDerived = "TO BE DERIVED";
+const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
+
+const std::string_view kProducedByName = "produced_by";
+const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
+const std::string_view kNamingConventionName = "naming_convention";
+
+/// Multi-dimensional String/Views /////////////////////////////////////////////////////////////////
+
+/// \brief Used with eDataTypes, above, for writing metadata to file or console.
 const std::string_view kDataTypeNames[eNumberOfDataTypes] = {
   "byte",
   "char",
@@ -106,58 +138,7 @@ const std::string_view kDataTypeNames[eNumberOfDataTypes] = {
   "std::string"
 };
 
-// Used with MetadataLookup class - the following are Atlas names of increment variables
-const std::string_view kIncrementVariables[eNumberOfIncrementVariables] {
-  "eastward_wind",
-  "northward_wind",
-  "exner_levels_minus_one",
-  "dry_air_density_levels_minus_one",
-  "potential_temperature",
-  "specific_humidity",
-  "mass_content_of_cloud_liquid_water_in_atmosphere_layer",
-  "mass_content_of_cloud_ice_in_atmosphere_layer",
-};
-
-// Needs to be a vector for use with call to templated search in Metadata::getNamingConvention
-const std::vector<std::string> kNamingConventions({
-  "LFRic",
-  "JEDI"
-});
-
-const std::string_view kTimeDimName = "time_counter";
-const std::string_view kTimeVarName = "time_instant";
-const std::string_view kTimeOriginName = "time_origin";
-
-const std::string_view kTileDimName = "surface_tiles";
-const std::string_view kTileVarName = "tile_fraction";
-
-const std::string_view kHorizontalName = "nMesh2d_face";
-const std::string_view kVerticalFullName = "full_levels";
-const std::string_view kVerticalHalfName = "half_levels";
-
-
-const std::string_view kLfricMeshTerm = "Mesh2d";
-const std::string_view kLfricLonVarName = "Mesh2d_face_y";
-const std::string_view kLfricLatVarName = "Mesh2d_face_x";
-
-const std::string_view kLongitudeVarName = "longitude";
-const std::string_view kLatitudeVarName = "latitude";
-
-const std::string_view kTabSpace = "    ";
-const std::string_view kLevelsSearchTerm = "levels";
-const std::string_view kNotFoundError = "NOT_FOUND";
-
-const std::string_view kToBeDerived = "TO BE DERIVED";
-const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
-
-const std::string_view kProducedByName = "produced_by";
-const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
-const std::string_view kNamingConventionName = "naming_convention";
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-/// Increment file metadata attributes
-/// Attribute names
-
+/// \brief Used to set the metadata attribute names in output files.
 const std::string_view  kIncrementAttributeNames[eNumberOfAttributeNames] {
   "standard_name",
   "long_name",
@@ -171,38 +152,37 @@ const std::string_view  kIncrementAttributeNames[eNumberOfAttributeNames] {
   "coordinates"
 };
 
-/// Attribute constant values
-const std::string_view kMeshValue = "Mesh2d";
-const std::string_view kLocationValue = "face";
-const std::string_view kOnlineOperationValue = "instant";  // Not needed?
-const std::string_view kIntervalOperationValue = "3600 s";  // Not needed?
-const std::string_view kIntervalWriteValue = "3600 s";  // Not needed?
-const std::string_view kCellMethodsValue = "time: point";  // Not needed?
-const std::string_view kCoordinatesValue = "Mesh2d_face_y Mesh2d_face_x";
 
 const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
   kNotFoundError,  // Use AttributeLookup
   kNotFoundError,  // Use AttributeLookup
   kNotFoundError,  // Use AttributeLookup
-  kMeshValue,
-  kLocationValue,
-  kOnlineOperationValue,
-  kIntervalOperationValue,
-  kIntervalWriteValue,
-  kCellMethodsValue,
-  kCoordinatesValue
+  "Mesh2d",
+  "face",
+  "instant",
+  "3600 s",
+  "3600 s",
+  "time: point",
+  "Mesh2d_face_y Mesh2d_face_x"
 };
-//////////////////////////////////////////////////////////////////////////////////////////////////
 
-const int kMPIRankOwner = 0;
-
-const int kVerticakSingle = 1;
-const int kVerticalFullSize = 71;
-const int kVerticalHalfSize = 70;
+/// \brief Needs to be a vector for use with call to search in Metadata::getNamingConvention.
+const std::vector<std::string> kNamingConventions({
+  "LFRic",
+  "JEDI"
+});
 
 const std::vector<std::string> kLfricCoordVarNames = {std::string(kLfricLonVarName),
                                                       std::string(kLfricLatVarName)};
 const std::vector<std::string> kCoordVarNames = {std::string(kLongitudeVarName),
                                                  std::string(kLatitudeVarName)};
+
+/// Numerical Constants ////////////////////////////////////////////////////////////////////////////
+
+const int kMPIRankOwner = 0;
+
+const int kVerticalFullSize = 71;
+const int kVerticalHalfSize = 70;
+
 }  // namespace consts
 }  // namespace monio
