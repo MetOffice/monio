@@ -52,24 +52,28 @@ class AtlasWriter {
                            const std::string& writeName);
 
  private:
-  /// \brief Called from the entry point with LFRic metadata.
+  /// \brief Creates additionally required metadata for Field. Called from populateFileDataWithField
+  ///        where LFRic metadata are provided.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& varName);
 
-  /// \brief Called from the entry point with no existing metadata.
+  /// \brief Creates all metadata for Field. Called from populateFileDataWithField where metadata
+  ///        are created.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const std::string& varName);
 
-  /// \brief Called from the entry point with LFRic metadata.
+  /// \brief Adds populated DataContainer to Data. Called from populateFileDataWithField where LFRic
+  ///        metadata are provided.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
                        const std::string& fieldName);
 
-  /// \brief Called from the entry point with no existing metadata.
+  /// \brief Adds populated DataContainer to Data. Called from populateFileDataWithField where
+  ///        metadata are created.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
@@ -118,7 +122,7 @@ class AtlasWriter {
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;
 
-  /// \brief Used for automatic creation of dimension names for fields with no existing metadata.
+  /// \brief Used for automatic creation of dimension names for fields where metadata are created.
   int dimCount_ = 0;
 };
 }  // namespace monio
