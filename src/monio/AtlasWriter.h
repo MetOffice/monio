@@ -106,7 +106,8 @@ class AtlasWriter {
                        const std::string& writeName,
                        const bool noFirstLevel);
 
-  /// \brief Returns a field with a copy of the zeroth level of input field.
+  /// \brief Returns a copy of the input field, with an additional level containing a copy of the
+  ///        zeroth level.
   template<typename T>
   atlas::Field copySurfaceLevel(const atlas::Field& inputField,
                                 const atlas::FunctionSpace& functionSpace,
