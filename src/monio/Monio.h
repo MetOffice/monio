@@ -66,7 +66,7 @@ class Monio {
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string& filePath);
 
-  /// \brief Called when handling exceptions elsewhere in MONIO to free disk resources more quickly.
+  /// \brief Can be called elsewhere in MONIO to free disk resources more quickly.
   void closeFiles();
 
   /// \brief A call to open and initialise a state file for reading. This function is public whilst

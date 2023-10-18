@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include "Constants.h"
-#include "Monio.h"
 #include "Utils.h"
 
 monio::DataContainerFloat::DataContainerFloat(const std::string& name) :
@@ -31,7 +30,6 @@ const std::vector<float>& monio::DataContainerFloat::getData() const {
 
 const float& monio::DataContainerFloat::getDatum(const size_t index) {
   if (index > dataVector_.size()) {
-    Monio::get().closeFiles();
     utils::throwException("DataContainerFloat::getDatum()> Passed index exceeds vector size...");
   }
   return dataVector_[index];
