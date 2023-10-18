@@ -52,35 +52,41 @@ class AtlasWriter {
                            const std::string& writeName);
 
  private:
-  /// \brief Called from the entry point with LFRic metadata.
+  /// \brief Creates additionally required metadata for field. Called from populateFileDataWithField
+  ///        where LFRic metadata are provided.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& varName);
 
-  /// \brief Called from the entry point with no existing metadata.
+  /// \brief Creates all metadata for field. Called from populateFileDataWithField where metadata
+  ///        are created.
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const std::string& varName);
 
-  /// \brief Called from the entry point with LFRic metadata.
+  /// \brief Adds populated data container to instance of data. Called from
+  ///        populateFileDataWithField where LFRic metadata are provided.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<size_t>& lfricToAtlasMap,
                        const std::string& fieldName);
 
-  /// \brief Called from the entry point with no existing metadata.
+  /// \brief Adds populated data container to instance of data. Called from
+  ///        populateFileDataWithField where metadata are created.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
                        const std::vector<int> dimensions);
 
-  /// \brief With LFRic metadata, derives the container type and makes the call to populate it.
+  /// \brief Derives the container type and makes the call to populate it. Used where metadata are
+  ///        provided and data are written in LFRic order.
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<size_t>& lfricToAtlasMap,
                                 const std::string& fieldName);
 
-  /// \brief Without metadata, derives the container type and makes the call to populate it.
+  /// \brief Derives the container type and makes the call to populate it. Used where metadata are
+  ///        created as part of the writing process and data are written in Atlas order.
   void populateDataContainerWithField(std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const atlas::Field& field,
                                 const std::vector<int>& dimensions);
@@ -100,7 +106,8 @@ class AtlasWriter {
                        const std::string& writeName,
                        const bool noFirstLevel);
 
-  /// \brief Returns a field with a copy of the zeroth level of input field.
+  /// \brief Returns a copy of the input field, with an additional level containing a copy of the
+  ///        zeroth level.
   template<typename T>
   atlas::Field copySurfaceLevel(const atlas::Field& inputField,
                                 const atlas::FunctionSpace& functionSpace,
@@ -116,7 +123,7 @@ class AtlasWriter {
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;
 
-  /// \brief Used for automatic creation of dimension names for fields with no existing metadata.
+  /// \brief Used for automatic creation of dimension names for fields where metadata are created.
   int dimCount_ = 0;
 };
 }  // namespace monio

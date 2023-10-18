@@ -164,7 +164,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       cleanFileData(fileData);
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
-        auto& localField = localFieldSet["fieldMetadata.jediName"];
+        auto& localField = localFieldSet[fieldMetadata.jediName];
         atlas::Field globalField = utilsatlas::getGlobalField(localField);
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name

@@ -19,7 +19,7 @@
 
 namespace monio {
 /// \brief Used by Metadata to hold information about a variable read from
-/// or to be written to a NetCDF file.
+///        or to be written to a NetCDF file.
 class Variable {
  public:
   Variable(const std::string name, const int type);

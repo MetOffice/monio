@@ -62,11 +62,11 @@ class Monio {
                   const std::string& filePath,
                   const bool isLfricNaming = true);
 
-  /// \brief Writes an instance of our field sets to file. Intended debugging and testing only.
+  /// \brief Writes an field set to file. Intended debugging and testing only.
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
                      const std::string& filePath);
 
-  /// \brief Called when handling exceptions elsewhere in MONIO to free disk resources more quickly.
+  /// \brief Can be called elsewhere in MONIO to free disk resources more quickly.
   void closeFiles();
 
   /// \brief A call to open and initialise a state file for reading. This function is public whilst

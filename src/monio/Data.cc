@@ -17,7 +17,6 @@
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
-#include "Monio.h"
 #include "Utils.h"
 
 namespace {
@@ -143,7 +142,6 @@ std::shared_ptr<monio::DataContainerBase>
   if (it != dataContainers_.end()) {
     return it->second;
   } else {
-    Monio::get().closeFiles();
     utils::throwException("DataContainer named \"" + name + "\" was not found.");
   }
 }
