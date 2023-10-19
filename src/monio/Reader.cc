@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Reader.h"
 
 #include <netcdf>
@@ -92,7 +92,7 @@ void monio::Reader::readDatumAtTime(FileData& fileData,
                                    const std::string& timeDimName) {
   oops::Log::debug() << "Reader::readDatumAtTime()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    if (fileData.getData().isPresent(varName) == false) {
+    if (fileData.getData().isContainerPresent(varName) == false) {
       std::shared_ptr<Variable> variable = fileData.getMetadata().getVariable(varName);
       int dataType = variable->getType();
 
@@ -233,8 +233,8 @@ monio::File& monio::Reader::getFile() {
 }
 
 std::vector<std::shared_ptr<monio::DataContainerBase>> monio::Reader::getCoordData(
-                                                       FileData& fileData,
-                                                   const std::vector<std::string>& coordNames) {
+                                                             FileData& fileData,
+                                                       const std::vector<std::string>& coordNames) {
   oops::Log::debug() << "Reader::getCoordData()" << std::endl;
   if (coordNames.size() == 2) {
     std::vector<std::shared_ptr<monio::DataContainerBase>> coordContainers;

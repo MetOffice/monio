@@ -1,19 +1,18 @@
 ﻿
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "File.h"
 
 #include <map>
 #include <memory>
 #include <stdexcept>
 
-#include "atlas/parallel/mpi/mpi.h"
 #include "oops/util/Logger.h"
 
 #include "AttributeBase.h"
@@ -24,7 +23,7 @@
 #include "Utils.h"
 #include "Variable.h"
 
-// De/Constructors ////////////////////////////////////////////////////////////////////////////////
+// De/Constructors /////////////////////////////////////////////////////////////////////////////////
 
 monio::File::File(const std::string& filePath,
                   const netCDF::NcFile::FileMode fileMode):
@@ -49,16 +48,15 @@ monio::File::~File() {
 
 void monio::File::close() {
   oops::Log::debug() << "File::close() ";
-  if (dataFile_->isNull() == false) {
-    if (fileMode_ == netCDF::NcFile::read) {
-      oops::Log::debug() << "read" << std::endl;
-    } else {
-      oops::Log::debug() << "write" << std::endl;
-    }
-    dataFile_->close();
+  if (fileMode_ == netCDF::NcFile::read) {
+    oops::Log::debug() << "read" << std::endl;
+  } else if (fileMode_ == netCDF::NcFile::write) {
+    oops::Log::debug() << "write" << std::endl;
   }
+  getFile().close();
+  dataFile_.release();
 }
-// Reading functions //////////////////////////////////////////////////////////////////////////////
+// Reading functions ///////////////////////////////////////////////////////////////////////////////
 
 void monio::File::readMetadata(Metadata& metadata) {
   oops::Log::debug() << "File::readMetadata()" << std::endl;
@@ -309,7 +307,7 @@ template void monio::File::readFieldDatum<int>(const std::string& varName,
                                                const std::vector<size_t>& countVec,
                                                std::vector<int>& dataVec);
 
-// Writing functions //////////////////////////////////////////////////////////////////////////////
+// Writing functions ///////////////////////////////////////////////////////////////////////////////
 
 void monio::File::writeMetadata(const Metadata& metadata) {
   oops::Log::debug() << "File::writeMetadata()" << std::endl;
@@ -456,31 +454,7 @@ template void monio::File::writeSingleDatum<float>(const std::string& varName,
 template void monio::File::writeSingleDatum<int>(const std::string& varName,
                                                  const std::vector<int>& dataVec);
 
-// Encapsulation functions ////////////////////////////////////////////////////////////////////////
-
-std::string& monio::File::getPath() {
-  return filePath_;
-}
-
-void monio::File::setPath(const std::string filePath) {
-  filePath_ = filePath;
-}
-
-netCDF::NcFile::FileMode& monio::File::getFileMode() {
-  return fileMode_;
-}
-
-void monio::File::setFileMode(const netCDF::NcFile::FileMode fileMode) {
-  fileMode_ = fileMode;
-}
-
-bool monio::File::isRead() {
-  return fileMode_ == netCDF::NcFile::read;
-}
-
-bool monio::File::isWrite() {
-  return fileMode_ != netCDF::NcFile::read;
-}
+// Other functions /////////////////////////////////////////////////////////////////////////////////
 
 netCDF::NcFile& monio::File::getFile() {
   if (dataFile_ == nullptr) {

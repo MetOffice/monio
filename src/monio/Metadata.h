@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #pragma once
 
 #include <map>
@@ -17,11 +17,12 @@
 #include "Variable.h"
 
 namespace monio {
-/// \brief Holds metadata read from or to be written to a NetCDF file
+/// \brief Holds metadata read from or to be written to a NetCDF file.
 class Metadata {
  public:
   Metadata();
 
+  /// \brief Custom equality operator is a friend for access to private class members.
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);
 
@@ -50,6 +51,8 @@ class Metadata {
   std::vector<std::string> getGlobalAttrNames();
   std::vector<std::string> getVariableNames();
 
+  /// \brief Produces a list of variables in the metadata whose names contain the search terms. Here
+  ///        it is used to build a set of "Mesh" variables for reading and storage ahead of writing.
   std::vector<std::string> findVariableNames(const std::string& searchTerm);
 
   std::map<std::string, int>& getDimensionsMap();
@@ -60,6 +63,8 @@ class Metadata {
   const std::map<std::string, std::shared_ptr<AttributeBase>>& getGlobalAttrsMap() const;
   const std::map<std::string, std::shared_ptr<Variable>>& getVariablesMap() const;
 
+  /// \brief Returns an number representing what naming convention an input file uses; JEDI or
+  ///        LFRic, and if this is defined.
   int getNamingConvention();
 
   void removeAllButTheseVariables(const std::vector<std::string>& varNames);
@@ -70,18 +75,20 @@ class Metadata {
   void clear();
   void clearGlobalAttributes();
 
+  /// \brief High-level call to produce a debug print of metadata to the console.
   void print();
 
  private:
   void printVariables();
   void printGlobalAttrs();
+  /// \brief Currently used to print only dimensions, but left as a template function.
   template<typename T> void printMap(const std::map<std::string, T>& map);
 
   std::map<std::string, int> dimensions_;
   std::map<std::string, std::shared_ptr<AttributeBase>> globalAttrs_;
   std::map<std::string, std::shared_ptr<Variable>> variables_;
 };
-
+/// \brief Equality operator declaration for visibility outside of class.
 bool operator==(const Metadata& lhs,
                 const Metadata& rhs);
 }  // namespace monio

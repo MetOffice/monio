@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Metadata.h"
 
 #include <algorithm>
@@ -20,7 +20,6 @@
 #include "AttributeDouble.h"
 #include "AttributeInt.h"
 #include "AttributeString.h"
-#include "Monio.h"
 #include "Utils.h"
 
 monio::Metadata::Metadata() {
@@ -143,7 +142,6 @@ int monio::Metadata::getDimension(const std::string& dimName) {
   if (isDimDefined(dimName) == true) {
     return dimensions_.at(dimName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Metadata::getDimension()> dimension \"" + dimName + "\" not found...");
   }
 }
@@ -172,7 +170,6 @@ std::shared_ptr<monio::Variable> monio::Metadata::getVariable(const std::string&
   if (it != variables_.end()) {
     return variables_.at(varName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Metadata::getVariable()> variable \"" + varName + "\" not found...");
   }
 }
@@ -185,7 +182,6 @@ const std::shared_ptr<monio::Variable>
   if (it != variables_.end()) {
     return variables_.at(varName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Metadata::getVariable()> variable \"" + varName + "\" not found...");
   }
 }
@@ -227,7 +223,6 @@ const std::vector<std::string> monio::Metadata::getVarStrAttrs(
       varStrAttrs.push_back(attr);
   }
   if (varNames.size() != varStrAttrs.size()) {
-    Monio::get().closeFiles();
     utils::throwException("Metadata::getVarStrAttrs()> "
         "Unmatched number of variables and attributes...");
   }
@@ -366,7 +361,6 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
   if (it != variables_.end()) {
     variables_.erase(varName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Metadata::deleteVariable()> Variable \"" + varName + "\" not found...");
   }
 }
@@ -438,7 +432,6 @@ void monio::Metadata::printVariables() {
           break;
         }
         default: {
-          Monio::get().closeFiles();
           utils::throwException("Metadata::printGlobalAttrs()> Data type not coded for...");
         }
       }
@@ -471,7 +464,6 @@ void monio::Metadata::printGlobalAttrs() {
         break;
       }
       default: {
-        Monio::get().closeFiles();
         utils::throwException("Metadata::printGlobalAttrs()> Data type not coded for...");
       }
     }

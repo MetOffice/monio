@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Variable.h"
 
 #include <algorithm>
@@ -15,7 +15,6 @@
 #include "AttributeInt.h"
 #include "AttributeString.h"
 #include "Constants.h"
-#include "Monio.h"
 #include "Utils.h"
 
 monio::Variable::Variable(const std::string name, const int type):
@@ -35,14 +34,6 @@ const size_t monio::Variable::getTotalSize() const {
     totalSize *= dim.second;
   }
   return totalSize;
-}
-
-std::vector<int> monio::Variable::getDimensionsVec() {
-  std::vector<int> dimensionsVec;
-  for (const auto& dim : dimensions_) {
-    dimensionsVec.push_back(dim.second);
-  }
-  return dimensionsVec;
 }
 
 std::vector<std::pair<std::string, size_t>>& monio::Variable::getDimensionsMap() {
@@ -68,7 +59,6 @@ std::shared_ptr<monio::AttributeBase>
   if (attributes_.find(attrName) != attributes_.end()) {
     return attributes_.at(attrName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Variable::getAttribute()> Attribute \"" +
                                     attrName + "\" not found...");
   }
@@ -85,14 +75,10 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       value = attrStr->getValue();
       return value;
     } else {
-      // Used specifically to retrieve LFRic's "standard_type" variable attributes as the closest
-      // approximation to a JEDI variable name. These are stored as AttributeString.
-      Monio::get().closeFiles();
       utils::throwException("Variable::getAttribute()> "
           "Variable attribute data type not coded for...");
     }
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Variable::getAttribute()> Attribute \"" +
                           attrName + "\" not found...");
   }
@@ -105,7 +91,6 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
   if (it == dimensions_.end()) {
     dimensions_.push_back(std::make_pair(dimName, size));
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Variable::addDimension()> Dimension \"" +
                           dimName + "\" already defined...");
   }
@@ -117,8 +102,7 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
   if (it == attributes_.end()) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
-    Monio::get().closeFiles();
-    utils::throwException("Variable::addAttribute()>  multiple definitions of \"" +
+    utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
                           attrName + "\"...");
   }
 }
@@ -138,35 +122,7 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
   if (it != attributes_.end()) {
     attributes_.erase(attrName);
   } else {
-    Monio::get().closeFiles();
     utils::throwException("Variable::deleteAttribute()> Attribute \"" +
                           attrName + "\" does not exist...");
   }
-}
-
-size_t monio::Variable::getDimension(const std::string& dimName) {
-  auto it = std::find_if(dimensions_.begin(), dimensions_.end(),
-      [&](const std::pair<std::string, size_t>& element) {
-        return element.first == dimName;
-      });
-  if (it != dimensions_.end()) {
-    return it->second;
-  } else {
-    Monio::get().closeFiles();
-    utils::throwException("Variable::getDimension()> Dimension \"" +
-                                  dimName + "\" does not exist...");
-  }
-}
-
-size_t monio::Variable::findDimensionSize(const std::string& dimSearchTerm) {
-  size_t dimSize = 1;
-  for (auto it = dimensions_.begin(); it != dimensions_.end(); ++it) {
-    std::string name = it->first;
-    size_t index = name.find(dimSearchTerm);
-    if (index != std::string::npos) {
-      dimSize = it->second;
-      break;
-    }
-  }
-  return dimSize;
 }

@@ -1,17 +1,16 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "DataContainerDouble.h"
 
 #include <stdexcept>
 
 #include "Constants.h"
-#include "Monio.h"
 #include "Utils.h"
 
 monio::DataContainerDouble::DataContainerDouble(const std::string& name) :
@@ -29,13 +28,8 @@ const std::vector<double>& monio::DataContainerDouble::getData() const {
   return dataVector_;
 }
 
-const double* monio::DataContainerDouble::getDataPointer() {
-  return dataVector_.data();
-}
-
 const double& monio::DataContainerDouble::getDatum(const size_t index) {
   if (index > dataVector_.size()) {
-    Monio::get().closeFiles();
     utils::throwException("DataContainerDouble::getDatum()> Passed index exceeds vector size...");
   }
 

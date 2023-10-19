@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Writer.h"
 
 #include <netcdf>
@@ -62,13 +62,6 @@ void monio::Writer::closeFile() {
 
 bool monio::Writer::isOpen() {
   return file_ != nullptr;
-}
-
-void monio::Writer::writeMetadatum(const Metadata& metadata) {
-  oops::Log::debug() << "Writer::writeMetadata()" << std::endl;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    getFile().writeMetadata(metadata);
-  }
 }
 
 void monio::Writer::writeMetadata(const Metadata& metadata) {

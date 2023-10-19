@@ -1,11 +1,11 @@
-/*#############################################################################
-# MONIO - Met Office NetCDF Input Output                                      #
-#                                                                             #
-# (C) Crown Copyright 2023 Met Office                                         #
-#                                                                             #
-# This software is licensed under the terms of the Apache Licence Version 2.0 #
-# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        #
-#############################################################################*/
+/******************************************************************************
+* MONIO - Met Office NetCDF Input Output                                      *
+*                                                                             *
+* (C) Crown Copyright 2023 Met Office                                         *
+*                                                                             *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+******************************************************************************/
 #include "Monio.h"
 
 #include <memory>
@@ -27,59 +27,19 @@ namespace  {
   }
 }
 
+monio::Monio& monio::Monio::get() {
+  oops::Log::debug() << "Monio::get()" << std::endl;
+  if (this_ == nullptr) {
+    this_ = new Monio(atlas::mpi::comm(), consts::kMPIRankOwner);
+  }
+  return *this_;
+}
+
 monio::Monio* monio::Monio::this_ = nullptr;
 
 monio::Monio::~Monio() {
   std::cout << "Monio::~Monio()" << std::endl;  // Uses std::cout by design
   delete this_;
-}
-
-int monio::Monio::initialiseFile(const atlas::Grid& grid,
-                                 const std::string& filePath,
-                                 const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int namingConvention = consts::eNotDefined;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath, dateTime);
-    reader_.openFile(filePath);
-    reader_.readMetadata(fileData);
-    // Read data
-    std::vector<std::string> meshVars =
-        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-    reader_.openFile(filePath);
-    reader_.readFullData(fileData, meshVars);
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
-    reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
-    // Process read data
-    createLfricAtlasMap(fileData, grid);
-    createDateTimes(fileData,
-                    std::string(consts::kTimeVarName),
-                    std::string(consts::kTimeOriginName));
-
-    namingConvention = fileData.getMetadata().getNamingConvention();
-  }
-  return namingConvention;
-}
-
-int monio::Monio::initialiseFile(const atlas::Grid& grid,
-                                 const std::string& filePath) {
-  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int namingConvention = consts::eNotDefined;
-  if (mpiCommunicator_.rank() == mpiRankOwner_) {
-    FileData& fileData = createFileData(grid.name(), filePath);
-    reader_.openFile(filePath);
-    reader_.readMetadata(fileData);
-    std::vector<std::string> meshVars =
-        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
-    reader_.readFullData(fileData, meshVars);
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
-    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
-    createLfricAtlasMap(fileData, grid);
-
-    namingConvention = fileData.getMetadata().getNamingConvention();
-  }
-  return namingConvention;
 }
 
 void monio::Monio::readState(atlas::FieldSet& localFieldSet,
@@ -101,7 +61,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath, dateTime);
+            int namingConvention = initialiseFile(grid.name(), filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
@@ -332,14 +292,58 @@ void monio::Monio::closeFiles() {
   writer_.closeFile();
 }
 
+int monio::Monio::initialiseFile(const atlas::Grid& grid,
+                                 const std::string& filePath,
+                                 bool doCreateDateTimes) {
+  oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
+  int namingConvention = consts::eNotDefined;
+  if (mpiCommunicator_.rank() == mpiRankOwner_) {
+    FileData& fileData = createFileData(grid.name(), filePath);
+    reader_.openFile(filePath);
+    reader_.readMetadata(fileData);
+    // Read data
+    std::vector<std::string> meshVars =
+        fileData.getMetadata().findVariableNames(std::string(consts::kLfricMeshTerm));
+    reader_.readFullData(fileData, meshVars);
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalFullName));
+    reader_.readFullDatum(fileData, std::string(consts::kVerticalHalfName));
+    // Process read data
+    createLfricAtlasMap(fileData, grid);
+    if (doCreateDateTimes == true) {
+      reader_.readFullDatum(fileData, std::string(consts::kTimeVarName));
+      createDateTimes(fileData,
+                      std::string(consts::kTimeVarName),
+                      std::string(consts::kTimeOriginName));
+    }
+    namingConvention = fileData.getMetadata().getNamingConvention();
+  }
+  return namingConvention;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-monio::Monio& monio::Monio::get() {
-  oops::Log::debug() << "Monio::get()" << std::endl;
-  if (this_ == nullptr) {
-    this_ = new Monio(atlas::mpi::comm(), consts::kMPIRankOwner);
+monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
+                    const int mpiRankOwner) :
+      mpiCommunicator_(mpiCommunicator),
+      mpiRankOwner_(mpiRankOwner),
+      reader_(mpiCommunicator, mpiRankOwner_),
+      writer_(mpiCommunicator, mpiRankOwner_),
+      atlasReader_(mpiCommunicator, mpiRankOwner_),
+      atlasWriter_(mpiCommunicator, mpiRankOwner_)   {
+  oops::Log::debug() << "Monio::Monio()" << std::endl;
+}
+
+monio::FileData& monio::Monio::createFileData(const std::string& gridName,
+                                              const std::string& filePath) {
+  oops::Log::debug() << "Monio::createFileData()" << std::endl;
+  auto it = filesData_.find(gridName);
+
+  if (it != filesData_.end()) {
+    filesData_.erase(gridName);
   }
-  return *this_;
+  // Overwrite existing data
+  filesData_.insert({gridName, FileData()});
+  return filesData_.at(gridName);
 }
 
 void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid) {
@@ -391,32 +395,6 @@ void monio::Monio::createDateTimes(FileData& fileData,
   }
 }
 
-monio::FileData& monio::Monio::createFileData(const std::string& gridName,
-                                              const std::string& filePath,
-                                              const util::DateTime& dateTime) {
-  oops::Log::debug() << "Monio::createFileData()" << std::endl;
-  auto it = filesData_.find(gridName);
-  if (it != filesData_.end()) {
-    filesData_.erase(gridName);
-  }
-  // Overwrite existing data
-  filesData_.insert({gridName, FileData(dateTime)});
-  return filesData_.at(gridName);
-}
-
-monio::FileData& monio::Monio::createFileData(const std::string& gridName,
-                                              const std::string& filePath) {
-  oops::Log::debug() << "Monio::createFileData()" << std::endl;
-  auto it = filesData_.find(gridName);
-
-  if (it != filesData_.end()) {
-    filesData_.erase(gridName);
-  }
-  // Overwrite existing data
-  filesData_.insert({gridName, FileData()});
-  return filesData_.at(gridName);
-}
-
 monio::FileData monio::Monio::getFileData(const std::string& gridName) {
   oops::Log::debug() << "Monio::getFileData()" << std::endl;
   auto it = filesData_.find(gridName);
@@ -424,15 +402,6 @@ monio::FileData monio::Monio::getFileData(const std::string& gridName) {
     return FileData(it->second);
   }
   return FileData();  // This function is called by all PEs. A return is essential.
-}
-
-bool monio::Monio::fileDataExists(const std::string& gridName) const {
-  oops::Log::debug() << "Monio::fileDataExists()" << std::endl;
-  auto it = filesData_.find(gridName);
-  if (it != filesData_.end()) {
-    return true;
-  }
-  return false;
 }
 
 void monio::Monio::cleanFileData(FileData& fileData) {
@@ -455,15 +424,4 @@ void monio::Monio::cleanFileData(FileData& fileData) {
       }
     }
   }
-}
-
-monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
-                    const int mpiRankOwner) :
-      mpiCommunicator_(mpiCommunicator),
-      mpiRankOwner_(mpiRankOwner),
-      reader_(mpiCommunicator, mpiRankOwner_),
-      writer_(mpiCommunicator, mpiRankOwner_),
-      atlasReader_(mpiCommunicator, mpiRankOwner_),
-      atlasWriter_(mpiCommunicator, mpiRankOwner_)   {
-  oops::Log::debug() << "Monio::Monio()" << std::endl;
 }
