@@ -41,7 +41,6 @@ std::vector<atlas::PointLonLat> getLfricCoords(
       } else {
         Monio::get().closeFiles();
         utils::throwException("utilsatlas::getLfricCoords()> Data type not coded for...");
-
       }
     }
     // Populate Atlas PointLonLat vector
