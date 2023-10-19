@@ -12,6 +12,7 @@
 
 #include "Utils.h"
 #include "UtilsAtlas.h"
+#include "Monio.h"
 
 monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
                                     const int mpiRankOwner):
@@ -59,6 +60,7 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
       break;
     }
     default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                  "Data type not coded for...");
       }
@@ -91,6 +93,7 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
       break;
     }
     default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                  "Data type not coded for...");
       }
@@ -107,6 +110,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   auto fieldView = atlas::array::make_view<T, 2>(field);
   // Field with noFirstLevel == true should have been adjusted to have 70 levels.
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+    Monio::get().closeFiles();
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
   // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
   // read data still has enough to fill 71.
@@ -118,6 +122,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j - 1) = dataVec[index];
         } else {
+          Monio::get().closeFiles();
           utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
                                 "data for field \"" + field.name() + "\".");
         }
@@ -132,6 +137,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j) = dataVec[index];
         } else {
+          Monio::get().closeFiles();
           utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
                                 "data for field \"" + field.name() + "\".");
         }
@@ -170,6 +176,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateField()> "
                               "Calculated index exceeds size of data.");
       }
@@ -192,6 +199,7 @@ atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&
         atlasType != atlasType.KIND_INT32) {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::getReadField())> Data type not coded for...");
     }
     atlas::util::Config atlasOptions = atlas::option::name(field.name()) |

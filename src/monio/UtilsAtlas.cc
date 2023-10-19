@@ -19,6 +19,7 @@
 
 #include "DataContainerDouble.h"
 #include "DataContainerFloat.h"
+#include "Monio.h"
 #include "Utils.h"
 
 namespace monio {
@@ -38,8 +39,9 @@ std::vector<atlas::PointLonLat> getLfricCoords(
         coordVectorArray[coordCount] = coordData;
         coordCount++;
       } else {
-        utils::throwException("utilsatlas::getLfricCoords()> "
-            "Data type not coded for...");
+        Monio::get().closeFiles();
+        utils::throwException("utilsatlas::getLfricCoords()> Data type not coded for...");
+
       }
     }
     // Populate Atlas PointLonLat vector
@@ -49,6 +51,7 @@ std::vector<atlas::PointLonLat> getLfricCoords(
       lfricCoords.push_back(atlas::PointLonLat(*lonIt, *latIt));
     }
   } else {
+      Monio::get().closeFiles();
       utils::throwException("utilsatlas::getLfricCoords()> "
           "Incorrect number of coordinate axes...");
   }
@@ -100,6 +103,7 @@ std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& a
   std::vector<size_t> lfricAtlasMap;
   // Essential check to ensure grid is configured to accommodate the data
   if (atlasCoords.size() != lfricCoords.size()) {
+    Monio::get().closeFiles();
     utils::throwException("utilsatlas::createLfricAtlasMap()> "
       "Configured grid is not compatible with input file...");
   }
@@ -135,6 +139,7 @@ atlas::Field getGlobalField(const atlas::Field& field) {
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&
         atlasType != atlasType.KIND_INT32) {
+        Monio::get().closeFiles();
         utils::throwException("utilsatlas::getGlobalFieldSet())> Data type not coded for...");
     }
     const auto& functionSpace = field.functionspace();
@@ -155,6 +160,7 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
     }
     return globalFieldSet;
   } else {
+    Monio::get().closeFiles();
     utils::throwException("utilsatlas::getGlobalFieldSet()> FieldSet has zero fields...");
   }
 }
@@ -183,17 +189,19 @@ int getGlobalDataSize(const atlas::Field& field) {
 
 int atlasTypeToMonioEnum(atlas::array::DataType atlasType) {
   switch (atlasType.kind()) {
-  case atlasType.KIND_INT32: {
-    return consts::eInt;
-  }
-  case atlasType.KIND_REAL32: {
-    return consts::eFloat;
-  }
-  case atlasType.KIND_REAL64: {
-    return consts::eDouble;
-  }
-  default:
-    utils::throwException("utilsatlas::atlasTypeToMonioEnum()> Data type not coded for...");
+    case atlasType.KIND_INT32: {
+      return consts::eInt;
+    }
+    case atlasType.KIND_REAL32: {
+      return consts::eFloat;
+    }
+    case atlasType.KIND_REAL64: {
+      return consts::eDouble;
+    }
+    default: {
+      Monio::get().closeFiles();
+      utils::throwException("utilsatlas::atlasTypeToMonioEnum()> Data type not coded for...");
+    }
   }
 }
 

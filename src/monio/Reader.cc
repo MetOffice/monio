@@ -259,6 +259,7 @@ size_t monio::Reader::findTimeStep(const FileData& fileData, const util::DateTim
   oops::Log::debug() << "Reader::findTimeStep()" << std::endl;
   if (fileData.getDateTimes().size() == 0) {
     oops::Log::debug() << "Reader::findTimeStep()> Date times not initialised..." << std::endl;
+    closeFile();
     utils::throwException("Reader::findTimeStep()> Date times not initialised...");
   }
 
