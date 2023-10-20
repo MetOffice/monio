@@ -2,10 +2,10 @@
 /******************************************************************************
 * MONIO - Met Office NetCDF Input Output                                      *
 *                                                                             *
-* (C) Crown Copyright 2023, Met Office. All rights reserved.                  *
+* (C) Crown Copyright 2023 Met Office                                         *
 *                                                                             *
-* This software is licensed under the terms of the 3-Clause BSD License       *
-* which can be obtained from https://opensource.org/license/bsd-3-clause/.    *
+* This software is licensed under the terms of the Apache Licence Version 2.0 *
+* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
 ******************************************************************************/
 #include "File.h"
 
@@ -254,6 +254,7 @@ void monio::File::readAttributes(Metadata& metadata) {
       metadata.addGlobalAttr(globAttr->getName(), globAttr);
     }
   } else {
+    close();
     utils::throwException("File::readAttributes()> Write file accessed for reading...");
   }
 }
