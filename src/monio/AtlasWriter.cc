@@ -336,7 +336,7 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }
   // WARNING - This name-check is an LFRic-Lite specific convention...
-  if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
+  if (utils::findInVector(consts::kMissingVariableNames, writeName) == false) {
     if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
       atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
