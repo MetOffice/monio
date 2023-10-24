@@ -254,8 +254,8 @@ void monio::File::readAttributes(Metadata& metadata) {
       metadata.addGlobalAttr(globAttr->getName(), globAttr);
     }
   } else {
-    utils::throwException(
-        "File::readAttributes()> Write file accessed for reading...");
+    close();
+    utils::throwException("File::readAttributes()> Write file accessed for reading...");
   }
 }
 

@@ -12,6 +12,7 @@
 
 #include "Utils.h"
 #include "UtilsAtlas.h"
+#include "Monio.h"
 
 monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
                                     const int mpiRankOwner):
@@ -40,25 +41,26 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
-    case consts::eDataTypes::eDouble: {
-      const std::shared_ptr<DataContainerDouble> dataContainerDouble =
-          std::static_pointer_cast<DataContainerDouble>(dataContainer);
-          populateField(field, dataContainerDouble->getData(), lfricToAtlasMap, noFirstLevel);
-      break;
-    }
-    case consts::eDataTypes::eFloat: {
-      const std::shared_ptr<DataContainerFloat> dataContainerFloat =
-          std::static_pointer_cast<DataContainerFloat>(dataContainer);
-          populateField(field, dataContainerFloat->getData(), lfricToAtlasMap, noFirstLevel);
-      break;
-    }
-    case consts::eDataTypes::eInt: {
-      const std::shared_ptr<DataContainerInt> dataContainerInt =
-          std::static_pointer_cast<DataContainerInt>(dataContainer);
-          populateField(field, dataContainerInt->getData(), lfricToAtlasMap, noFirstLevel);
-      break;
-    }
-    default: {
+      case consts::eDataTypes::eDouble: {
+        const std::shared_ptr<DataContainerDouble> dataContainerDouble =
+            std::static_pointer_cast<DataContainerDouble>(dataContainer);
+            populateField(field, dataContainerDouble->getData(), lfricToAtlasMap, noFirstLevel);
+        break;
+      }
+      case consts::eDataTypes::eFloat: {
+        const std::shared_ptr<DataContainerFloat> dataContainerFloat =
+            std::static_pointer_cast<DataContainerFloat>(dataContainer);
+            populateField(field, dataContainerFloat->getData(), lfricToAtlasMap, noFirstLevel);
+        break;
+      }
+      case consts::eDataTypes::eInt: {
+        const std::shared_ptr<DataContainerInt> dataContainerInt =
+            std::static_pointer_cast<DataContainerInt>(dataContainer);
+            populateField(field, dataContainerInt->getData(), lfricToAtlasMap, noFirstLevel);
+        break;
+      }
+      default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                  "Data type not coded for...");
       }
@@ -72,25 +74,26 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
     switch (dataType) {
-    case consts::eDataTypes::eDouble: {
-      const std::shared_ptr<DataContainerDouble> dataContainerDouble =
-          std::static_pointer_cast<DataContainerDouble>(dataContainer);
-          populateField(field, dataContainerDouble->getData());
-      break;
-    }
-    case consts::eDataTypes::eFloat: {
-      const std::shared_ptr<DataContainerFloat> dataContainerFloat =
-          std::static_pointer_cast<DataContainerFloat>(dataContainer);
-          populateField(field, dataContainerFloat->getData());
-      break;
-    }
-    case consts::eDataTypes::eInt: {
-      const std::shared_ptr<DataContainerInt> dataContainerInt =
-          std::static_pointer_cast<DataContainerInt>(dataContainer);
-          populateField(field, dataContainerInt->getData());
-      break;
-    }
-    default: {
+      case consts::eDataTypes::eDouble: {
+        const std::shared_ptr<DataContainerDouble> dataContainerDouble =
+            std::static_pointer_cast<DataContainerDouble>(dataContainer);
+            populateField(field, dataContainerDouble->getData());
+        break;
+      }
+      case consts::eDataTypes::eFloat: {
+        const std::shared_ptr<DataContainerFloat> dataContainerFloat =
+            std::static_pointer_cast<DataContainerFloat>(dataContainer);
+            populateField(field, dataContainerFloat->getData());
+        break;
+      }
+      case consts::eDataTypes::eInt: {
+        const std::shared_ptr<DataContainerInt> dataContainerInt =
+            std::static_pointer_cast<DataContainerInt>(dataContainer);
+            populateField(field, dataContainerInt->getData());
+        break;
+      }
+      default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateFieldWithDataContainer()> "
                                  "Data type not coded for...");
       }
@@ -107,6 +110,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   auto fieldView = atlas::array::make_view<T, 2>(field);
   // Field with noFirstLevel == true should have been adjusted to have 70 levels.
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+    Monio::get().closeFiles();
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
   // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
   // read data still has enough to fill 71.
@@ -118,6 +122,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j - 1) = dataVec[index];
         } else {
+          Monio::get().closeFiles();
           utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
                                 "data for field \"" + field.name() + "\".");
         }
@@ -132,6 +137,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
         if (std::size_t(index) <= dataVec.size()) {
           fieldView(i, j) = dataVec[index];
         } else {
+          Monio::get().closeFiles();
           utils::throwException("AtlasReader::populateField()> Calculated index exceeds size of "
                                 "data for field \"" + field.name() + "\".");
         }
@@ -170,6 +176,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::populateField()> "
                               "Calculated index exceeds size of data.");
       }
@@ -192,6 +199,7 @@ atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&
         atlasType != atlasType.KIND_INT32) {
+        Monio::get().closeFiles();
         utils::throwException("AtlasReader::getReadField())> Data type not coded for...");
     }
     atlas::util::Config atlasOptions = atlas::option::name(field.name()) |

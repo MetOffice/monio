@@ -17,6 +17,7 @@
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
 #include "Metadata.h"
+#include "Monio.h"
 #include "Utils.h"
 #include "UtilsAtlas.h"
 #include "Writer.h"
@@ -202,6 +203,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
         break;
       }
       default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                  "Data type not coded for...");
       }
@@ -220,40 +222,41 @@ void monio::AtlasWriter::populateDataContainerWithField(
     atlas::array::DataType atlasType = field.datatype();
     int fieldSize = utilsatlas::getGlobalDataSize(field);
     switch (atlasType.kind()) {
-    case atlasType.KIND_INT32: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerInt>(fieldName);
+      case atlasType.KIND_INT32: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerInt>(fieldName);
+        }
+        std::shared_ptr<DataContainerInt> dataContainerInt =
+                          std::static_pointer_cast<DataContainerInt>(dataContainer);
+        dataContainerInt->clear();
+        dataContainerInt->setSize(fieldSize);
+        populateDataVec(dataContainerInt->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerInt> dataContainerInt =
-                        std::static_pointer_cast<DataContainerInt>(dataContainer);
-      dataContainerInt->clear();
-      dataContainerInt->setSize(fieldSize);
-      populateDataVec(dataContainerInt->getData(), field, dimensions);
-      break;
-    }
-    case atlasType.KIND_REAL32: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+      case atlasType.KIND_REAL32: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+        }
+        std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                          std::static_pointer_cast<DataContainerFloat>(dataContainer);
+        dataContainerFloat->clear();
+        dataContainerFloat->setSize(fieldSize);
+        populateDataVec(dataContainerFloat->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerFloat> dataContainerFloat =
-                        std::static_pointer_cast<DataContainerFloat>(dataContainer);
-      dataContainerFloat->clear();
-      dataContainerFloat->setSize(fieldSize);
-      populateDataVec(dataContainerFloat->getData(), field, dimensions);
-      break;
-    }
-    case atlasType.KIND_REAL64: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+      case atlasType.KIND_REAL64: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+        }
+        std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                          std::static_pointer_cast<DataContainerDouble>(dataContainer);
+        dataContainerDouble->clear();
+        dataContainerDouble->setSize(fieldSize);
+        populateDataVec(dataContainerDouble->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                        std::static_pointer_cast<DataContainerDouble>(dataContainer);
-      dataContainerDouble->clear();
-      dataContainerDouble->setSize(fieldSize);
-      populateDataVec(dataContainerDouble->getData(), field, dimensions);
-      break;
-    }
-    default: {
+      default: {
+        Monio::get().closeFiles();
         utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                  "Data type not coded for...");
       }
@@ -268,6 +271,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
   int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
+    Monio::get().closeFiles();
     utils::throwException("AtlasWriter::populateDataVec()> "
                           "Data container is not configured for the expected data...");
   }
@@ -323,14 +327,16 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
   if (atlasType != atlasType.KIND_REAL64 &&
       atlasType != atlasType.KIND_REAL32 &&
       atlasType != atlasType.KIND_INT32) {
+      Monio::get().closeFiles();
       utils::throwException("AtlasWriter::getWriteField())> Data type not coded for...");
   }
   // Erroneous case. For noFirstLevel == true field should have 70 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+    Monio::get().closeFiles();
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }
   // WARNING - This name-check is an LFRic-Lite specific convention...
-  if (writeName != consts::kToBeDerived && writeName != consts::kToBeImplemented) {
+  if (utils::findInVector(consts::kMissingVariableNames, writeName) == false) {
     if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
       atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
@@ -350,6 +356,7 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
       field.metadata().set("name", writeName);
     }
   } else {
+    Monio::get().closeFiles();
     utils::throwException("AtlasWriter::getWriteField()> Field write name misconfiguration...");
   }
   return field;
