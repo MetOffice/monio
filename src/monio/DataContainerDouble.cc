@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include "Constants.h"
+#include "Monio.h"
 #include "Utils.h"
 
 monio::DataContainerDouble::DataContainerDouble(const std::string& name) :
@@ -30,6 +31,7 @@ const std::vector<double>& monio::DataContainerDouble::getData() const {
 
 const double& monio::DataContainerDouble::getDatum(const size_t index) {
   if (index > dataVector_.size()) {
+    Monio::get().closeFiles();
     utils::throwException("DataContainerDouble::getDatum()> Passed index exceeds vector size...");
   }
 

@@ -17,6 +17,7 @@
 #include "DataContainerFloat.h"
 #include "DataContainerInt.h"
 #include "Metadata.h"
+#include "Monio.h"
 #include "Utils.h"
 #include "UtilsAtlas.h"
 #include "Writer.h"
@@ -202,7 +203,8 @@ void monio::AtlasWriter::populateDataContainerWithField(
         break;
       }
       default: {
-        utils::throwException("AtlasWriter::populateDataContainerWithField()> "
+        Monio::get().closeFiles();
+utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                  "Data type not coded for...");
       }
     }
@@ -254,7 +256,8 @@ void monio::AtlasWriter::populateDataContainerWithField(
       break;
     }
     default: {
-        utils::throwException("AtlasWriter::populateDataContainerWithField()> "
+        Monio::get().closeFiles();
+utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                  "Data type not coded for...");
       }
     }
@@ -268,7 +271,8 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
   int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
-    utils::throwException("AtlasWriter::populateDataVec()> "
+    Monio::get().closeFiles();
+utils::throwException("AtlasWriter::populateDataVec()> "
                           "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
@@ -323,10 +327,12 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
   if (atlasType != atlasType.KIND_REAL64 &&
       atlasType != atlasType.KIND_REAL32 &&
       atlasType != atlasType.KIND_INT32) {
+      Monio::get().closeFiles();
       utils::throwException("AtlasWriter::getWriteField())> Data type not coded for...");
   }
   // Erroneous case. For noFirstLevel == true field should have 70 levels
   if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+    Monio::get().closeFiles();
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }
   // WARNING - This name-check is an LFRic-Lite specific convention...
@@ -350,6 +356,7 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
       field.metadata().set("name", writeName);
     }
   } else {
+    Monio::get().closeFiles();
     utils::throwException("AtlasWriter::getWriteField()> Field write name misconfiguration...");
   }
   return field;

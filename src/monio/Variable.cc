@@ -15,6 +15,7 @@
 #include "AttributeInt.h"
 #include "AttributeString.h"
 #include "Constants.h"
+#include "Monio.h"
 #include "Utils.h"
 
 monio::Variable::Variable(const std::string name, const int type):
@@ -59,7 +60,8 @@ std::shared_ptr<monio::AttributeBase>
   if (attributes_.find(attrName) != attributes_.end()) {
     return attributes_.at(attrName);
   } else {
-    utils::throwException("Variable::getAttribute()> Attribute \"" +
+    Monio::get().closeFiles();
+utils::throwException("Variable::getAttribute()> Attribute \"" +
                                     attrName + "\" not found...");
   }
 }
@@ -75,11 +77,13 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       value = attrStr->getValue();
       return value;
     } else {
-      utils::throwException("Variable::getAttribute()> "
+      Monio::get().closeFiles();
+utils::throwException("Variable::getAttribute()> "
           "Variable attribute data type not coded for...");
     }
   } else {
-    utils::throwException("Variable::getAttribute()> Attribute \"" +
+    Monio::get().closeFiles();
+utils::throwException("Variable::getAttribute()> Attribute \"" +
                           attrName + "\" not found...");
   }
 }
@@ -91,7 +95,8 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
   if (it == dimensions_.end()) {
     dimensions_.push_back(std::make_pair(dimName, size));
   } else {
-    utils::throwException("Variable::addDimension()> Dimension \"" +
+    Monio::get().closeFiles();
+utils::throwException("Variable::addDimension()> Dimension \"" +
                           dimName + "\" already defined...");
   }
 }
@@ -102,7 +107,8 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
   if (it == attributes_.end()) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
-    utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
+    Monio::get().closeFiles();
+utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
                           attrName + "\"...");
   }
 }
@@ -122,7 +128,8 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
   if (it != attributes_.end()) {
     attributes_.erase(attrName);
   } else {
-    utils::throwException("Variable::deleteAttribute()> Attribute \"" +
+    Monio::get().closeFiles();
+utils::throwException("Variable::deleteAttribute()> Attribute \"" +
                           attrName + "\" does not exist...");
   }
 }

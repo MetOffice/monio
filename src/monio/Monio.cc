@@ -48,6 +48,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
                             const util::DateTime& dateTime) {
   oops::Log::debug() << "Monio::readState()" << std::endl;
   if (localFieldSet.size() == 0) {
+    Monio::get().closeFiles();
     utils::throwException("Monio::readState()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
@@ -85,12 +86,15 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
       } catch (netCDF::exceptions::NcException& exception) {
         reader_.closeFile();
         std::string exceptionMessage = exception.what();
+        Monio::get().closeFiles();
         utils::throwException("Monio::readState()> An exception has occurred: " + exceptionMessage);
       }
     } else {
+      Monio::get().closeFiles();
       utils::throwException("Monio::readState()> File \"" + filePath + "\" does not exist...");
     }
   } else {
+    Monio::get().closeFiles();
     utils::throwException("Monio::readState()> No file path supplied...");
   }
 }
@@ -100,6 +104,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
                             const std::string& filePath) {
   oops::Log::debug() << "Monio::readIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
+    Monio::get().closeFiles();
     utils::throwException("Monio::readIncrements()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
@@ -137,13 +142,16 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         oops::Log::info() << " exception.what()> " <<  exception.what() << std::endl;
         reader_.closeFile();
         std::string exceptionMessage = exception.what();
+        Monio::get().closeFiles();
         utils::throwException("Monio::readIncrements()> An exception has occurred: " +
                               exceptionMessage);
       }
     } else {
+      Monio::get().closeFiles();
       utils::throwException("Monio::readIncrements()> File \"" + filePath + "\" does not exist...");
     }
   } else {
+    Monio::get().closeFiles();
     utils::throwException("Monio::readIncrements()> No file path supplied...");
   }
 }
@@ -154,6 +162,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                    const bool isLfricNaming) {
   oops::Log::debug() << "Monio::writeIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
+    Monio::get().closeFiles();
     utils::throwException("Monio::writeIncrements()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
@@ -174,6 +183,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
           } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
           } else {
+            Monio::get().closeFiles();
             utils::throwException("Monio::writeIncrements()> "
                                   "Field metadata configuration error...");
           }
@@ -194,6 +204,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
+      Monio::get().closeFiles();
       utils::throwException("Monio::writeIncrements()> An exception occurred: " + exceptionMessage);
     }
   } else {
@@ -208,6 +219,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                               const bool isLfricNaming) {
   oops::Log::debug() << "Monio::writeState()" << std::endl;
   if (localFieldSet.size() == 0) {
+    Monio::get().closeFiles();
     utils::throwException("Monio::writeState()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
@@ -228,6 +240,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
           } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
           } else {
+            Monio::get().closeFiles();
             utils::throwException("Monio::writeState()> Field metadata configuration error...");
           }
           oops::Log::debug() << "Monio::writeState() processing data for> \"" <<
@@ -247,6 +260,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
+      Monio::get().closeFiles();
       utils::throwException("Monio::writeState()> An exception has occurred: " + exceptionMessage);
     }
   } else {
@@ -259,6 +273,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
                                  const std::string& filePath) {
   oops::Log::debug() << "Monio::writeFieldSet()" << std::endl;
   if (localFieldSet.size() == 0) {
+    Monio::get().closeFiles();
     utils::throwException("Monio::writeFieldSet()> localFieldSet has zero fields...");
   }
   if (filePath.length() != 0) {
@@ -278,6 +293,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
     } catch (netCDF::exceptions::NcException& exception) {
       writer_.closeFile();
       std::string exceptionMessage = exception.what();
+      Monio::get().closeFiles();
       utils::throwException("Monio::writeFieldSet()> An exception occurred: " + exceptionMessage);
     }
   } else {
@@ -369,10 +385,10 @@ void monio::Monio::createDateTimes(FileData& fileData,
       std::shared_ptr<Variable> timeVar = fileData.getMetadata().getVariable(timeVarName);
       std::shared_ptr<DataContainerBase> timeDataBase =
                                              fileData.getData().getContainer(timeVarName);
-      if (timeDataBase->getType() != consts::eDouble)
-        utils::throwException("Monio::createDateTimes()> "
-                                 "Time data not stored as double...");
-
+      if (timeDataBase->getType() != consts::eDouble) {
+        Monio::get().closeFiles();
+        utils::throwException("Monio::createDateTimes()> Time data not stored as double...");
+      }
       std::shared_ptr<DataContainerDouble> timeData =
                   std::static_pointer_cast<DataContainerDouble>(timeDataBase);
 
