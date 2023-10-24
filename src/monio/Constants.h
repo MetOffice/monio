@@ -114,9 +114,6 @@ const std::string_view kLatitudeVarName = "latitude";
 const std::string_view kTabSpace = "    ";
 const std::string_view kNotFoundError = "NOT_FOUND";
 
-const std::string_view kToBeDerived = "TO BE DERIVED";
-const std::string_view kToBeImplemented = "TO BE IMPLEMENTED";
-
 const std::string_view kProducedByName = "produced_by";
 const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
 const std::string_view kNamingConventionName = "naming_convention";
@@ -170,6 +167,12 @@ const std::string_view  kIncrementVariableValues[eNumberOfAttributeNames] {
 const std::vector<std::string> kNamingConventions({
   "LFRic",
   "JEDI"
+});
+
+const std::vector<std::string> kMissingVariableNames({
+  "TO BE DERIVED",      // LFRic-Lite - variables without names in the LFRic context
+  "TO BE IMPLEMENTED",  // LFRic-Lite - theoretical variables that aren't used
+  "none"                // LFRic-JEDI
 });
 
 const std::vector<std::string> kLfricCoordVarNames = {std::string(kLfricLonVarName),
