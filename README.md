@@ -67,7 +67,9 @@ Writing of an LFRic-compatible, time-independent, increment file is dependent on
 monio::Monio::get().initialiseFile(grid, filePath); 
 ```
 
-Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is necessary to capture and use that `int` here. Following this, writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
+Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is necessary to capture and use that `int` here. 
+
+Following this, writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
 
 ```
 monio::Monio::get().writeIncrements(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
@@ -83,7 +85,9 @@ _This method is intended for use with tests only_. Writing of an LFRic-compatibl
 monio::Monio::get().initialiseFile(grid, filePath); 
 ```
 
-Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is necessary to capture and use that `int` here. Following this, writing of an LFRic-compatible, time-independent, state file can be carried out with the following call:
+Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is necessary to capture and use that `int` here. 
+
+Following this, writing of an LFRic-compatible, time-independent, state file can be carried out with the following call:
 
 ```
 monio::Monio::get().writeState(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
