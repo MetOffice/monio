@@ -69,7 +69,7 @@ monio::Monio::get().initialiseFile(grid, filePath);
 
 Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is necessary to capture and use that `int` here. 
 
-Following this, writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
+Following this, or if MONIO was also used to read LFRic-compatible data, writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
 
 ```
 monio::Monio::get().writeIncrements(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
