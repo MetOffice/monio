@@ -79,7 +79,7 @@ Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written
 
 ### Writing State Files
 
-_This method is intended for use with tests only_. Writing of an LFRic-compatible, time-independent, state file is dependent on geometry data and other metadata being available at the resolution you intend to write. These will be availalbe if MONIO has already been used to read LFRic-compatible data at the same resolution you intend to write (see the read functions described above). If MONIO has not been used for reading, writing will first require that geometry and metadata are copied from an appropriate input file using the following call:
+_This method is intended for use with tests only_. Writing of an LFRic-compatible, time-independent, state file is dependent on geometry data and other metadata being available at the resolution you intend to write. These will be available if MONIO has already been used to read LFRic-compatible data at the same resolution you intend to write (see the read functions described above). If MONIO has not been used for reading, writing will first require that geometry and metadata are copied from an appropriate input file using the following call:
 
 ```
 monio::Monio::get().initialiseFile(grid, filePath); 
