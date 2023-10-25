@@ -97,13 +97,13 @@ Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written
 
 ### Writing A FieldSet
 
-For debugging, it may occasionally be useful to output a `FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
+For debugging, it may occasionally be useful to output an `atlas::FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
 
 ```
 monio::Monio::get().writeFieldSet(localFieldSet, filePath);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, and `filePath` is a `std::string` defining a valid path to the intended output file.
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, and `filePath` is a `std::string` defining a valid path to the intended output file. It should be noted that this particular writing method requires no existing geometric or metadata to be provided, and so requires no supporting function call to be executed. For this reason, data are written in their default Atlas order.
 
 ## Issues
 
