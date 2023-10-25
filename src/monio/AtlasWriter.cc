@@ -204,11 +204,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
       }
       default: {
         Monio::get().closeFiles();
-<<<<<<< HEAD
         utils::throwException("AtlasWriter::populateDataContainerWithField()> "
-=======
-utils::throwException("AtlasWriter::populateDataContainerWithField()> "
->>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                                  "Data type not coded for...");
       }
     }
@@ -259,23 +255,10 @@ void monio::AtlasWriter::populateDataContainerWithField(
         populateDataVec(dataContainerDouble->getData(), field, dimensions);
         break;
       }
-<<<<<<< HEAD
       default: {
         Monio::get().closeFiles();
         utils::throwException("AtlasWriter::populateDataContainerWithField()> "
-=======
-      std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                        std::static_pointer_cast<DataContainerDouble>(dataContainer);
-      dataContainerDouble->clear();
-      dataContainerDouble->setSize(fieldSize);
-      populateDataVec(dataContainerDouble->getData(), field, dimensions);
-      break;
-    }
-    default: {
-        Monio::get().closeFiles();
-utils::throwException("AtlasWriter::populateDataContainerWithField()> "
->>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
-                                 "Data type not coded for...");
+                              "Data type not coded for...");
       }
     }
   }
@@ -289,11 +272,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
   int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
     Monio::get().closeFiles();
-<<<<<<< HEAD
     utils::throwException("AtlasWriter::populateDataVec()> "
-=======
-utils::throwException("AtlasWriter::populateDataVec()> "
->>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                           "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
