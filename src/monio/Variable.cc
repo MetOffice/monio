@@ -61,7 +61,11 @@ std::shared_ptr<monio::AttributeBase>
     return attributes_.at(attrName);
   } else {
     Monio::get().closeFiles();
+<<<<<<< HEAD
     utils::throwException("Variable::getAttribute()> Attribute \"" +
+=======
+utils::throwException("Variable::getAttribute()> Attribute \"" +
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                                     attrName + "\" not found...");
   }
 }
@@ -78,12 +82,20 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       return value;
     } else {
       Monio::get().closeFiles();
+<<<<<<< HEAD
       utils::throwException("Variable::getAttribute()> "
+=======
+utils::throwException("Variable::getAttribute()> "
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
           "Variable attribute data type not coded for...");
     }
   } else {
     Monio::get().closeFiles();
+<<<<<<< HEAD
     utils::throwException("Variable::getAttribute()> Attribute \"" +
+=======
+utils::throwException("Variable::getAttribute()> Attribute \"" +
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                           attrName + "\" not found...");
   }
 }
@@ -96,7 +108,11 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
     dimensions_.push_back(std::make_pair(dimName, size));
   } else {
     Monio::get().closeFiles();
+<<<<<<< HEAD
     utils::throwException("Variable::addDimension()> Dimension \"" +
+=======
+utils::throwException("Variable::addDimension()> Dimension \"" +
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                           dimName + "\" already defined...");
   }
 }
@@ -108,7 +124,11 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
     Monio::get().closeFiles();
+<<<<<<< HEAD
     utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
+=======
+utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                           attrName + "\"...");
   }
 }
@@ -129,7 +149,11 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
     attributes_.erase(attrName);
   } else {
     Monio::get().closeFiles();
+<<<<<<< HEAD
     utils::throwException("Variable::deleteAttribute()> Attribute \"" +
+=======
+utils::throwException("Variable::deleteAttribute()> Attribute \"" +
+>>>>>>> 94662e8d3e65f47bd55526903c917eb1c763175c
                           attrName + "\" does not exist...");
   }
 }

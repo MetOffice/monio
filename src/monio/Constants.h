@@ -17,7 +17,7 @@ namespace consts {
 /// Structs ////////////////////////////////////////////////////////////////////////////////////////
 
 /// \brief This struct is used for interfacing with the Monio singleton and its intended use-cases
-///        within the MO/JEDI context. MO model interfaces should include this file and build a
+///        within the MO/JEDI context. MO model interfaces should include this class and build a
 ///        vector of these structs along with the field sets associated with reading and writing.
 struct FieldMetadata {
   std::string lfricReadName;
