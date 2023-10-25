@@ -2,10 +2,10 @@
 /******************************************************************************
 * MONIO - Met Office NetCDF Input Output                                      *
 *                                                                             *
-* (C) Crown Copyright 2023 Met Office                                         *
+* (C) Crown Copyright 2023, Met Office. All rights reserved.                  *
 *                                                                             *
-* This software is licensed under the terms of the Apache Licence Version 2.0 *
-* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+* This software is licensed under the terms of the 3-Clause BSD License       *
+* which can be obtained from https://opensource.org/license/bsd-3-clause/.    *
 ******************************************************************************/
 #include "AtlasWriter.h"
 
@@ -204,7 +204,7 @@ void monio::AtlasWriter::populateDataContainerWithField(
       }
       default: {
         Monio::get().closeFiles();
-utils::throwException("AtlasWriter::populateDataContainerWithField()> "
+        utils::throwException("AtlasWriter::populateDataContainerWithField()> "
                                  "Data type not coded for...");
       }
     }
@@ -222,43 +222,43 @@ void monio::AtlasWriter::populateDataContainerWithField(
     atlas::array::DataType atlasType = field.datatype();
     int fieldSize = utilsatlas::getGlobalDataSize(field);
     switch (atlasType.kind()) {
-    case atlasType.KIND_INT32: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerInt>(fieldName);
+      case atlasType.KIND_INT32: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerInt>(fieldName);
+        }
+        std::shared_ptr<DataContainerInt> dataContainerInt =
+                          std::static_pointer_cast<DataContainerInt>(dataContainer);
+        dataContainerInt->clear();
+        dataContainerInt->setSize(fieldSize);
+        populateDataVec(dataContainerInt->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerInt> dataContainerInt =
-                        std::static_pointer_cast<DataContainerInt>(dataContainer);
-      dataContainerInt->clear();
-      dataContainerInt->setSize(fieldSize);
-      populateDataVec(dataContainerInt->getData(), field, dimensions);
-      break;
-    }
-    case atlasType.KIND_REAL32: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+      case atlasType.KIND_REAL32: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerFloat>(fieldName);
+        }
+        std::shared_ptr<DataContainerFloat> dataContainerFloat =
+                          std::static_pointer_cast<DataContainerFloat>(dataContainer);
+        dataContainerFloat->clear();
+        dataContainerFloat->setSize(fieldSize);
+        populateDataVec(dataContainerFloat->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerFloat> dataContainerFloat =
-                        std::static_pointer_cast<DataContainerFloat>(dataContainer);
-      dataContainerFloat->clear();
-      dataContainerFloat->setSize(fieldSize);
-      populateDataVec(dataContainerFloat->getData(), field, dimensions);
-      break;
-    }
-    case atlasType.KIND_REAL64: {
-      if (dataContainer == nullptr) {
-        dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+      case atlasType.KIND_REAL64: {
+        if (dataContainer == nullptr) {
+          dataContainer = std::make_shared<DataContainerDouble>(fieldName);
+        }
+        std::shared_ptr<DataContainerDouble> dataContainerDouble =
+                          std::static_pointer_cast<DataContainerDouble>(dataContainer);
+        dataContainerDouble->clear();
+        dataContainerDouble->setSize(fieldSize);
+        populateDataVec(dataContainerDouble->getData(), field, dimensions);
+        break;
       }
-      std::shared_ptr<DataContainerDouble> dataContainerDouble =
-                        std::static_pointer_cast<DataContainerDouble>(dataContainer);
-      dataContainerDouble->clear();
-      dataContainerDouble->setSize(fieldSize);
-      populateDataVec(dataContainerDouble->getData(), field, dimensions);
-      break;
-    }
-    default: {
+      default: {
         Monio::get().closeFiles();
-utils::throwException("AtlasWriter::populateDataContainerWithField()> "
-                                 "Data type not coded for...");
+        utils::throwException("AtlasWriter::populateDataContainerWithField()> "
+                              "Data type not coded for...");
       }
     }
   }
@@ -272,7 +272,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
   int numLevels = field.levels();
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
     Monio::get().closeFiles();
-utils::throwException("AtlasWriter::populateDataVec()> "
+    utils::throwException("AtlasWriter::populateDataVec()> "
                           "Data container is not configured for the expected data...");
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);

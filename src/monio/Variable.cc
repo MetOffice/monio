@@ -1,10 +1,10 @@
 /******************************************************************************
 * MONIO - Met Office NetCDF Input Output                                      *
 *                                                                             *
-* (C) Crown Copyright 2023 Met Office                                         *
+* (C) Crown Copyright 2023, Met Office. All rights reserved.                  *
 *                                                                             *
-* This software is licensed under the terms of the Apache Licence Version 2.0 *
-* which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.        *
+* This software is licensed under the terms of the 3-Clause BSD License       *
+* which can be obtained from https://opensource.org/license/bsd-3-clause/.    *
 ******************************************************************************/
 #include "Variable.h"
 
@@ -61,8 +61,8 @@ std::shared_ptr<monio::AttributeBase>
     return attributes_.at(attrName);
   } else {
     Monio::get().closeFiles();
-utils::throwException("Variable::getAttribute()> Attribute \"" +
-                                    attrName + "\" not found...");
+    utils::throwException("Variable::getAttribute()> Attribute \"" +
+                          attrName + "\" not found...");
   }
 }
 
@@ -78,12 +78,12 @@ std::string monio::Variable::getStrAttr(const std::string& attrName) {
       return value;
     } else {
       Monio::get().closeFiles();
-utils::throwException("Variable::getAttribute()> "
-          "Variable attribute data type not coded for...");
+      utils::throwException("Variable::getAttribute()> "
+                            "Variable attribute data type not coded for...");
     }
   } else {
     Monio::get().closeFiles();
-utils::throwException("Variable::getAttribute()> Attribute \"" +
+    utils::throwException("Variable::getAttribute()> Attribute \"" +
                           attrName + "\" not found...");
   }
 }
@@ -96,7 +96,7 @@ void monio::Variable::addDimension(const std::string& dimName, const size_t size
     dimensions_.push_back(std::make_pair(dimName, size));
   } else {
     Monio::get().closeFiles();
-utils::throwException("Variable::addDimension()> Dimension \"" +
+    utils::throwException("Variable::addDimension()> Dimension \"" +
                           dimName + "\" already defined...");
   }
 }
@@ -108,7 +108,7 @@ void monio::Variable::addAttribute(std::shared_ptr<monio::AttributeBase> attr) {
     attributes_.insert(std::make_pair(attrName, attr));
   } else {
     Monio::get().closeFiles();
-utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
+    utils::throwException("Variable::addAttribute()> multiple definitions of \"" +
                           attrName + "\"...");
   }
 }
@@ -129,7 +129,7 @@ void monio::Variable::deleteAttribute(const std::string& attrName) {
     attributes_.erase(attrName);
   } else {
     Monio::get().closeFiles();
-utils::throwException("Variable::deleteAttribute()> Attribute \"" +
+    utils::throwException("Variable::deleteAttribute()> Attribute \"" +
                           attrName + "\" does not exist...");
   }
 }

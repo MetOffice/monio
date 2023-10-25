@@ -61,7 +61,15 @@ Where `localFieldSet` is the `atlas::FieldSet` to be populated with data from th
 
 ### Writing Increment Files
 
-Writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
+Writing of an LFRic-compatible, time-independent, increment file is dependent on geometry data and other metadata being available at the resolution you intend to write. These will be available if MONIO has already been used to read LFRic-compatible data at the same resolution you intend to write (see the read functions described above). If MONIO has not been used for reading, writing will first require that geometry and metadata are copied from an appropriate input file using the following call:
+
+```
+monio::Monio::get().initialiseFile(grid, filePath); 
+```
+
+Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is not necessary to capture and use that `int` here. 
+
+Following this, or if MONIO was also used to read LFRic-compatible data, writing of an LFRic-compatible, time-independent, increment file can be carried out with the following call:
 
 ```
 monio::Monio::get().writeIncrements(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
@@ -71,7 +79,15 @@ Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written
 
 ### Writing State Files
 
-_This method is intended for use with tests only_. Writing of an LFRic-compatible, time-independent, state file can be carried out with the following call:
+_This method is intended for use with tests only_. Writing of an LFRic-compatible, time-independent, state file is dependent on geometry data and other metadata being available at the resolution you intend to write. These will be available if MONIO has already been used to read LFRic-compatible data at the same resolution you intend to write (see the read functions described above). If MONIO has not been used for reading, writing will first require that geometry and metadata are copied from an appropriate input file using the following call:
+
+```
+monio::Monio::get().initialiseFile(grid, filePath); 
+```
+
+Where `grid` is a reference to the `atlas::CubedSphereGrid` used to setup the geometry of the `atlas::FieldSet`, `filePath` is a `std::string` defining a valid path to the file to be read. This particular function call returns an `int` that determines the variable naming convention used in the input file. However, it is not necessary to capture and use that `int` here. 
+
+Following this, writing of an LFRic-compatible, time-independent, state file can be carried out with the following call:
 
 ```
 monio::Monio::get().writeState(localFieldSet, fieldMetadataVec, filePath, isLFRicNaming);
@@ -81,13 +97,13 @@ Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written
 
 ### Writing A FieldSet
 
-For debugging, it may occasionally be useful to output a `FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
+For debugging, it may occasionally be useful to output an `atlas::FieldSet` from any arbitrary position in the code into a NetCDF so that it can be examined. For this reason, MONIO offers the following call:
 
 ```
 monio::Monio::get().writeFieldSet(localFieldSet, filePath);
 ```
 
-Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, and `filePath` is a `std::string` defining a valid path to the intended output file.
+Where `localFieldSet` is the `atlas::FieldSet` containing the data to be written to file, and `filePath` is a `std::string` defining a valid path to the intended output file. It should be noted that this particular writing method requires no existing geometric data or metadata to be provided, and so requires no supporting function call to be executed beforehand. For this reason, data are written in their default, Atlas order.
 
 ## Issues
 
