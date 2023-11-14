@@ -23,6 +23,8 @@ struct FieldMetadata {
   std::string lfricReadName;
   std::string lfricWriteName;
   std::string jediName;
+  std::string lfricVertConfig;
+  std::string jediVertConfig;
   std::string units;
   int numberOfLevels;
   bool noFirstLevel;
@@ -35,6 +37,8 @@ enum eFieldMetadata {
   eLfricReadName,
   eLfricWriteName,
   eJediName,
+  eLfricVertConfig,
+  eJediVertConfig,
   eUnits,
   eNumberOfLevels,
   eNoFirstLevel
