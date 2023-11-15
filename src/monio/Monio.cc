@@ -84,9 +84,8 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        reader_.closeFile();
-        std::string exceptionMessage = exception.what();
         Monio::get().closeFiles();
+        std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readState()> An exception has occurred: " + exceptionMessage);
       }
     } else {
@@ -139,10 +138,8 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        oops::Log::info() << " exception.what()> " <<  exception.what() << std::endl;
-        reader_.closeFile();
-        std::string exceptionMessage = exception.what();
         Monio::get().closeFiles();
+        std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readIncrements()> An exception has occurred: " +
                               exceptionMessage);
       }
@@ -202,9 +199,8 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeIncrements()> An exception occurred: " + exceptionMessage);
     }
   } else {
@@ -258,9 +254,8 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeState()> An exception has occurred: " + exceptionMessage);
     }
   } else {
@@ -291,9 +286,8 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeFieldSet()> An exception occurred: " + exceptionMessage);
     }
   } else {
