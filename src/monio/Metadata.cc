@@ -322,8 +322,8 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
   return globalAttrs_;
 }
 
-int monio::Metadata::getNamingConvention() {
-  int namingConvention = consts::eNotDefined;
+int monio::Metadata::getVariableConvention() {
+  int variableConvention = consts::eNotDefined;
   for (const auto& globalAttr : globalAttrs_) {
     if (globalAttr.first == consts::kVariableConventionName) {
       std::shared_ptr<monio::AttributeString> dataFormatAttr =
@@ -331,11 +331,11 @@ int monio::Metadata::getNamingConvention() {
       std::string dataFormatValue = dataFormatAttr->getValue();
       int pos = utils::findPosInVector(consts::kNamingConventions, dataFormatValue);
       if (pos != -1) {  // Condition preserves use of consts::eNotDefined == 2 when not found
-        namingConvention = pos;
+        variableConvention = pos;
       }
     }
   }
-  return namingConvention;
+  return variableConvention;
 }
 
 void monio::Metadata::removeAllButTheseVariables(

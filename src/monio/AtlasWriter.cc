@@ -413,8 +413,8 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
 void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricConvention) {
   // Initialise variables
   std::string variableConvention =
-      isLfricConvention == true ? consts::kNamingConventions[consts::eLfricNaming] :
-                              consts::kNamingConventions[consts::eJediNaming];
+      isLfricConvention == true ? consts::kNamingConventions[consts::eLfricConvention] :
+                              consts::kNamingConventions[consts::eJediConvention];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> namingAttr =
       std::make_shared<AttributeString>(std::string(consts::kVariableConventionName),

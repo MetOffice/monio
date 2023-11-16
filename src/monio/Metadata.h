@@ -65,7 +65,7 @@ class Metadata {
 
   /// \brief Returns an number representing what naming convention an input file uses; JEDI or
   ///        LFRic, and if this is defined.
-  int getNamingConvention();
+  int getVariableConvention();
 
   void removeAllButTheseVariables(const std::vector<std::string>& varNames);
 

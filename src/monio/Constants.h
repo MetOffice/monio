@@ -56,10 +56,10 @@ enum eDimensions {
   eVertical
 };
 
-/// \brief For indicating the naming convention adopted by input files, where applicable.
-enum eNamingConventions {
-  eLfricNaming,
-  eJediNaming,
+/// \brief For indicating the variable convention adopted by input files, where applicable.
+enum eVariableConventions {
+  eLfricConvention,
+  eJediConvention,
   eNotDefined
 };
 
@@ -120,7 +120,7 @@ const std::string_view kNotFoundError = "NOT_FOUND";
 
 const std::string_view kProducedByName = "produced_by";
 const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
-const std::string_view kVariableConventionName = "naming_convention";
+const std::string_view kVariableConventionName = "variable_convention";
 
 /// Multi-dimensional String/Views /////////////////////////////////////////////////////////////////
 

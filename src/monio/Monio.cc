@@ -68,7 +68,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediNaming) {
+            if (namingConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readState() processing data for> \"" <<
@@ -123,7 +123,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediNaming) {
+            if (namingConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
@@ -306,7 +306,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                                  const std::string& filePath,
                                  bool doCreateDateTimes) {
   oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int namingConvention = consts::eNotDefined;
+  int variableConvention = consts::eNotDefined;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData& fileData = createFileData(grid.name(), filePath);
     reader_.openFile(filePath);
@@ -325,9 +325,9 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                       std::string(consts::kTimeVarName),
                       std::string(consts::kTimeOriginName));
     }
-    namingConvention = fileData.getMetadata().getNamingConvention();
+    variableConvention = fileData.getMetadata().getVariableConvention();
   }
-  return namingConvention;
+  return variableConvention;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
