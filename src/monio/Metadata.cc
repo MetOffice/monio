@@ -325,7 +325,7 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
 int monio::Metadata::getNamingConvention() {
   int namingConvention = consts::eNotDefined;
   for (const auto& globalAttr : globalAttrs_) {
-    if (globalAttr.first == consts::kNamingConventionName) {
+    if (globalAttr.first == consts::kVariableConventionName) {
       std::shared_ptr<monio::AttributeString> dataFormatAttr =
             std::dynamic_pointer_cast<monio::AttributeString>(globalAttr.second);
       std::string dataFormatValue = dataFormatAttr->getValue();

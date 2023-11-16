@@ -53,14 +53,14 @@ class Monio {
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                        const std::string& filePath,
-                       const bool isLfricNaming = true);
+                       const bool isLfricConvention = true);
 
   /// \brief Writes increment files. No time component but the variables can use JEDI or LFRic read
   ///        names. Intended debugging and testing only.
   void writeState(const atlas::FieldSet& localFieldSet,
                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                   const std::string& filePath,
-                  const bool isLfricNaming = true);
+                  const bool isLfricConvention = true);
 
   /// \brief Writes an field set to file. Intended debugging and testing only.
   void writeFieldSet(const atlas::FieldSet& localFieldSet,

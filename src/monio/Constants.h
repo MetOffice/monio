@@ -120,7 +120,7 @@ const std::string_view kNotFoundError = "NOT_FOUND";
 
 const std::string_view kProducedByName = "produced_by";
 const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
-const std::string_view kNamingConventionName = "naming_convention";
+const std::string_view kVariableConventionName = "naming_convention";
 
 /// Multi-dimensional String/Views /////////////////////////////////////////////////////////////////
 

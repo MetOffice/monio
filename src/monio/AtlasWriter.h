@@ -43,7 +43,7 @@ class AtlasWriter {
                                  atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& writeName,
-                           const bool isLfricNaming);
+                           const bool isLfricConvention);
 
   /// \brief Creates all metadata and data from at Atlas field. For writing of field sets with no
   ///        metadata.
@@ -118,7 +118,7 @@ class AtlasWriter {
                              const Metadata& metadata,
                                    std::shared_ptr<monio::Variable> var);
 
-  void addGlobalAttributes(Metadata& metadata, const bool isLfricNaming = true);
+  void addGlobalAttributes(Metadata& metadata, const bool isLfricConvention = true);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

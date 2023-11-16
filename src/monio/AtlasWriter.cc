@@ -33,7 +33,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
                                                    atlas::Field& field,
                                              const consts::FieldMetadata& fieldMetadata,
                                              const std::string& writeName,
-                                             const bool isLfricNaming) {
+                                             const bool isLfricConvention) {
   oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
@@ -46,7 +46,7 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
     atlas::Field writeField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
     populateMetadataWithField(metadata, writeField, fieldMetadata, writeName);
     populateDataWithField(fileData.getData(), writeField, lfricAtlasMap, writeName);
-    addGlobalAttributes(metadata, isLfricNaming);
+    addGlobalAttributes(metadata, isLfricConvention);
   }
 }
 
@@ -410,15 +410,15 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
   }
 }
 
-void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricNaming) {
+void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLfricConvention) {
   // Initialise variables
-  std::string namingConvention =
-      isLfricNaming == true ? consts::kNamingConventions[consts::eLfricNaming] :
+  std::string variableConvention =
+      isLfricConvention == true ? consts::kNamingConventions[consts::eLfricNaming] :
                               consts::kNamingConventions[consts::eJediNaming];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> namingAttr =
-      std::make_shared<AttributeString>(std::string(consts::kNamingConventionName),
-                                        namingConvention);
+      std::make_shared<AttributeString>(std::string(consts::kVariableConventionName),
+                                        variableConvention);
   std::shared_ptr<monio::AttributeString> producedByAttr =
       std::make_shared<AttributeString>(std::string(consts::kProducedByName),
                                         std::string(consts::kProducedByString));
