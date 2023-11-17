@@ -167,6 +167,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
+      cleanFileData(fileData);
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -223,6 +224,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
+      cleanFileData(fileData);
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -325,7 +327,6 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                       std::string(consts::kTimeVarName),
                       std::string(consts::kTimeOriginName));
     }
-    cleanFileData(fileData);
     variableConvention = fileData.getMetadata().getVariableConvention();
   }
   return variableConvention;
