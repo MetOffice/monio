@@ -167,7 +167,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
+      cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -224,7 +224,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
+      cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -429,8 +429,7 @@ void monio::Monio::cleanFileData(FileData& fileData) {
     std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
 
     for (const auto& metadataVarName : metadataVarNames) {
-      auto it = std::find(begin(dataContainerNames),
-                          end(dataContainerNames), metadataVarName);
+      auto it = std::find(begin(dataContainerNames), end(dataContainerNames), metadataVarName);
       if (it == std::end(dataContainerNames)) {
         fileData.getMetadata().deleteVariable(metadataVarName);
       }

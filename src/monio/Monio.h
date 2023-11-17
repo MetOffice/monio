@@ -99,7 +99,7 @@ class Monio {
   /// \brief Adds vertical meta/data for writing of JEDI-only increment files.
   void addJediData(FileData& fileData);
 
-  /// \brief Removes unnecessary meta/data from data read from file during initialisation.
+  /// \brief Removes unnecessary meta/data required for reading, but not for writing.
   void cleanFileData(FileData& fileData);
 
   /// \brief Necessary use of a standard pointer to a single instance of this class (as part of the
