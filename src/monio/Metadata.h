@@ -26,8 +26,8 @@ class Metadata {
   friend bool operator==(const Metadata& lhs,
                          const Metadata& rhs);
 
-  bool isDimDefined(const std::string& dimName);
-  int getDimension(const std::string& dimName);
+  const bool isDimDefined(const std::string& dimName) const;
+  const int getDimension(const std::string& dimName) const;
 
   std::string getDimensionName(const int dimValue);
   const std::string getDimensionName(const int dimValue) const;

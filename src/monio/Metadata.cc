@@ -128,7 +128,7 @@ bool monio::operator==(const monio::Metadata& lhs,
   return true;
 }
 
-bool monio::Metadata::isDimDefined(const std::string& dimName) {
+const bool monio::Metadata::isDimDefined(const std::string& dimName) const {
   oops::Log::debug() << "Metadata::isDimDefined()" << std::endl;
   auto it = dimensions_.find(dimName);
   if (it != dimensions_.end()) {
@@ -138,7 +138,7 @@ bool monio::Metadata::isDimDefined(const std::string& dimName) {
   }
 }
 
-int monio::Metadata::getDimension(const std::string& dimName) {
+const int monio::Metadata::getDimension(const std::string& dimName) const {
   oops::Log::debug() << "Metadata::getDimension()" << std::endl;
   if (isDimDefined(dimName) == true) {
     return dimensions_.at(dimName);

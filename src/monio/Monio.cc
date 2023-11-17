@@ -179,10 +179,13 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
+          std::string verticalConfigName;
           if (isLfricConvention == true) {
             writeName = fieldMetadata.lfricWriteName;
+            verticalConfigName = fieldMetadata.lfricVertConfig;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            verticalConfigName = fieldMetadata.jediVertConfig;
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeIncrements()> "
@@ -195,6 +198,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                                  globalField,
                                                  fieldMetadata,
                                                  writeName,
+                                                 verticalConfigName,
                                                  isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
@@ -238,10 +242,13 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
+          std::string verticalConfigName;
           if (isLfricConvention == true) {
             writeName = fieldMetadata.lfricReadName;
+            verticalConfigName = fieldMetadata.lfricVertConfig;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            verticalConfigName = fieldMetadata.jediVertConfig;
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeState()> Field metadata configuration error...");
@@ -253,6 +260,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                                                  globalField,
                                                  fieldMetadata,
                                                  writeName,
+                                                 verticalConfigName,
                                                  isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);

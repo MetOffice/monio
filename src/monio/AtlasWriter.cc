@@ -33,18 +33,20 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
                                                    atlas::Field& field,
                                              const consts::FieldMetadata& fieldMetadata,
                                              const std::string& writeName,
+                                             const std::string& vertConfigName,
                                              const bool isLfricConvention) {
   oops::Log::debug() << "AtlasWriter::populateFileDataWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::vector<size_t>& lfricAtlasMap = fileData.getLfricAtlasMap();
     // Create dimensions
     Metadata& metadata = fileData.getMetadata();
-    metadata.addDimension(std::string(consts::kHorizontalName), lfricAtlasMap.size());
-    metadata.addDimension(std::string(consts::kVerticalFullName), consts::kVerticalFullSize);
-    metadata.addDimension(std::string(consts::kVerticalHalfName), consts::kVerticalHalfSize);
-
-    atlas::Field writeField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
-    populateMetadataWithField(metadata, writeField, fieldMetadata, writeName);
+    atlas::Field writeField;
+    if (isLfricConvention == true) {
+      writeField = getWriteField(field, writeName, fieldMetadata.noFirstLevel);
+    } else {
+      writeField = field;
+    }
+    populateMetadataWithField(metadata, writeField, fieldMetadata, writeName, vertConfigName);
     populateDataWithField(fileData.getData(), writeField, lfricAtlasMap, writeName);
     addGlobalAttributes(metadata, isLfricConvention);
   }
@@ -99,12 +101,15 @@ void monio::AtlasWriter::populateFileDataWithField(FileData& fileData,
 void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
                                              const atlas::Field& field,
                                              const consts::FieldMetadata& fieldMetadata,
-                                             const std::string& varName) {
+                                             const std::string& varName,
+                                             const std::string& vertConfigName) {
   oops::Log::debug() << "AtlasWriter::populateMetadataWithField()" << std::endl;
   int type = utilsatlas::atlasTypeToMonioEnum(field.datatype());
   std::shared_ptr<monio::Variable> var = std::make_shared<Variable>(varName, type);
   // Variable dimensions
-  addVariableDimensions(field, metadata, var);
+  addVariableDimensions(field, metadata, var, vertConfigName);
+  int dimSize = metadata.getDimension(vertConfigName);
+  metadata.addDimension(vertConfigName, dimSize);
   // Variable attributes
   for (int i = 0; i < consts::eNumberOfAttributeNames; ++i) {
     std::string attributeName = std::string(consts::kIncrementAttributeNames[i]);
@@ -395,7 +400,8 @@ template atlas::Field monio::AtlasWriter::copySurfaceLevel<int>(const atlas::Fie
 
 void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
                                                const Metadata& metadata,
-                                               std::shared_ptr<monio::Variable> var) {
+                                                     std::shared_ptr<monio::Variable> var,
+                                               const std::string& vertConfigName) {
   std::vector<int> dimVec = field.shape();
   if (field.metadata().get<bool>("global") == false) {
     dimVec[0] = utilsatlas::getHorizontalSize(field);  // If so, get the 2D size of the Field
@@ -403,7 +409,13 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
   // Reversal of dims required for LFRic files. Currently applied to all output files.
   std::reverse(dimVec.begin(), dimVec.end());
   for (auto& dimSize : dimVec) {
-    std::string dimName = metadata.getDimensionName(dimSize);
+    std::string dimName;
+    int tmpSz = metadata.getDimension(vertConfigName);
+    if (vertConfigName != "" && dimSize == metadata.getDimension(vertConfigName)) {
+      dimName = vertConfigName;
+    } else {
+      dimName = metadata.getDimensionName(dimSize);
+    }
     if (dimName != consts::kNotFoundError) {  // Not used for 1-D fields.
       var->addDimension(dimName, dimSize);
     }
