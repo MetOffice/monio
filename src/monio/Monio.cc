@@ -169,6 +169,9 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
       cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
+      if (isLfricConvention == false) {
+        addJediData(fileData);
+      }
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -180,7 +183,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
             writeName = fieldMetadata.lfricWriteName;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
-            addJediData(fileData);
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeIncrements()> "
@@ -196,7 +198,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                                  isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();
@@ -226,6 +228,9 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
       cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
+      if (isLfricConvention == false) {
+        addJediData(fileData);
+      }
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -237,7 +242,6 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
             writeName = fieldMetadata.lfricReadName;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
-            addJediData(fileData);
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeState()> Field metadata configuration error...");
@@ -252,7 +256,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                                                  isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();
@@ -284,7 +288,7 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
           atlasWriter_.populateFileDataWithField(fileData, globalField, globalField.name());
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();

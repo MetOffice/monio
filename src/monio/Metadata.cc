@@ -373,7 +373,7 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
 
 void monio::Metadata::clear() {
   oops::Log::debug() << "Metadata::clear()" << std::endl;
-  dimensions_.clear();
+  // dimensions_.clear();  // Dimensions are required for correct writing of subsequent variables.
   variables_.clear();
   globalAttrs_.clear();
 }

@@ -13,6 +13,7 @@ monio::FileData::FileData() :
   metadata_() {}
 
 void monio::FileData::clearData() {
+  metadata_.clear();  // Does not delete dimensions. Required for subsequent variables.
   data_.clear();
 }
 
