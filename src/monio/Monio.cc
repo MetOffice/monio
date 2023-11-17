@@ -15,6 +15,7 @@
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
 
+#include "AttributeString.h"
 #include "Constants.h"
 #include "Utils.h"
 #include "UtilsAtlas.h"
@@ -447,13 +448,24 @@ void monio::Monio::addJediData(FileData& fileData) {
   metadata.addDimension(vertFullNoSurfName, consts::kVertFullNoSurfSize);
   metadata.addDimension(vertHalfWithTopName, consts::kVertHalfWithTopSize);
 
-  std::shared_ptr<monio::Variable> varFullNoSurf =
+  std::shared_ptr<monio::Variable> vertFullNoSurfVar =
         std::make_shared<Variable>(vertFullNoSurfName, consts::eDouble);
-  std::shared_ptr<monio::Variable> varHalfWithTop =
+  std::shared_ptr<monio::Variable> vertHalfWithTopVar =
         std::make_shared<Variable>(vertHalfWithTopName, consts::eDouble);
 
-  metadata.addVariable(vertFullNoSurfName, varFullNoSurf);
-  metadata.addVariable(vertHalfWithTopName, varHalfWithTop);
+  vertFullNoSurfVar->addDimension(vertFullNoSurfName, consts::kVertFullNoSurfSize);
+  vertHalfWithTopVar->addDimension(vertHalfWithTopName, consts::kVertHalfWithTopSize);
+
+  std::shared_ptr<AttributeBase> vertFullNoSurfAttr =
+        std::make_shared<AttributeString>("name", vertFullNoSurfName);
+  std::shared_ptr<AttributeBase> vertHalfWithTopAttr =
+        std::make_shared<AttributeString>("name", vertHalfWithTopName);
+
+  vertFullNoSurfVar->addAttribute(vertFullNoSurfAttr);
+  vertHalfWithTopVar->addAttribute(vertHalfWithTopAttr);
+
+  metadata.addVariable(vertFullNoSurfName, vertFullNoSurfVar);
+  metadata.addVariable(vertHalfWithTopName, vertHalfWithTopVar);
 
   std::vector<double> vertFullNoSurfValues(consts::kVertFullNoSurfSize);
   std::vector<double> vertHalfWithTopValues(consts::kVertHalfWithTopSize);

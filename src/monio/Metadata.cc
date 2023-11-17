@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <utility>
