@@ -441,8 +441,19 @@ void monio::Monio::addJediData(FileData& fileData) {
   Metadata& metadata = fileData.getMetadata();
   Data& data = fileData.getData();
 
-  metadata.addDimension(std::string(consts::kVertFullNoSurfName), consts::kVertFullNoSurfSize);
-  metadata.addDimension(std::string(consts::kVertHalfWithTopName), consts::kVertHalfWithTopSize);
+  std::string vertFullNoSurfName = std::string(consts::kVertFullNoSurfName);
+  std::string vertHalfWithTopName = std::string(consts::kVertHalfWithTopName);
+
+  metadata.addDimension(vertFullNoSurfName, consts::kVertFullNoSurfSize);
+  metadata.addDimension(vertHalfWithTopName, consts::kVertHalfWithTopSize);
+
+  std::shared_ptr<monio::Variable> varFullNoSurf =
+        std::make_shared<Variable>(vertFullNoSurfName, consts::eDouble);
+  std::shared_ptr<monio::Variable> varHalfWithTop =
+        std::make_shared<Variable>(vertHalfWithTopName, consts::eDouble);
+
+  metadata.addVariable(vertFullNoSurfName, varFullNoSurf);
+  metadata.addVariable(vertHalfWithTopName, varHalfWithTop);
 
   std::vector<double> vertFullNoSurfValues(consts::kVertFullNoSurfSize);
   std::vector<double> vertHalfWithTopValues(consts::kVertHalfWithTopSize);
@@ -451,9 +462,9 @@ void monio::Monio::addJediData(FileData& fileData) {
   std::iota(vertHalfWithTopValues.begin(), vertHalfWithTopValues.end(), consts::kVerticalHalfInc);
 
   std::shared_ptr<DataContainerDouble> dataContainerFullNoSurf =
-        std::make_shared<DataContainerDouble>(std::string(consts::kVertFullNoSurfName));
+        std::make_shared<DataContainerDouble>(vertFullNoSurfName);
   std::shared_ptr<DataContainerDouble> dataContainerHalfWithTop =
-        std::make_shared<DataContainerDouble>(std::string(consts::kVertHalfWithTopName));
+        std::make_shared<DataContainerDouble>(vertHalfWithTopName);
 
   dataContainerFullNoSurf->setData(vertFullNoSurfValues);
   dataContainerHalfWithTop->setData(vertHalfWithTopValues);
