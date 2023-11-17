@@ -85,6 +85,9 @@ class Monio {
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath);
 
+  /// \brief Returns a copy of the data read and produced during file initialisation.
+  FileData getFileData(const std::string& gridName);
+
   /// \brief Creates and stores a map between Atlas and LFRic horizontal ordering.
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
 
@@ -93,8 +96,8 @@ class Monio {
                        const std::string& timeVarName,
                        const std::string& timeOriginName);
 
-  /// \brief Returns a copy of the data read and produced during file initialisation.
-  FileData getFileData(const std::string& gridName);
+  /// \brief Adds vertical meta/data for writing of JEDI-only increment files.
+  void addJediData(FileData& fileData);
 
   /// \brief Removes unnecessary meta/data from data read from file during initialisation.
   void cleanFileData(FileData& fileData);

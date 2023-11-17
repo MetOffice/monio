@@ -8,12 +8,15 @@
 ******************************************************************************/
 #pragma once
 
+#include <numeric>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace monio {
 namespace consts {
+
+using std::iota;
 /// Structs ////////////////////////////////////////////////////////////////////////////////////////
 
 /// \brief This struct is used for interfacing with the Monio singleton and its intended use-cases
@@ -107,6 +110,8 @@ const std::string_view kTileVarName = "tile_fraction";
 const std::string_view kHorizontalName = "nMesh2d_face";
 const std::string_view kVerticalFullName = "full_levels";
 const std::string_view kVerticalHalfName = "half_levels";
+const std::string_view kVertFullNoSurfName = "full_levels_no_surf";
+const std::string_view kVertHalfWithTopName = "half_levels_with_top";
 
 const std::string_view kLfricMeshTerm = "Mesh2d";
 const std::string_view kLfricLonVarName = "Mesh2d_face_y";
@@ -190,6 +195,10 @@ const int kMPIRankOwner = 0;
 
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;
+const int kVertFullNoSurfSize = 70;
+const int kVertHalfWithTopSize = 71;
 
+const double kVerticalFullInc = 1;
+const double kVerticalHalfInc = 0.5;
 }  // namespace consts
 }  // namespace monio

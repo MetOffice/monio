@@ -167,7 +167,6 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -179,6 +178,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
             writeName = fieldMetadata.lfricWriteName;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            addJediData(fileData);
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeIncrements()> "
@@ -223,7 +223,6 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -235,6 +234,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
             writeName = fieldMetadata.lfricReadName;
           } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            addJediData(fileData);
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeState()> Field metadata configuration error...");
@@ -325,6 +325,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                       std::string(consts::kTimeVarName),
                       std::string(consts::kTimeOriginName));
     }
+    cleanFileData(fileData);
     variableConvention = fileData.getMetadata().getVariableConvention();
   }
   return variableConvention;
@@ -354,6 +355,15 @@ monio::FileData& monio::Monio::createFileData(const std::string& gridName,
   // Overwrite existing data
   filesData_.insert({gridName, FileData()});
   return filesData_.at(gridName);
+}
+
+monio::FileData monio::Monio::getFileData(const std::string& gridName) {
+  oops::Log::debug() << "Monio::getFileData()" << std::endl;
+  auto it = filesData_.find(gridName);
+  if (it != filesData_.end()) {
+    return FileData(it->second);
+  }
+  return FileData();  // This function is called by all PEs. A return is essential.
 }
 
 void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid) {
@@ -405,15 +415,6 @@ void monio::Monio::createDateTimes(FileData& fileData,
   }
 }
 
-monio::FileData monio::Monio::getFileData(const std::string& gridName) {
-  oops::Log::debug() << "Monio::getFileData()" << std::endl;
-  auto it = filesData_.find(gridName);
-  if (it != filesData_.end()) {
-    return FileData(it->second);
-  }
-  return FileData();  // This function is called by all PEs. A return is essential.
-}
-
 void monio::Monio::cleanFileData(FileData& fileData) {
   oops::Log::debug() << "Monio::cleanFileData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -434,4 +435,29 @@ void monio::Monio::cleanFileData(FileData& fileData) {
       }
     }
   }
+}
+
+void monio::Monio::addJediData(FileData& fileData) {
+  Metadata& metadata = fileData.getMetadata();
+  Data& data = fileData.getData();
+
+  metadata.addDimension(std::string(consts::kVertFullNoSurfName), consts::kVertFullNoSurfSize);
+  metadata.addDimension(std::string(consts::kVertHalfWithTopName), consts::kVertHalfWithTopSize);
+
+  std::vector<double> vertFullNoSurfValues(consts::kVertFullNoSurfSize);
+  std::vector<double> vertHalfWithTopValues(consts::kVertHalfWithTopSize);
+
+  std::iota(vertFullNoSurfValues.begin(), vertFullNoSurfValues.end(), consts::kVerticalFullInc);
+  std::iota(vertHalfWithTopValues.begin(), vertHalfWithTopValues.end(), consts::kVerticalHalfInc);
+
+  std::shared_ptr<DataContainerDouble> dataContainerFullNoSurf =
+        std::make_shared<DataContainerDouble>(std::string(consts::kVertFullNoSurfName));
+  std::shared_ptr<DataContainerDouble> dataContainerHalfWithTop =
+        std::make_shared<DataContainerDouble>(std::string(consts::kVertHalfWithTopName));
+
+  dataContainerFullNoSurf->setData(vertFullNoSurfValues);
+  dataContainerHalfWithTop->setData(vertHalfWithTopValues);
+
+  data.addContainer(dataContainerFullNoSurf);
+  data.addContainer(dataContainerHalfWithTop);
 }
