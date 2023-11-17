@@ -108,8 +108,6 @@ void monio::AtlasWriter::populateMetadataWithField(Metadata& metadata,
   std::shared_ptr<monio::Variable> var = std::make_shared<Variable>(varName, type);
   // Variable dimensions
   addVariableDimensions(field, metadata, var, vertConfigName);
-  int dimSize = metadata.getDimension(vertConfigName);
-  metadata.addDimension(vertConfigName, dimSize);
   // Variable attributes
   for (int i = 0; i < consts::eNumberOfAttributeNames; ++i) {
     std::string attributeName = std::string(consts::kIncrementAttributeNames[i]);
@@ -410,8 +408,8 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
   std::reverse(dimVec.begin(), dimVec.end());
   for (auto& dimSize : dimVec) {
     std::string dimName;
-    int tmpSz = metadata.getDimension(vertConfigName);
-    if (vertConfigName != "" && dimSize == metadata.getDimension(vertConfigName)) {
+    if (vertConfigName != "" && metadata.isDimDefined(vertConfigName) &&
+        dimSize == metadata.getDimension(vertConfigName)) {
       dimName = vertConfigName;
     } else {
       dimName = metadata.getDimensionName(dimSize);
