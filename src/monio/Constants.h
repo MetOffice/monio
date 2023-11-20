@@ -61,8 +61,8 @@ enum eDimensions {
 
 /// \brief For indicating the variable convention adopted by input files, where applicable.
 enum eVariableConventions {
-  eLfricConvention,
   eJediConvention,
+  eLfricConvention,
   eNotDefined
 };
 

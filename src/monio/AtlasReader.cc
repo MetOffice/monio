@@ -24,19 +24,22 @@ monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
 void monio::AtlasReader::populateFieldWithFileData(atlas::Field& field,
                                              const FileData& fileData,
                                              const consts::FieldMetadata& fieldMetadata,
-                                             const std::string& readName) {
+                                             const std::string& readName,
+                                             const bool isLfricConvention) {
   oops::Log::debug() << "AtlasReader::populateFieldWithFileData()" << std::endl;
   atlas::Field readField = getReadField(field, fieldMetadata.noFirstLevel);
   populateFieldWithDataContainer(readField,
                                  fileData.getData().getContainer(readName),
                                  fileData.getLfricAtlasMap(),
-                                 fieldMetadata.noFirstLevel);
+                                 fieldMetadata.noFirstLevel,
+                                 isLfricConvention);
 }
 
 void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
                                       const std::shared_ptr<DataContainerBase>& dataContainer,
                                       const std::vector<size_t>& lfricToAtlasMap,
-                                      const bool noFirstLevel) {
+                                      const bool noFirstLevel,
+                                      const bool isLfricConvention) {
   oops::Log::debug() << "AtlasReader::populateFieldWithDataContainer()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     int dataType = dataContainer.get()->getType();
@@ -44,19 +47,22 @@ void monio::AtlasReader::populateFieldWithDataContainer(atlas::Field& field,
       case consts::eDataTypes::eDouble: {
         const std::shared_ptr<DataContainerDouble> dataContainerDouble =
             std::static_pointer_cast<DataContainerDouble>(dataContainer);
-            populateField(field, dataContainerDouble->getData(), lfricToAtlasMap, noFirstLevel);
+            populateField(field, dataContainerDouble->getData(), lfricToAtlasMap,
+                          noFirstLevel, isLfricConvention);
         break;
       }
       case consts::eDataTypes::eFloat: {
         const std::shared_ptr<DataContainerFloat> dataContainerFloat =
             std::static_pointer_cast<DataContainerFloat>(dataContainer);
-            populateField(field, dataContainerFloat->getData(), lfricToAtlasMap, noFirstLevel);
+            populateField(field, dataContainerFloat->getData(), lfricToAtlasMap,
+                          noFirstLevel, isLfricConvention);
         break;
       }
       case consts::eDataTypes::eInt: {
         const std::shared_ptr<DataContainerInt> dataContainerInt =
             std::static_pointer_cast<DataContainerInt>(dataContainer);
-            populateField(field, dataContainerInt->getData(), lfricToAtlasMap, noFirstLevel);
+            populateField(field, dataContainerInt->getData(), lfricToAtlasMap,
+                          noFirstLevel, isLfricConvention);
         break;
       }
       default: {
@@ -105,7 +111,8 @@ template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
                                  const std::vector<T>& dataVec,
                                  const std::vector<size_t>& lfricToAtlasMap,
-                                 const bool noFirstLevel) {
+                                 const bool noFirstLevel,
+                                 const bool isLfricConvention) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   // Field with noFirstLevel == true should have been adjusted to have 70 levels.
@@ -114,7 +121,9 @@ void monio::AtlasReader::populateField(atlas::Field& field,
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
   // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
   // read data still has enough to fill 71.
-  } else if (noFirstLevel == true && field.levels() == consts::kVerticalHalfSize) {
+  } else if (isLfricConvention == true &&
+             noFirstLevel == true &&
+             field.levels() == consts::kVerticalHalfSize) {
     for (int j = 1; j < consts::kVerticalFullSize; ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
@@ -128,7 +137,8 @@ void monio::AtlasReader::populateField(atlas::Field& field,
         }
       }
     }
-  // Valid case for fields noFirstLevel == false. Field is filled with all available data.
+  // Valid case for isLfricConvention == false and fields noFirstLevel == false. Field is filled
+  // with all available data.
   } else {
     for (int j = 0; j < field.levels(); ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
@@ -149,15 +159,18 @@ void monio::AtlasReader::populateField(atlas::Field& field,
 template void monio::AtlasReader::populateField<double>(atlas::Field& field,
                                                         const std::vector<double>& dataVec,
                                                         const std::vector<size_t>& lfricToAtlasMap,
-                                                        const bool copyFirstLevel);
+                                                        const bool copyFirstLevel,
+                                                        const bool isLfricConvention);
 template void monio::AtlasReader::populateField<float>(atlas::Field& field,
                                                        const std::vector<float>& dataVec,
                                                        const std::vector<size_t>& lfricToAtlasMap,
-                                                        const bool copyFirstLevel);
+                                                       const bool copyFirstLevel,
+                                                       const bool isLfricConvention);
 template void monio::AtlasReader::populateField<int>(atlas::Field& field,
                                                      const std::vector<int>& dataVec,
                                                      const std::vector<size_t>& lfricToAtlasMap,
-                                                     const bool copyFirstLevel);
+                                                     const bool copyFirstLevel,
+                                                     const bool isLfricConvention);
 
 template<typename T>
 void monio::AtlasReader::populateField(atlas::Field& field,
