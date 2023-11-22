@@ -323,7 +323,7 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
 }
 
 int monio::Metadata::getVariableConvention() {
-  int variableConvention = consts::eNotDefined;
+  int variableConvention = consts::eLfricConvention;  // Defaults to LFRic Convention
   for (const auto& globalAttr : globalAttrs_) {
     if (globalAttr.first == consts::kVariableConventionName) {
       std::shared_ptr<monio::AttributeString> dataFormatAttr =

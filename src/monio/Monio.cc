@@ -323,7 +323,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                                  const std::string& filePath,
                                  bool doCreateDateTimes) {
   oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int variableConvention = consts::eNotDefined;
+  int variableConvention = consts::eLfricConvention;  // LFRic convention is default
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData& fileData = createFileData(grid.name(), filePath);
     reader_.openFile(filePath);
