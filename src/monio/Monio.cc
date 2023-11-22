@@ -63,13 +63,13 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath, true);
+            int variableConvention = initialiseFile(grid.name(), filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediConvention) {
+            if (variableConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readState() processing data for> \"" <<
@@ -78,7 +78,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             reader_.readDatumAtTime(fileData, readName, dateTime,
                                     std::string(consts::kTimeDimName));
             atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
-                                                   namingConvention == consts::eLfricConvention);
+                                                   variableConvention == consts::eLfricConvention);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -119,13 +119,13 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath);
+            int variableConvention = initialiseFile(grid.name(), filePath);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediConvention) {
+            if (variableConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
@@ -133,7 +133,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);
             atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
-                                                   namingConvention == consts::eLfricConvention);
+                                                   variableConvention == consts::eLfricConvention);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
