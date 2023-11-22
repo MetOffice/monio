@@ -15,8 +15,6 @@
 
 namespace monio {
 namespace consts {
-
-using std::iota;
 /// Structs ////////////////////////////////////////////////////////////////////////////////////////
 
 /// \brief This struct is used for interfacing with the Monio singleton and its intended use-cases
