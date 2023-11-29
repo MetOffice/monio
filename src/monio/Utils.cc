@@ -84,8 +84,7 @@ template std::vector<std::string> extractKeys<std::string, std::shared_ptr<DataC
 template<typename T>
 int findPosInVector(std::vector<T> vector, T searchTerm) {
   int pos = -1;
-  typename std::vector<T>::iterator it;
-  it = std::find(vector.begin(), vector.end(), searchTerm);
+  typename std::vector<T>::iterator it = std::find(vector.begin(), vector.end(), searchTerm);
   if (it != vector.end()) {
     return std::distance(vector.begin(), it);
   }

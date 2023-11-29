@@ -47,7 +47,8 @@ class AtlasReader {
   void populateFieldWithFileData(atlas::Field& field,
                            const FileData& fileData,
                            const consts::FieldMetadata& fieldMetadata,
-                           const std::string& readName);
+                           const std::string& readName,
+                           const bool isLfricConvention);
 
  private:
   /// \brief Called from the entry point. Derives container type, makes the call to populate a field
@@ -55,7 +56,8 @@ class AtlasReader {
   void populateFieldWithDataContainer(atlas::Field& field,
                                 const std::shared_ptr<monio::DataContainerBase>& dataContainer,
                                 const std::vector<size_t>& lfricToAtlasMap,
-                                const bool copyFirstLevel = false);
+                                const bool noFirstLevel,
+                                const bool isLfricConvention);
 
   /// \brief Not currently used, but could be. Derives container type, makes the call to populate a
   ///        field with data where data order isn't relevant.
@@ -67,7 +69,8 @@ class AtlasReader {
   template<typename T> void populateField(atlas::Field& field,
                                     const std::vector<T>& dataVec,
                                     const std::vector<size_t>& lfricToAtlasMap,
-                                    const bool copyFirstLevel);
+                                    const bool noFirstLevel,
+                                    const bool isLfricConvention);
 
   /// \brief Not currently used, but used to populate a field where data order isn't relevant.
   template<typename T> void populateField(atlas::Field& field,

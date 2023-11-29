@@ -15,6 +15,7 @@
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
 
+#include "AttributeString.h"
 #include "Constants.h"
 #include "Utils.h"
 #include "UtilsAtlas.h"
@@ -62,13 +63,13 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath, true);
+            int variableConvention = initialiseFile(grid.name(), filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediNaming) {
+            if (variableConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readState() processing data for> \"" <<
@@ -76,7 +77,8 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             // Read fields into memory
             reader_.readDatumAtTime(fileData, readName, dateTime,
                                     std::string(consts::kTimeDimName));
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
+                                                   variableConvention == consts::eLfricConvention);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -84,9 +86,8 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        reader_.closeFile();
-        std::string exceptionMessage = exception.what();
         Monio::get().closeFiles();
+        std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readState()> An exception has occurred: " + exceptionMessage);
       }
     } else {
@@ -118,20 +119,21 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
 
             // Initialise file
-            int namingConvention = initialiseFile(grid.name(), filePath);
+            int variableConvention = initialiseFile(grid.name(), filePath);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
             // Configure read name
             std::string readName = fieldMetadata.lfricReadName;
-            if (namingConvention == consts::eJediNaming) {
+            if (variableConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
             oops::Log::debug() << "Monio::readIncrements() processing data for> \"" <<
                                   readName << "\"..." << std::endl;
             // Read fields into memory
             reader_.readFullDatum(fileData, readName);
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName);
+            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
+                                                   variableConvention == consts::eLfricConvention);
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
@@ -139,10 +141,8 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
         }
         reader_.closeFile();
       } catch (netCDF::exceptions::NcException& exception) {
-        oops::Log::info() << " exception.what()> " <<  exception.what() << std::endl;
-        reader_.closeFile();
-        std::string exceptionMessage = exception.what();
         Monio::get().closeFiles();
+        std::string exceptionMessage = exception.what();
         utils::throwException("Monio::readIncrements()> An exception has occurred: " +
                               exceptionMessage);
       }
@@ -159,7 +159,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
 void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                    const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                                    const std::string& filePath,
-                                   const bool isLfricNaming) {
+                                   const bool isLfricConvention) {
   oops::Log::debug() << "Monio::writeIncrements()" << std::endl;
   if (localFieldSet.size() == 0) {
     Monio::get().closeFiles();
@@ -170,7 +170,10 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
+      cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
+      if (isLfricConvention == false) {
+        addJediData(fileData);
+      }
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -178,10 +181,13 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
-          if (isLfricNaming == true) {
+          std::string verticalConfigName;
+          if (isLfricConvention == true) {
             writeName = fieldMetadata.lfricWriteName;
-          } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
+            verticalConfigName = fieldMetadata.lfricVertConfig;
+          } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            verticalConfigName = fieldMetadata.jediVertConfig;
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeIncrements()> "
@@ -194,17 +200,17 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
                                                  globalField,
                                                  fieldMetadata,
                                                  writeName,
-                                                 isLfricNaming);
+                                                 verticalConfigName,
+                                                 isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeIncrements()> An exception occurred: " + exceptionMessage);
     }
   } else {
@@ -216,7 +222,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
 void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                               const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                               const std::string& filePath,
-                              const bool isLfricNaming) {
+                              const bool isLfricConvention) {
   oops::Log::debug() << "Monio::writeState()" << std::endl;
   if (localFieldSet.size() == 0) {
     Monio::get().closeFiles();
@@ -227,7 +233,10 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
       auto& functionSpace = localFieldSet[0].functionspace();
       auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
       FileData fileData = getFileData(grid.name());
-      cleanFileData(fileData);
+      cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
+      if (isLfricConvention == false) {
+        addJediData(fileData);
+      }
       writer_.openFile(filePath);
       for (const auto& fieldMetadata : fieldMetadataVec) {
         auto& localField = localFieldSet[fieldMetadata.jediName];
@@ -235,10 +244,13 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
         if (mpiCommunicator_.rank() == mpiRankOwner_) {
           // Configure write name
           std::string writeName;
-          if (isLfricNaming == true) {
+          std::string verticalConfigName;
+          if (isLfricConvention == true) {
             writeName = fieldMetadata.lfricReadName;
-          } else if (isLfricNaming == false && fieldMetadata.jediName == globalField.name()) {
+            verticalConfigName = fieldMetadata.lfricVertConfig;
+          } else if (isLfricConvention == false && fieldMetadata.jediName == globalField.name()) {
             writeName = fieldMetadata.jediName;
+            verticalConfigName = fieldMetadata.jediVertConfig;
           } else {
             Monio::get().closeFiles();
             utils::throwException("Monio::writeState()> Field metadata configuration error...");
@@ -250,17 +262,17 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
                                                  globalField,
                                                  fieldMetadata,
                                                  writeName,
-                                                 isLfricNaming);
+                                                 verticalConfigName,
+                                                 isLfricConvention);
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeState()> An exception has occurred: " + exceptionMessage);
     }
   } else {
@@ -286,14 +298,13 @@ void monio::Monio::writeFieldSet(const atlas::FieldSet& localFieldSet,
           atlasWriter_.populateFileDataWithField(fileData, globalField, globalField.name());
           writer_.writeMetadata(fileData.getMetadata());
           writer_.writeData(fileData);
-          fileData.clearData();  // Globalised field data no longer required
+          fileData.clearData();  // Written and globalised field data no longer required
         }
       }
       writer_.closeFile();
     } catch (netCDF::exceptions::NcException& exception) {
-      writer_.closeFile();
-      std::string exceptionMessage = exception.what();
       Monio::get().closeFiles();
+      std::string exceptionMessage = exception.what();
       utils::throwException("Monio::writeFieldSet()> An exception occurred: " + exceptionMessage);
     }
   } else {
@@ -312,7 +323,7 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                                  const std::string& filePath,
                                  bool doCreateDateTimes) {
   oops::Log::debug() << "Monio::initialiseFile()" << std::endl;
-  int namingConvention = consts::eNotDefined;
+  int variableConvention = consts::eLfricConvention;  // LFRic convention is default
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     FileData& fileData = createFileData(grid.name(), filePath);
     reader_.openFile(filePath);
@@ -331,9 +342,9 @@ int monio::Monio::initialiseFile(const atlas::Grid& grid,
                       std::string(consts::kTimeVarName),
                       std::string(consts::kTimeOriginName));
     }
-    namingConvention = fileData.getMetadata().getNamingConvention();
+    variableConvention = fileData.getMetadata().getVariableConvention();
   }
-  return namingConvention;
+  return variableConvention;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,6 +371,15 @@ monio::FileData& monio::Monio::createFileData(const std::string& gridName,
   // Overwrite existing data
   filesData_.insert({gridName, FileData()});
   return filesData_.at(gridName);
+}
+
+monio::FileData monio::Monio::getFileData(const std::string& gridName) {
+  oops::Log::debug() << "Monio::getFileData()" << std::endl;
+  auto it = filesData_.find(gridName);
+  if (it != filesData_.end()) {
+    return FileData(it->second);
+  }
+  return FileData();  // This function is called by all PEs. A return is essential.
 }
 
 void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid) {
@@ -411,15 +431,6 @@ void monio::Monio::createDateTimes(FileData& fileData,
   }
 }
 
-monio::FileData monio::Monio::getFileData(const std::string& gridName) {
-  oops::Log::debug() << "Monio::getFileData()" << std::endl;
-  auto it = filesData_.find(gridName);
-  if (it != filesData_.end()) {
-    return FileData(it->second);
-  }
-  return FileData();  // This function is called by all PEs. A return is essential.
-}
-
 void monio::Monio::cleanFileData(FileData& fileData) {
   oops::Log::debug() << "Monio::cleanFileData()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
@@ -433,11 +444,57 @@ void monio::Monio::cleanFileData(FileData& fileData) {
     std::vector<std::string> dataContainerNames = fileData.getData().getDataContainerNames();
 
     for (const auto& metadataVarName : metadataVarNames) {
-      auto it = std::find(begin(dataContainerNames),
-                          end(dataContainerNames), metadataVarName);
+      auto it = std::find(begin(dataContainerNames), end(dataContainerNames), metadataVarName);
       if (it == std::end(dataContainerNames)) {
         fileData.getMetadata().deleteVariable(metadataVarName);
       }
     }
   }
+}
+
+void monio::Monio::addJediData(FileData& fileData) {
+  Metadata& metadata = fileData.getMetadata();
+  Data& data = fileData.getData();
+
+  std::string vertFullNoSurfName = std::string(consts::kVertFullNoSurfName);
+  std::string vertHalfWithTopName = std::string(consts::kVertHalfWithTopName);
+
+  metadata.addDimension(vertFullNoSurfName, consts::kVertFullNoSurfSize);
+  metadata.addDimension(vertHalfWithTopName, consts::kVertHalfWithTopSize);
+
+  std::shared_ptr<monio::Variable> vertFullNoSurfVar =
+        std::make_shared<Variable>(vertFullNoSurfName, consts::eDouble);
+  std::shared_ptr<monio::Variable> vertHalfWithTopVar =
+        std::make_shared<Variable>(vertHalfWithTopName, consts::eDouble);
+
+  vertFullNoSurfVar->addDimension(vertFullNoSurfName, consts::kVertFullNoSurfSize);
+  vertHalfWithTopVar->addDimension(vertHalfWithTopName, consts::kVertHalfWithTopSize);
+
+  std::shared_ptr<AttributeBase> vertFullNoSurfAttr =
+        std::make_shared<AttributeString>("name", vertFullNoSurfName);
+  std::shared_ptr<AttributeBase> vertHalfWithTopAttr =
+        std::make_shared<AttributeString>("name", vertHalfWithTopName);
+
+  vertFullNoSurfVar->addAttribute(vertFullNoSurfAttr);
+  vertHalfWithTopVar->addAttribute(vertHalfWithTopAttr);
+
+  metadata.addVariable(vertFullNoSurfName, vertFullNoSurfVar);
+  metadata.addVariable(vertHalfWithTopName, vertHalfWithTopVar);
+
+  std::vector<double> vertFullNoSurfValues(consts::kVertFullNoSurfSize);
+  std::vector<double> vertHalfWithTopValues(consts::kVertHalfWithTopSize);
+
+  std::iota(vertFullNoSurfValues.begin(), vertFullNoSurfValues.end(), consts::kVerticalFullInc);
+  std::iota(vertHalfWithTopValues.begin(), vertHalfWithTopValues.end(), consts::kVerticalHalfInc);
+
+  std::shared_ptr<DataContainerDouble> dataContainerFullNoSurf =
+        std::make_shared<DataContainerDouble>(vertFullNoSurfName);
+  std::shared_ptr<DataContainerDouble> dataContainerHalfWithTop =
+        std::make_shared<DataContainerDouble>(vertHalfWithTopName);
+
+  dataContainerFullNoSurf->setData(vertFullNoSurfValues);
+  dataContainerHalfWithTop->setData(vertHalfWithTopValues);
+
+  data.addContainer(dataContainerFullNoSurf);
+  data.addContainer(dataContainerHalfWithTop);
 }

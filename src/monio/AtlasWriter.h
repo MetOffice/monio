@@ -43,7 +43,8 @@ class AtlasWriter {
                                  atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
                            const std::string& writeName,
-                           const bool isLfricNaming);
+                           const std::string& vertConfigName,
+                           const bool isLfricConvention);
 
   /// \brief Creates all metadata and data from at Atlas field. For writing of field sets with no
   ///        metadata.
@@ -57,7 +58,8 @@ class AtlasWriter {
   void populateMetadataWithField(Metadata& metadata,
                            const atlas::Field& field,
                            const consts::FieldMetadata& fieldMetadata,
-                           const std::string& varName);
+                           const std::string& varName,
+                           const std::string& vertConfigName);
 
   /// \brief Creates all metadata for field. Called from populateFileDataWithField where metadata
   ///        are created.
@@ -101,7 +103,7 @@ class AtlasWriter {
                                       const atlas::Field& field,
                                       const std::vector<int>& dimensions);
 
-  /// \brief Returns a field formatted for writing to file.
+  /// \brief  Map JEDI fields back into LFRic function space.
   atlas::Field getWriteField(atlas::Field& inputField,
                        const std::string& writeName,
                        const bool noFirstLevel);
@@ -116,9 +118,10 @@ class AtlasWriter {
   /// \brief Associates a given variable with its applicable dimensions in the metadata.
   void addVariableDimensions(const atlas::Field& field,
                              const Metadata& metadata,
-                                   std::shared_ptr<monio::Variable> var);
+                                   std::shared_ptr<monio::Variable> var,
+                             const std::string& vertConfigName = "");
 
-  void addGlobalAttributes(Metadata& metadata, const bool isLfricNaming = true);
+  void addGlobalAttributes(Metadata& metadata, const bool isLfricConvention = true);
 
   const eckit::mpi::Comm& mpiCommunicator_;
   const std::size_t mpiRankOwner_;

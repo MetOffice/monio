@@ -24,8 +24,8 @@ class FileData {
  public:
   FileData();
 
-  /// \brief Clears contents of Data. Used for memory-efficiency where written data can be dropped
-  ///        before writing subsequent variables.
+  /// \brief Clears contents of Data and all except dimensions in Metadata. Used for
+  ///        memory-efficiency where all but required data can be dropped.
   void clearData();
 
   Data& getData();

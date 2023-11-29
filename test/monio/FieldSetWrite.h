@@ -107,9 +107,11 @@ void initParams(atlas::FieldSet& fieldSet,
     std::vector<std::string> stringVec = utils::strToWords(fieldMetadata.getString(key), ',');
 
     consts::FieldMetadata fieldMetadata;
-    fieldMetadata.jediName = utils::strNoWhiteSpace(stringVec[consts::eJediName]);
     fieldMetadata.lfricReadName = utils::strNoWhiteSpace(stringVec[consts::eLfricReadName]);
     fieldMetadata.lfricWriteName = utils::strNoWhiteSpace(stringVec[consts::eLfricWriteName]);
+    fieldMetadata.jediName = utils::strNoWhiteSpace(stringVec[consts::eJediName]);
+    fieldMetadata.lfricVertConfig = utils::strNoWhiteSpace(stringVec[consts::eLfricVertConfig]);
+    fieldMetadata.jediVertConfig = utils::strNoWhiteSpace(stringVec[consts::eJediVertConfig]);
     fieldMetadata.units = utils::strNoWhiteSpace(stringVec[consts::eUnits]);
     fieldMetadata.numberOfLevels =
                     std::stoi(utils::strNoWhiteSpace(stringVec[consts::eNumberOfLevels]));

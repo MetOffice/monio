@@ -128,7 +128,7 @@ bool monio::operator==(const monio::Metadata& lhs,
   return true;
 }
 
-bool monio::Metadata::isDimDefined(const std::string& dimName) {
+const bool monio::Metadata::isDimDefined(const std::string& dimName) const {
   oops::Log::debug() << "Metadata::isDimDefined()" << std::endl;
   auto it = dimensions_.find(dimName);
   if (it != dimensions_.end()) {
@@ -138,7 +138,7 @@ bool monio::Metadata::isDimDefined(const std::string& dimName) {
   }
 }
 
-int monio::Metadata::getDimension(const std::string& dimName) {
+const int monio::Metadata::getDimension(const std::string& dimName) const {
   oops::Log::debug() << "Metadata::getDimension()" << std::endl;
   if (isDimDefined(dimName) == true) {
     return dimensions_.at(dimName);
@@ -322,20 +322,20 @@ const std::map<std::string, std::shared_ptr<monio::AttributeBase>>&
   return globalAttrs_;
 }
 
-int monio::Metadata::getNamingConvention() {
-  int namingConvention = consts::eNotDefined;
+int monio::Metadata::getVariableConvention() {
+  int variableConvention = consts::eLfricConvention;  // Defaults to LFRic Convention
   for (const auto& globalAttr : globalAttrs_) {
-    if (globalAttr.first == consts::kNamingConventionName) {
+    if (globalAttr.first == consts::kVariableConventionName) {
       std::shared_ptr<monio::AttributeString> dataFormatAttr =
             std::dynamic_pointer_cast<monio::AttributeString>(globalAttr.second);
       std::string dataFormatValue = dataFormatAttr->getValue();
       int pos = utils::findPosInVector(consts::kNamingConventions, dataFormatValue);
       if (pos != -1) {  // Condition preserves use of consts::eNotDefined == 2 when not found
-        namingConvention = pos;
+        variableConvention = pos;
       }
     }
   }
-  return namingConvention;
+  return variableConvention;
 }
 
 void monio::Metadata::removeAllButTheseVariables(
@@ -373,7 +373,7 @@ void monio::Metadata::deleteVariable(const std::string& varName) {
 
 void monio::Metadata::clear() {
   oops::Log::debug() << "Metadata::clear()" << std::endl;
-  dimensions_.clear();
+  // dimensions_.clear();  // Dimensions are required for correct writing of subsequent variables.
   variables_.clear();
   globalAttrs_.clear();
 }

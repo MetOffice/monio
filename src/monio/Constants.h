@@ -8,6 +8,7 @@
 ******************************************************************************/
 #pragma once
 
+#include <numeric>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -23,6 +24,8 @@ struct FieldMetadata {
   std::string lfricReadName;
   std::string lfricWriteName;
   std::string jediName;
+  std::string lfricVertConfig;
+  std::string jediVertConfig;
   std::string units;
   int numberOfLevels;
   bool noFirstLevel;
@@ -35,6 +38,8 @@ enum eFieldMetadata {
   eLfricReadName,
   eLfricWriteName,
   eJediName,
+  eLfricVertConfig,
+  eJediVertConfig,
   eUnits,
   eNumberOfLevels,
   eNoFirstLevel
@@ -52,11 +57,10 @@ enum eDimensions {
   eVertical
 };
 
-/// \brief For indicating the naming convention adopted by input files, where applicable.
-enum eNamingConventions {
-  eLfricNaming,
-  eJediNaming,
-  eNotDefined
+/// \brief For indicating the variable convention adopted by input files, where applicable.
+enum eVariableConventions {
+  eLfricConvention,
+  eJediConvention
 };
 
 /// \brief Used for populating output files with the correct metadata associated with variable data.
@@ -103,6 +107,8 @@ const std::string_view kTileVarName = "tile_fraction";
 const std::string_view kHorizontalName = "nMesh2d_face";
 const std::string_view kVerticalFullName = "full_levels";
 const std::string_view kVerticalHalfName = "half_levels";
+const std::string_view kVertFullNoSurfName = "full_levels_no_surf";
+const std::string_view kVertHalfWithTopName = "half_levels_with_top";
 
 const std::string_view kLfricMeshTerm = "Mesh2d";
 const std::string_view kLfricLonVarName = "Mesh2d_face_y";
@@ -116,7 +122,7 @@ const std::string_view kNotFoundError = "NOT_FOUND";
 
 const std::string_view kProducedByName = "produced_by";
 const std::string_view kProducedByString = "MONIO: Met Office NetCDF I/O";
-const std::string_view kNamingConventionName = "naming_convention";
+const std::string_view kVariableConventionName = "variable_convention";
 
 /// Multi-dimensional String/Views /////////////////////////////////////////////////////////////////
 
@@ -186,6 +192,10 @@ const int kMPIRankOwner = 0;
 
 const int kVerticalFullSize = 71;
 const int kVerticalHalfSize = 70;
+const int kVertFullNoSurfSize = 70;
+const int kVertHalfWithTopSize = 71;
 
+const double kVerticalFullInc = 1;
+const double kVerticalHalfInc = 0.5;
 }  // namespace consts
 }  // namespace monio

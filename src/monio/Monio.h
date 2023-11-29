@@ -53,14 +53,14 @@ class Monio {
   void writeIncrements(const atlas::FieldSet& localFieldSet,
                        const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                        const std::string& filePath,
-                       const bool isLfricNaming = true);
+                       const bool isLfricConvention = true);
 
   /// \brief Writes increment files. No time component but the variables can use JEDI or LFRic read
   ///        names. Intended debugging and testing only.
   void writeState(const atlas::FieldSet& localFieldSet,
                   const std::vector<consts::FieldMetadata>& fieldMetadataVec,
                   const std::string& filePath,
-                  const bool isLfricNaming = true);
+                  const bool isLfricConvention = true);
 
   /// \brief Writes an field set to file. Intended debugging and testing only.
   void writeFieldSet(const atlas::FieldSet& localFieldSet,
@@ -85,6 +85,9 @@ class Monio {
   FileData& createFileData(const std::string& gridName,
                            const std::string& filePath);
 
+  /// \brief Returns a copy of the data read and produced during file initialisation.
+  FileData getFileData(const std::string& gridName);
+
   /// \brief Creates and stores a map between Atlas and LFRic horizontal ordering.
   void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
 
@@ -93,10 +96,10 @@ class Monio {
                        const std::string& timeVarName,
                        const std::string& timeOriginName);
 
-  /// \brief Returns a copy of the data read and produced during file initialisation.
-  FileData getFileData(const std::string& gridName);
+  /// \brief Adds vertical meta/data for writing of JEDI-only increment files.
+  void addJediData(FileData& fileData);
 
-  /// \brief Removes unnecessary meta/data from data read from file during initialisation.
+  /// \brief Removes unnecessary meta/data required for reading, but not for writing.
   void cleanFileData(FileData& fileData);
 
   /// \brief Necessary use of a standard pointer to a single instance of this class (as part of the
