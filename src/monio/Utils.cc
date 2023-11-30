@@ -54,7 +54,7 @@ bool strToBool(std::string input) {
              (cleanStr.size() == 5 && cleanStr == "false")) {
     return false;
   } else {
-    throw std::invalid_argument("ERROR> Input value of \"" + input + "\" is not valid.");
+    throw std::invalid_argument("utils::strToBool> Input value of \"" + input + "\" is not valid.");
   }
 }
 
