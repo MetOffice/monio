@@ -78,7 +78,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
               reader_.readDatumAtTime(fileData, readName, dateTime,
                                       std::string(consts::kTimeDimName));
               atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
-                                                     variableConvention == consts::eLfricConvention);
+                                                    variableConvention == consts::eLfricConvention);
             } else {
               oops::Log::info() << "Monio::readState()> Variable \"" + fieldMetadata.jediName +
                                    "\" not defined in LFRic. Skipping read..." << std::endl;
