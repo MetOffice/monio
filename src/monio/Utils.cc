@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <fstream>
 #include <memory>
+#include <stdio.h>
 
 #include "AttributeBase.h"
 #include "DataContainerBase.h"
@@ -56,6 +57,22 @@ bool strToBool(std::string input) {
   } else {
     throw std::invalid_argument("utils::strToBool> Input value of \"" + input + "\" is not valid.");
   }
+}
+
+std::string exec(const std::string& cmd) {
+  std::array<char, 128> buffer;
+  std::string result;
+
+  std::string extCmd = "sh -c '" + cmd + "' 2>&1";
+
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(extCmd.c_str(), "r"), pclose);
+  if (!pipe) {
+    throw std::runtime_error("popen() failed!");
+  }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    result += buffer.data();
+  }
+  return result;
 }
 
 bool fileExists(std::string path) {
