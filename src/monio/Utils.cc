@@ -8,10 +8,11 @@
 ******************************************************************************/
 #include "Utils.h"
 
+#include <stdio.h>
+
 #include <algorithm>
 #include <fstream>
 #include <memory>
-#include <stdio.h>
 
 #include "AttributeBase.h"
 #include "DataContainerBase.h"
