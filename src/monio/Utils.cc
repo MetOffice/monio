@@ -64,9 +64,7 @@ bool strToBool(std::string input) {
 std::string exec(const std::string& cmd) {
   std::array<char, 128> buffer;
   std::string result;
-
   std::string extCmd = "sh -c '" + cmd + "' 2>&1";
-
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(extCmd.c_str(), "r"), pclose);
   if (!pipe) {
     throw std::runtime_error("popen() failed!");
