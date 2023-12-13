@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <array>
 #include <fstream>
 #include <memory>
 
