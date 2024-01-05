@@ -9,7 +9,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(monio VERSION 0.0.1 LANGUAGES CXX)
+project(monio VERSION 0.0.1 LANGUAGES Fortran CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH})
 set(CMAKE_DIRECTORY_LABELS ${PROJECT_NAME})
@@ -27,6 +27,7 @@ ecbuild_declare_project()
 set(MONIO_LINKER_LANGUAGE CXX)
 
 ## Dependencies
+find_package(jedicmake QUIET)  # Prefer find modules from jedi-cmake
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
 find_package(NetCDF COMPONENTS CXX)
