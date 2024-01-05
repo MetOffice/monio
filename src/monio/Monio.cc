@@ -61,7 +61,6 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
             auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
-
             // Initialise file
             int variableConvention = initialiseFile(grid.name(), filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
@@ -72,13 +71,18 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
             if (variableConvention == consts::eJediConvention) {
               readName = fieldMetadata.jediName;
             }
-            oops::Log::debug() << "Monio::readState() processing data for> \"" <<
-                                  readName << "\"..." << std::endl;
-            // Read fields into memory
-            reader_.readDatumAtTime(fileData, readName, dateTime,
-                                    std::string(consts::kTimeDimName));
-            atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
-                                                   variableConvention == consts::eLfricConvention);
+            if (utils::findInVector(consts::kMissingVariableNames, readName) == false) {
+              oops::Log::debug() << "Monio::readState() processing data for> \"" <<
+                                    readName << "\"..." << std::endl;
+              // Read fields into memory
+              reader_.readDatumAtTime(fileData, readName, dateTime,
+                                      std::string(consts::kTimeDimName));
+              atlasReader_.populateFieldWithFileData(globalField, fileData, fieldMetadata, readName,
+                                                    variableConvention == consts::eLfricConvention);
+            } else {
+              oops::Log::info() << "Monio::readState()> Variable \"" + fieldMetadata.jediName +
+                                   "\" not defined in LFRic. Skipping read..." << std::endl;
+            }
           }
           auto& functionSpace = globalField.functionspace();
           functionSpace.scatter(globalField, localField);
