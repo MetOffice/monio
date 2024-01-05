@@ -27,7 +27,7 @@ ecbuild_declare_project()
 set(MONIO_LINKER_LANGUAGE CXX)
 
 ## Dependencies
-find_package( jedicmake QUIET )  # Prefer find modules from jedi-cmake
+find_package(jedicmake QUIET)  # Prefer find modules from jedi-cmake
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
 find_package(NetCDF COMPONENTS CXX)
