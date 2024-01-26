@@ -14,8 +14,7 @@
 #include "UtilsAtlas.h"
 #include "Monio.h"
 
-monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
-                                    const int mpiRankOwner):
+monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator, const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
@@ -142,7 +141,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   // Valid case for isLfricConvention == false and fields noFirstLevel == false. Field is filled
   // with all available data.
   } else {
-    for (int j = 0; j < numLevels; ++j) {
+    for (atlas::idx_t j = 0; j < numLevels; ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
         // Bounds checking

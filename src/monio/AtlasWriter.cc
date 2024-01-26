@@ -22,8 +22,7 @@
 #include "UtilsAtlas.h"
 #include "Writer.h"
 
-monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator,
-                                    const int mpiRankOwner):
+monio::AtlasWriter::AtlasWriter(const eckit::mpi::Comm& mpiCommunicator, const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasWriter::AtlasWriter()" << std::endl;
