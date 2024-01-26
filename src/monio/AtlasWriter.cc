@@ -402,15 +402,15 @@ void monio::AtlasWriter::addVariableDimensions(const atlas::Field& field,
                                                      std::shared_ptr<monio::Variable> var,
                                                const std::string& vertConfigName) {
   std::vector<atlas::idx_t> fieldShape = field.shape();
-  if (field.metadata().get<bool>("global") == false) {
-    fieldShape[0] = utilsatlas::getHorizontalSize(field);  // If so, get the 2D size of the Field
+  if (field.metadata().get<bool>("global") == false) {  // If so, get the 2D size of the Field
+    fieldShape[consts::eHorizontal] = utilsatlas::getHorizontalSize(field);
   }
   // Reversal of dims required for LFRic files. Currently applied to all output files.
   std::reverse(fieldShape.begin(), fieldShape.end());
   for (auto& dimSize : fieldShape) {
     std::string dimName;
     if (vertConfigName != "" && metadata.isDimDefined(vertConfigName) &&
-        dimSize == metadata.getDimension(vertConfigName)) {
+          dimSize == metadata.getDimension(vertConfigName)) {
       dimName = vertConfigName;
     } else {
       dimName = metadata.getDimensionName(dimSize);
@@ -425,7 +425,7 @@ void monio::AtlasWriter::addGlobalAttributes(Metadata& metadata, const bool isLf
   // Initialise variables
   std::string variableConvention =
       isLfricConvention == true ? consts::kNamingConventions[consts::eLfricConvention] :
-                              consts::kNamingConventions[consts::eJediConvention];
+                                  consts::kNamingConventions[consts::eJediConvention];
   // Create attribute objects
   std::shared_ptr<monio::AttributeString> namingAttr =
       std::make_shared<AttributeString>(std::string(consts::kVariableConventionName),
