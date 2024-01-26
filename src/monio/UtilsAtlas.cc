@@ -62,7 +62,7 @@ std::vector<atlas::PointLonLat> getAtlasCoords(const atlas::Field& field) {
   if (field.metadata().get<bool>("global") == false) {
     auto lonLatField = field.functionspace().lonlat();
     auto lonLatView = atlas::array::make_view<double, 2>(lonLatField);
-    for (int i = 0; i < getHorizontalSize(field); ++i) {
+    for (atlas::idx_t i = 0; i < getHorizontalSize(field); ++i) {
       atlasCoords.push_back(atlas::PointLonLat(lonLatView(i, consts::eLongitude),
                                                lonLatView(i, consts::eLatitude)));
     }
@@ -131,8 +131,9 @@ std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& a
 atlas::Field getGlobalField(const atlas::Field& field) {
   if (field.metadata().get<bool>("global") == false) {
     atlas::array::DataType atlasType = field.datatype();
+    std::vector<atlas::idx_t> fieldShape = field.shape();
     atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
-                                       atlas::option::levels(field.levels()) |
+                                       atlas::option::levels(fieldShape[consts::eVertical]) |
                                        atlas::option::datatype(atlasType) |
                                        atlas::option::global(0);
     if (atlasType != atlasType.KIND_REAL64 &&
@@ -164,11 +165,11 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
   }
 }
 
-int getHorizontalSize(const atlas::Field& field) {
+atlas::idx_t getHorizontalSize(const atlas::Field& field) {
   atlas::Field ghostField = field.functionspace().ghost();
-  int size = 0;
+  atlas::idx_t size = 0;
   auto ghostView = atlas::array::make_view<int, 1>(ghostField);
-  for (int i = ghostField.size() - 1; i >= 0; --i) {
+  for (atlas::idx_t i = ghostField.size() - 1; i >= 0; --i) {
     if (ghostView(i) == 0) {
       size = i + 1;
       break;
@@ -177,10 +178,10 @@ int getHorizontalSize(const atlas::Field& field) {
   return size;
 }
 
-int getGlobalDataSize(const atlas::Field& field) {
-  std::vector<int> dimVec = field.shape();
-  int size = 1;
-  for (const auto& dim : dimVec) {
+atlas::idx_t getGlobalDataSize(const atlas::Field& field) {
+  std::vector<atlas::idx_t> fieldShape = field.shape();
+  atlas::idx_t size = 1;
+  for (const auto& dim : fieldShape) {
     size *= dim;
   }
   return size;
@@ -216,9 +217,9 @@ bool compareFieldSets(const atlas::FieldSet& aSet, const atlas::FieldSet& bSet) 
 bool compareFields(const atlas::Field& a, const atlas::Field& b) {
   const auto aView = atlas::array::make_view<const double, 2>(a);
   const auto bView = atlas::array::make_view<const double, 2>(b);
-  std::vector<int> dimVec = a.shape();
-  for (int j = 0; j < dimVec[consts::eVertical]; ++j) {
-    for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
+  std::vector<atlas::idx_t> fieldShape = a.shape();
+  for (atlas::idx_t j = 0; j < fieldShape[consts::eVertical]; ++j) {
+    for (atlas::idx_t i = 0; i < fieldShape[consts::eHorizontal]; ++i) {
       if (aView(i, j) != bView(i, j)) {
         return false;
       }
