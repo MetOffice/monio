@@ -154,7 +154,7 @@ void monio::AtlasWriter::populateDataWithField(Data& data,
 
 void monio::AtlasWriter::populateDataWithField(Data& data,
                                          const atlas::Field& field,
-                                         const std::vector<atlas::idx_t> dimensions) {
+                                         const std::vector<atlas::idx_t>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataWithField()" << std::endl;
   std::shared_ptr<DataContainerBase> dataContainer = nullptr;
   populateDataContainerWithField(dataContainer, field, dimensions);
@@ -271,8 +271,7 @@ void monio::AtlasWriter::populateDataVec(std::vector<T>& dataVec,
                                    const atlas::Field& field,
                                    const std::vector<size_t>& lfricToAtlasMap) {
   oops::Log::debug() << "AtlasWriter::populateDataVec() " << field.name() << std::endl;
-  std::vector<atlas::idx_t> fieldShape = field.shape();
-  atlas::idx_t numLevels = fieldShape[consts::eVertical];
+  atlas::idx_t numLevels = field.shape(consts::eVertical);
   if ((lfricToAtlasMap.size() * numLevels) != dataVec.size()) {
     Monio::get().closeFiles();
     utils::throwException("AtlasWriter::populateDataVec()> "
@@ -333,15 +332,15 @@ atlas::Field monio::AtlasWriter::getWriteField(atlas::Field& field,
       Monio::get().closeFiles();
       utils::throwException("AtlasWriter::getWriteField())> Data type not coded for...");
   }
-  std::vector<atlas::idx_t> fieldShape = field.shape();
+  atlas::idx_t numLevels = field.shape(consts::eVertical);
   // Erroneous case. For noFirstLevel == true field should have 70 levels
-  if (noFirstLevel == true && fieldShape[consts::eVertical] == consts::kVerticalFullSize) {
+  if (noFirstLevel == true && numLevels == consts::kVerticalFullSize) {
     Monio::get().closeFiles();
     utils::throwException("AtlasWriter::getWriteField()> Field levels misconfiguration...");
   }
   // WARNING - This name-check is an LFRic-Lite specific convention...
   if (utils::findInVector(consts::kMissingVariableNames, writeName) == false) {
-    if (noFirstLevel == true && fieldShape[consts::eVertical] == consts::kVerticalHalfSize) {
+    if (noFirstLevel == true && numLevels == consts::kVerticalHalfSize) {
       atlas::util::Config atlasOptions = atlas::option::name(writeName) |
                                          atlas::option::global(0) |
                                          atlas::option::levels(consts::kVerticalFullSize);

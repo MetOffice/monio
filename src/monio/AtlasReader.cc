@@ -115,8 +115,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   // Field with noFirstLevel == true should have been adjusted to have 70 levels.
-  std::vector<atlas::idx_t> fieldShape = field.shape();
-  atlas::idx_t numLevels = fieldShape[consts::eVertical];
+  atlas::idx_t numLevels = field.shape(consts::eVertical);
   if (noFirstLevel == true && numLevels == consts::kVerticalFullSize) {
     Monio::get().closeFiles();
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
@@ -206,9 +205,8 @@ template void monio::AtlasReader::populateField<int>(atlas::Field& field,
 
 atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
                                               const bool noFirstLevel) {
-  std::vector<atlas::idx_t> fieldShape = field.shape();
   // Check to ensure field has not been initialised with 71 levels
-  if (noFirstLevel == true && fieldShape[consts::eVertical] == consts::kVerticalFullSize) {
+  if (noFirstLevel == true && field.shape(consts::eVertical) == consts::kVerticalFullSize) {
     atlas::array::DataType atlasType = field.datatype();
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&
