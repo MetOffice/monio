@@ -14,8 +14,7 @@
 #include "UtilsAtlas.h"
 #include "Monio.h"
 
-monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator,
-                                    const int mpiRankOwner):
+monio::AtlasReader::AtlasReader(const eckit::mpi::Comm& mpiCommunicator, const int mpiRankOwner):
     mpiCommunicator_(mpiCommunicator),
     mpiRankOwner_(mpiRankOwner) {
   oops::Log::debug() << "AtlasReader::AtlasReader()" << std::endl;
@@ -116,14 +115,16 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
   auto fieldView = atlas::array::make_view<T, 2>(field);
   // Field with noFirstLevel == true should have been adjusted to have 70 levels.
-  if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+  std::vector<atlas::idx_t> fieldShape = field.shape();
+  atlas::idx_t numLevels = fieldShape[consts::eVertical];
+  if (noFirstLevel == true && numLevels == consts::kVerticalFullSize) {
     Monio::get().closeFiles();
     utils::throwException("AtlasReader::populateField()> Field levels misconfiguration...");
   // Only valid case for field with noFirstLevel == true. Field is adjusted to have 70 levels but
   // read data still has enough to fill 71.
   } else if (isLfricConvention == true &&
              noFirstLevel == true &&
-             field.levels() == consts::kVerticalHalfSize) {
+             numLevels == consts::kVerticalHalfSize) {
     for (int j = 1; j < consts::kVerticalFullSize; ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
@@ -140,7 +141,7 @@ void monio::AtlasReader::populateField(atlas::Field& field,
   // Valid case for isLfricConvention == false and fields noFirstLevel == false. Field is filled
   // with all available data.
   } else {
-    for (int j = 0; j < field.levels(); ++j) {
+    for (atlas::idx_t j = 0; j < numLevels; ++j) {
       for (std::size_t i = 0; i < lfricToAtlasMap.size(); ++i) {
         int index = lfricToAtlasMap[i] + (j * lfricToAtlasMap.size());
         // Bounds checking
@@ -177,15 +178,14 @@ void monio::AtlasReader::populateField(atlas::Field& field,
                                        const std::vector<T>& dataVec) {
   oops::Log::debug() << "AtlasReader::populateField()" << std::endl;
 
-  std::vector<int> dimVec = field.shape();
+  std::vector<atlas::idx_t> fieldShape = field.shape();
   if (field.metadata().get<bool>("global") == false) {
-    dimVec[consts::eHorizontal] = utilsatlas::getHorizontalSize(field);
+    fieldShape[consts::eHorizontal] = utilsatlas::getHorizontalSize(field);
   }
   auto fieldView = atlas::array::make_view<T, 2>(field);
-  int numLevels = field.levels();
-  for (int i = 0; i < dimVec[consts::eHorizontal]; ++i) {
-    for (int j = 0; j < numLevels; ++j) {
-      int index = i + (j * dimVec[consts::eHorizontal]);
+  for (atlas::idx_t i = 0; i < fieldShape[consts::eHorizontal]; ++i) {
+    for (atlas::idx_t j = 0; j < fieldShape[consts::eVertical]; ++j) {
+      atlas::idx_t index = i + (j * fieldShape[consts::eHorizontal]);
       if (std::size_t(index) <= dataVec.size()) {
         fieldView(i, j) = dataVec[index];
       } else {
@@ -206,8 +206,9 @@ template void monio::AtlasReader::populateField<int>(atlas::Field& field,
 
 atlas::Field monio::AtlasReader::getReadField(atlas::Field& field,
                                               const bool noFirstLevel) {
+  std::vector<atlas::idx_t> fieldShape = field.shape();
   // Check to ensure field has not been initialised with 71 levels
-  if (noFirstLevel == true && field.levels() == consts::kVerticalFullSize) {
+  if (noFirstLevel == true && fieldShape[consts::eVertical] == consts::kVerticalFullSize) {
     atlas::array::DataType atlasType = field.datatype();
     if (atlasType != atlasType.KIND_REAL64 &&
         atlasType != atlasType.KIND_REAL32 &&

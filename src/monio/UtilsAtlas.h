@@ -43,8 +43,8 @@ namespace utilsatlas {
 
   atlas::Field getGlobalField(const atlas::Field& field);
 
-  int getHorizontalSize(const atlas::Field& field);  // Just 2D size. Any field.
-  int getGlobalDataSize(const atlas::Field& field);  // Full 3D size of data. Global fields only
+  atlas::idx_t getHorizontalSize(const atlas::Field& field);  // Just 2D size. Any field.
+  atlas::idx_t getGlobalDataSize(const atlas::Field& field);  // Full 3D size of global field.
 
   int atlasTypeToMonioEnum(atlas::array::DataType atlasType);
 

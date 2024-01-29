@@ -78,7 +78,7 @@ class AtlasWriter {
   ///        populateFileDataWithField where metadata are created.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
-                       const std::vector<int> dimensions);
+                       const std::vector<atlas::idx_t> dimensions);
 
   /// \brief Derives the container type and makes the call to populate it. Used where metadata are
   ///        provided and data are written in LFRic order.
@@ -101,7 +101,7 @@ class AtlasWriter {
   /// \brief Iterates through field and populates vector with data from field in Atlas order.
   template<typename T> void populateDataVec(std::vector<T>& dataVec,
                                       const atlas::Field& field,
-                                      const std::vector<int>& dimensions);
+                                      const std::vector<atlas::idx_t>& dimensions);
 
   /// \brief  Map JEDI fields back into LFRic function space.
   atlas::Field getWriteField(atlas::Field& inputField,
