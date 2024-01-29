@@ -78,7 +78,7 @@ class AtlasWriter {
   ///        populateFileDataWithField where metadata are created.
   void populateDataWithField(Data& data,
                        const atlas::Field& field,
-                       const std::vector<atlas::idx_t> dimensions);
+                       const std::vector<atlas::idx_t>& dimensions);
 
   /// \brief Derives the container type and makes the call to populate it. Used where metadata are
   ///        provided and data are written in LFRic order.

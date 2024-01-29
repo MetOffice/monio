@@ -131,9 +131,9 @@ std::vector<size_t> createLfricAtlasMap(const std::vector<atlas::PointLonLat>& a
 atlas::Field getGlobalField(const atlas::Field& field) {
   if (field.metadata().get<bool>("global") == false) {
     atlas::array::DataType atlasType = field.datatype();
-    std::vector<atlas::idx_t> fieldShape = field.shape();
+    atlas::idx_t numLevels = field.shape(consts::eVertical);
     atlas::util::Config atlasOptions = atlas::option::name(field.name()) |
-                                       atlas::option::levels(fieldShape[consts::eVertical]) |
+                                       atlas::option::levels(numLevels) |
                                        atlas::option::datatype(atlasType) |
                                        atlas::option::global(0);
     if (atlasType != atlasType.KIND_REAL64 &&
