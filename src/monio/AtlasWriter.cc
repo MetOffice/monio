@@ -218,7 +218,6 @@ void monio::AtlasWriter::populateDataContainerWithField(
                                const atlas::Field& field,
                                const std::vector<atlas::idx_t>& dimensions) {
   oops::Log::debug() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
-  oops::Log::info() << "AtlasWriter::populateDataContainerWithField()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     std::string fieldName = field.name();
     atlas::array::DataType atlasType = field.datatype();
