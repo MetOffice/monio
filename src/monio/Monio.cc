@@ -360,7 +360,7 @@ monio::Monio::Monio(const eckit::mpi::Comm& mpiCommunicator,
       reader_(mpiCommunicator, mpiRankOwner_),
       writer_(mpiCommunicator, mpiRankOwner_),
       atlasReader_(mpiCommunicator, mpiRankOwner_),
-      atlasWriter_(mpiCommunicator, mpiRankOwner_)   {
+      atlasWriter_(mpiCommunicator, mpiRankOwner_) {
   oops::Log::debug() << "Monio::Monio()" << std::endl;
 }
 
