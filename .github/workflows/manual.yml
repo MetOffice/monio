@@ -1,0 +1,74 @@
+# manual.yml
+---
+name: UKMO Container (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      oops:
+        description: 'oops branch'
+        required: true
+        default: 'develop'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
+
+env:
+  REPO: ${{ github.event.repository.name }}
+  BUNDLE: manual/${{ github.ref_name }}
+
+jobs:
+  build:
+    if: github.repository_owner == 'MetOffice'
+    name: gnu-openmpi (UKMO)
+    runs-on: jedi-self-hosted-rg
+
+    steps:
+      - name: Pre-submit cleanup
+        run: |
+          rm -fr ./${{ env.BUNDLE }} || true
+          ls -lgo ./
+      - name: Checkout ${{ env.REPO }}
+        uses: actions/checkout@v4
+        with:
+          path: ./${{ env.BUNDLE }}/${{ env.REPO }}
+      - name: Initiate bundle
+        run: cp ./${{ env.BUNDLE }}/${{ env.REPO }}/ci/* ./${{ env.BUNDLE }}/
+
+      - name: Checkout jedicmake
+        uses: actions/checkout@v4
+        with:
+          path: ./${{ env.BUNDLE }}/jedicmake
+          repository: JCSDA-internal/jedi-cmake
+          submodules: recursive
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Checkout oops
+        uses: actions/checkout@v4
+        with:
+          path: ./${{ env.BUNDLE }}/oops
+          repository: JCSDA-internal/oops
+          ref: ${{ inputs.oops }}
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Build and Test
+        env:
+          WORKDIR: /var/tmp/${{ env.BUNDLE }}
+          MOBB_DATA: /var/tmp/mobb-data
+
+        run: |
+          az acr login --name ngmssboxjediacr
+          ln -sfT /testdata/mobb-data ${{ github.workspace }}/mobb-data
+
+          docker run --rm \
+            --volume ${PWD}/${BUNDLE}:${WORKDIR} \
+            --volume ${{ github.workspace }}/mobb-data:${MOBB_DATA} \
+            --env MOBB_DATA=${MOBB_DATA} \
+            --workdir=${WORKDIR} \
+            --entrypoint=${WORKDIR}/build-and-test \
+            'ngmssboxjediacr.azurecr.io/jedibase:alma9'
+
+      - name: Cleanup workspace
+        working-directory: ${{github.workspace}}
+        run: rm -fr ${{ env.BUNDLE }} || true

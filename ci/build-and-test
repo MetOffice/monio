@@ -27,9 +27,12 @@ GENERATOR=Unix\ Makefiles
 if command -v ninja &>/dev/null; then GENERATOR=Ninja; fi
 BASE="${HERE%/*}"
 TESTDIR="${BASE##*/}"
+export OMPI_ALLOW_RUN_AS_ROOT=1
+export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 export OMPI_MCA_rmaps_base_oversubscribe=true
-export MONIO_TESTFILES_DIR="/var/tmp/MOBB_DATA/lfric-lite/Data"
-ls -l "${MONIO_TESTFILES_DIR}"
+
+# export MONIO_TESTFILES_DIR="/var/tmp/MOBB_DATA/lfric-lite/Data"
+# ls -l "${MONIO_TESTFILES_DIR}"
 
 trap finally ERR EXIT
 cd "${WORKD}"
@@ -46,9 +49,6 @@ cmake -B . -S "${HERE}" -G "${GENERATOR}" -DCMAKE_BUILD_TYPE=Debug
 cmake --build . -j "${NPROC}"
 
 # -- Test
-env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-ctest -j"${NPROC}" --test-dir "${TESTDIR}" || \
-env OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-ctest --test-dir "${TESTDIR}" --rerun-failed -V
+ctest --test-dir "${TESTDIR}" --output-on-failure -V
 
 exit
