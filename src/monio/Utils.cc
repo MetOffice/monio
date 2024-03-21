@@ -19,6 +19,8 @@
 #include "DataContainerBase.h"
 #include "Variable.h"
 
+#include "eckit/mpi/Comm.h"
+
 #include "oops/util/Logger.h"
 
 namespace monio {
@@ -29,14 +31,14 @@ std::vector<std::string> strToWords(const std::string inputStr,
   std::string word = "";
   std::vector<std::string> wordList;
   while (std::getline(stringStream, word, separatorChar)) {
-      wordList.push_back(word);
+    wordList.push_back(word);
   }
   return wordList;
 }
 
 std::string strNoWhiteSpace(std::string input) {
   input.erase(std::remove_if(input.begin(), input.end(), [](unsigned char x) {
-      return std::isspace(x);
+    return std::isspace(x);
   }), input.end());
   return input;
 }
@@ -123,7 +125,9 @@ bool findInVector(std::vector<T> vector, T searchTerm) {
 template bool findInVector<std::string>(std::vector<std::string> vector, std::string searchTerm);
 
 void throwException(const std::string message) {
-  oops::Log::debug() << message << std::endl;
+  oops::Log::error() << message << std::endl;
+  // Call MPI abort on the WORLD communicator.
+  eckit::mpi::comm("world").abort();
   throw std::runtime_error(message);
 }
 }  // namespace utils
