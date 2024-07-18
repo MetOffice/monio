@@ -30,7 +30,7 @@ set(MONIO_LINKER_LANGUAGE CXX)
 find_package(jedicmake QUIET)  # Prefer find modules from jedi-cmake
 find_package(MPI REQUIRED COMPONENTS CXX)
 find_package(HDF5 REQUIRED COMPONENTS)
-find_package(NetCDF COMPONENTS CXX)
+find_package(NetCDF COMPONENTS Fortran CXX)
 find_package(eckit 1.16.1 REQUIRED COMPONENTS MPI)
 find_package(atlas 0.20.2 REQUIRED)
 find_package(oops 1.0.0 REQUIRED)
