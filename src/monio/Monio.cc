@@ -124,7 +124,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
             auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
 
             // Initialise file
-            int variableConvention = initialiseFile(grid.name(), filePath);
+            int variableConvention = initialiseFile(grid, filePath);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
