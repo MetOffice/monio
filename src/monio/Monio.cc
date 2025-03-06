@@ -62,7 +62,6 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
             auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
-
             // Initialise file
             int variableConvention = initialiseFile(grid, filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
