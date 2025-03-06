@@ -62,18 +62,7 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
 
-            auto nc = atlas::functionspace::NodeColumns(functionSpace);
-            auto sc = atlas::functionspace::StructuredColumns(functionSpace);
-
-            atlas::Grid grid;
-            if (nc) {
-              grid = nc.mesh().grid();
-            } else if (sc) {
-              grid = sc.grid();
-            } else {
-              utils::throwException("Monio::readState()> FunctionSpace not an accepted type. "
-                                    "Accepted types: NodeColumns, StructuredColumns");
-            }
+            auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
 
             // Initialise file
             int variableConvention = initialiseFile(grid, filePath, true);
@@ -134,7 +123,7 @@ void monio::Monio::readIncrements(atlas::FieldSet& localFieldSet,
           atlas::Field globalField = utilsatlas::getGlobalField(localField);
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
-            auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+            auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
 
             // Initialise file
             int variableConvention = initialiseFile(grid.name(), filePath);
@@ -186,7 +175,7 @@ void monio::Monio::writeIncrements(const atlas::FieldSet& localFieldSet,
   if (filePath.length() != 0) {
     try {
       auto& functionSpace = localFieldSet[0].functionspace();
-      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+      auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
       FileData fileData = getFileData(grid.name());
       cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
       if (isLfricConvention == false) {
@@ -249,7 +238,7 @@ void monio::Monio::writeState(const atlas::FieldSet& localFieldSet,
   if (filePath.length() != 0) {
     try {
       auto& functionSpace = localFieldSet[0].functionspace();
-      auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+      auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
       FileData fileData = getFileData(grid.name());
       cleanFileData(fileData);  // Remove metadata required for reading, but not for writing.
       if (isLfricConvention == false) {

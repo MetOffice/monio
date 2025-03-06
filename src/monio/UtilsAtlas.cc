@@ -165,6 +165,19 @@ atlas::FieldSet getGlobalFieldSet(const atlas::FieldSet& fieldSet) {
   }
 }
 
+atlas::Grid getGridFromFunctionSpace(const atlas::FunctionSpace& functionSpace) {
+  auto nc = atlas::functionspace::NodeColumns(functionSpace);
+  auto sc = atlas::functionspace::StructuredColumns(functionSpace);
+  if (nc) {
+    return nc.mesh().grid();
+  } else if (sc) {
+    return sc.grid();
+  } else {
+    utils::throwException("Monio::readState()> FunctionSpace not an accepted type. "
+                          "Accepted types: NodeColumns, StructuredColumns");
+  }
+}
+
 atlas::idx_t getHorizontalSize(const atlas::Field& field) {
   atlas::Field ghostField = field.functionspace().ghost();
   atlas::idx_t size = 0;

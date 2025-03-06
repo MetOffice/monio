@@ -43,6 +43,8 @@ namespace utilsatlas {
 
   atlas::Field getGlobalField(const atlas::Field& field);
 
+  atlas::Grid getGridFromFunctionSpace(const atlas::FunctionSpace& functionSpace);
+
   atlas::idx_t getHorizontalSize(const atlas::Field& field);  // Just 2D size. Any field.
   atlas::idx_t getGlobalDataSize(const atlas::Field& field);  // Full 3D size of global field.
 
