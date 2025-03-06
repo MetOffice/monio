@@ -89,7 +89,7 @@ class Monio {
   FileData getFileData(const std::string& gridName);
 
   /// \brief Creates and stores a map between Atlas and LFRic horizontal ordering.
-  void createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid);
+  void createLfricAtlasMap(FileData& fileData, const atlas::Grid& grid);
 
   /// \brief Creates and stores date-times from a state file.
   void createDateTimes(FileData& fileData,

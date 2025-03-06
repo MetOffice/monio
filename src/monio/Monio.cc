@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "atlas/functionspace/StructuredColumns.h"
 #include "atlas/parallel/mpi/mpi.h"
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
@@ -60,9 +61,22 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           atlas::Field globalField = utilsatlas::getGlobalField(localField);
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
-            auto& grid = atlas::functionspace::NodeColumns(functionSpace).mesh().grid();
+
+            auto nc = atlas::functionspace::NodeColumns(functionSpace);
+            auto sc = atlas::functionspace::StructuredColumns(functionSpace);
+
+            atlas::Grid grid;
+            if (nc) {
+              grid = nc.mesh().grid();
+            } else if (sc) {
+              grid = sc.grid();
+            } else {
+              utils::throwException("Monio::readState()> FunctionSpace not an accepted type. "
+                                    "Accepted types: NodeColumns, StructuredColumns");
+            }
+
             // Initialise file
-            int variableConvention = initialiseFile(grid.name(), filePath, true);
+            int variableConvention = initialiseFile(grid, filePath, true);
             // getFileData returns a copy of FileData (with required LFRic mesh data), so read data
             // is discarded when FileData goes out-of-scope for reading subsequent fields.
             FileData fileData = getFileData(grid.name());
@@ -390,7 +404,7 @@ monio::FileData monio::Monio::getFileData(const std::string& gridName) {
   return FileData();  // This function is called by all PEs. A return is essential.
 }
 
-void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::CubedSphereGrid& grid) {
+void monio::Monio::createLfricAtlasMap(FileData& fileData, const atlas::Grid& grid) {
   oops::Log::trace() << "Monio::createLfricAtlasMap()" << std::endl;
   if (mpiCommunicator_.rank() == mpiRankOwner_) {
     if (fileData.getLfricAtlasMap().size() == 0) {
