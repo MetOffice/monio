@@ -61,7 +61,6 @@ void monio::Monio::readState(atlas::FieldSet& localFieldSet,
           atlas::Field globalField = utilsatlas::getGlobalField(localField);
           if (mpiCommunicator_.rank() == mpiRankOwner_) {
             auto& functionSpace = globalField.functionspace();
-
             auto grid = utilsatlas::getGridFromFunctionSpace(functionSpace);
 
             // Initialise file
