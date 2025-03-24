@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "atlas/functionspace/StructuredColumns.h"
 #include "atlas/parallel/mpi/mpi.h"
 #include "oops/util/Duration.h"
 #include "oops/util/Logger.h"
